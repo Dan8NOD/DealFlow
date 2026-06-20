@@ -21,10 +21,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Create tables on startup (for SQLite/dev; production uses Alembic)
+# Create tables on startup
 @app.on_event("startup")
 def on_startup():
     Base.metadata.create_all(bind=engine)
+    _ensure_columns(engine)
+
+
+def _ensure_columns(engine):
+    """Add any missing columns that were added after initial table creation."""
+    from sqlalchemy import text, inspect
+    insp = inspect(engine)
+    # Leads table
+    lead_cols = {c['name'] for c in insp.get_columns('leads')}
+    for col, typ in [('monthly_income','FLOAT'),('income_source','VARCHAR(50)'),
+                      ('interested_in_buying','BOOLEAN DEFAULT FALSE'),
+                      ('upsell_eligible','BOOLEAN DEFAULT FALSE'),('notes','TEXT')]:
+        if col not in lead_cols:
+            with engine.connect() as conn:
+                conn.execute(text(f"ALTER TABLE leads ADD COLUMN {col} {typ}"))
+                conn.commit()
+    # Applications table
+    app_cols = {c['name'] for c in insp.get_columns('applications')}
+    for col, typ in [('monthly_income','FLOAT'),('credit_score','INTEGER'),
+                      ('move_in_date','VARCHAR(30)'),('pets','VARCHAR(100)'),('notes','TEXT')]:
+        if col not in app_cols:
+            with engine.connect() as conn:
+                conn.execute(text(f"ALTER TABLE applications ADD COLUMN {col} {typ}"))
+                conn.commit()
 
 
 app.include_router(auth.router)

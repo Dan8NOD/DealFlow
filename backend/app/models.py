@@ -121,6 +121,11 @@ class Lead(Base):
     received_at = Column(DateTime, nullable=False, index=True)
     days_old = Column(Integer)
     raw_email_id = Column(String(200), index=True)
+    monthly_income = Column(Float)  # monthly income if known
+    income_source = Column(String(50))  # 'application', 'self-reported', 'estimated'
+    interested_in_buying = Column(Boolean, default=False)
+    upsell_eligible = Column(Boolean, default=False)  # auto-flagged: income > threshold
+    notes = Column(Text)  # agent notes
     created_at = Column(DateTime, server_default=func.now())
     property = relationship("Property", back_populates="leads")
 
@@ -139,6 +144,11 @@ class Application(Base):
     days_in_pipeline = Column(Integer)
     event_count = Column(Integer, default=0)
     needs_review = Column(Boolean, default=False)
+    monthly_income = Column(Float)  # from application docs
+    credit_score = Column(Integer)
+    move_in_date = Column(String(30))
+    pets = Column(String(100))
+    notes = Column(Text)  # agent notes
     created_at = Column(DateTime, server_default=func.now())
     events = relationship("ApplicationEvent", back_populates="application", cascade="all, delete")
     property = relationship("Property")

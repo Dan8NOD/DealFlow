@@ -188,6 +188,11 @@ async def api_applications(
             "needs_review": bool(a.needs_review),
             "first_seen": a.first_seen.isoformat() if a.first_seen else None,
             "last_update": a.last_update.isoformat() if a.last_update else None,
+            "monthly_income": a.monthly_income,
+            "credit_score": a.credit_score,
+            "pets": a.pets,
+            "move_in_date": a.move_in_date,
+            "notes": a.notes,
         }
         for a in apps
     ]
@@ -263,6 +268,11 @@ async def api_leads(
             "status": l.status.value if l.status else "",
             "days_old": l.days_old or 0,
             "received_at": l.received_at.isoformat() if l.received_at else None,
+            "monthly_income": l.monthly_income,
+            "income_source": l.income_source,
+            "upsell_eligible": bool(l.upsell_eligible),
+            "interested_in_buying": bool(l.interested_in_buying),
+            "notes": l.notes,
         }
         for l in leads
     ]
@@ -333,7 +343,7 @@ async def patch_application(
     app = db.query(Application).filter(Application.id == app_id, Application.org_id == user.org_id).first()
     if not app:
         return JSONResponse({"error": "not found"}, status_code=404)
-    for field in ("status", "handler", "applicant_name"):
+    for field in ("status", "handler", "applicant_name", "monthly_income", "credit_score", "pets", "move_in_date", "notes"):
         if field in body:
             setattr(app, field, body[field])
     if "last_update" not in body:
@@ -353,9 +363,13 @@ async def patch_lead(
     lead = db.query(Lead).filter(Lead.id == lead_id, Lead.org_id == user.org_id).first()
     if not lead:
         return JSONResponse({"error": "not found"}, status_code=404)
-    for field in ("status", "name", "email", "phone"):
+    for field in ("status", "name", "email", "phone", "monthly_income", "income_source", "interested_in_buying", "notes"):
         if field in body:
             setattr(lead, field, body[field])
+    # Auto-calculate upsell eligibility: income > $5k/mo → flag
+    income = getattr(lead, 'monthly_income', None)
+    if income is not None and income > 0:
+        lead.upsell_eligible = income >= 5000
     db.commit()
     return {"ok": True, "id": lead_id}
 

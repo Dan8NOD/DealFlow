@@ -20,12 +20,10 @@ if not DB_URL or "render.com" not in DB_URL:
     print("  export DATABASE_URL='postgresql://...'")
     sys.exit(1)
 
-# Fix URL scheme and require SSL (Render mandates it)
-DB_URL = DB_URL.replace("postgres://", "postgresql://", 1)
+# Fix URL scheme and ensure SSL (Render mandates it)
+DB_URL = DB_URL.replace("postgres://", "postgresql://")
 if "sslmode" not in DB_URL:
-    DB_URL += "?sslmode=require"
-
-print(f"Target DB: {DB_URL.split('@')[1] if '@' in DB_URL else DB_URL}")
+    DB_URL += "?sslmode=require" if "?" not in DB_URL else "&sslmode=require"
 
 # Bootstrap SQLAlchemy against production DB
 os.environ["DATABASE_URL"] = DB_URL

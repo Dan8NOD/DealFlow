@@ -129,6 +129,7 @@ async def dashboard_json(
                 "handler": a.handler,
                 "days": a.days_in_pipeline or 0,
                 "updated": a.last_update.isoformat() if a.last_update else None,
+                "needs_review": bool(a.needs_review),
             }
             for a in db.query(Application).filter(Application.org_id == org_id)
               .order_by(desc(Application.last_update)).limit(100).all()
@@ -189,6 +190,7 @@ async def api_applications(
             "handler": a.handler,
             "days_in_pipeline": a.days_in_pipeline or 0,
             "event_count": a.event_count or 0,
+            "needs_review": bool(a.needs_review),
             "last_update": a.last_update.isoformat() if a.last_update else None,
         }
         for a in apps

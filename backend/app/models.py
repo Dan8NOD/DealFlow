@@ -24,6 +24,8 @@ class PropertyStatus(str, enum.Enum):
     RENTED = "rented"
     OCCUPIED = "occupied"
     OFF_MARKET = "off_market"
+    FOR_SALE = "for_sale"
+    PENDING = "pending"
 
 
 class LeadStatus(str, enum.Enum):
@@ -136,6 +138,7 @@ class Application(Base):
     last_update = Column(DateTime)
     days_in_pipeline = Column(Integer)
     event_count = Column(Integer, default=0)
+    needs_review = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now())
     events = relationship("ApplicationEvent", back_populates="application", cascade="all, delete")
     property = relationship("Property")

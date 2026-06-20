@@ -2,423 +2,442 @@
 {% block title %}Dashboard — {{ org.name }}{% endblock %}
 {% block extra_css %}
 header.bar { background: linear-gradient(135deg, #1f4e78 0%, #2c5f8a 100%);
-  color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
-header.bar h1 { font-size: 20px; font-weight: 700; }
-header.bar a { color: white; text-decoration: none; margin-left: 16px; opacity: 0.9; }
-.tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0;
-  overflow-x: auto; flex-wrap: wrap; }
-.tab { padding: 10px 16px; background: transparent; border: none; cursor: pointer;
-  font-size: 14px; font-weight: 600; color: #4a5568; border-bottom: 3px solid transparent;
+  color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+header.bar h1 { font-size: 18px; font-weight: 700; }
+header.bar a, header.bar button { color: white; text-decoration: none; margin-left: 12px; opacity: 0.9;
+  font-size: 12px; background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; }
+.tabs { display: flex; gap: 0; margin-bottom: 0; border-bottom: 2px solid #e2e8f0; }
+.tab { padding: 10px 18px; background: transparent; border: none; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: #4a5568; border-bottom: 3px solid transparent;
   margin-bottom: -2px; white-space: nowrap; }
 .tab.active { color: #1f4e78; border-bottom-color: #1f4e78; }
-h2 { font-size: 16px; margin: 24px 0 12px; color: #1f4e78; }
-table { font-size: 13px; }
-table th { font-size: 11px; text-transform: uppercase; color: #4a5568; }
-table tr:hover { background: #f7fafc; }
+.toolbar { display: flex; gap: 8px; padding: 10px 0; align-items: center; flex-wrap: wrap; }
+.toolbar input { padding: 6px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 13px; flex: 1; max-width: 260px; }
+.toolbar select { padding: 6px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 13px; }
+/* Airtable-style grid */
+.grid-wrap { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid #e2e8f0; }
+.grid { width: 100%; border-collapse: collapse; font-size: 13px; }
+.grid th { background: #f7fafc; padding: 8px 10px; text-align: left; font-size: 11px;
+  text-transform: uppercase; color: #4a5568; border-bottom: 2px solid #e2e8f0;
+  position: sticky; top: 0; white-space: nowrap; }
+.grid td { padding: 6px 10px; border-bottom: 1px solid #edf2f7; cursor: pointer; max-width: 200px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.grid tr:hover td { background: #f0f9ff; }
+.grid tr.selected td { background: #dbeafe; }
+/* Inline editor */
+.cell-editor { width: 100%; padding: 4px 6px; border: 2px solid #1f4e78; border-radius: 4px;
+  font-size: 13px; font-family: inherit; background: white; outline: none; }
+.cell-select { width: 100%; padding: 4px 6px; border: 2px solid #1f4e78; border-radius: 4px;
+  font-size: 13px; font-family: inherit; background: white; }
+/* Badges */
 .badge { display: inline-block; padding: 2px 8px; border-radius: 999px;
   font-size: 11px; font-weight: 600; background: #edf2f7; }
 .badge.warn { background: #fef3c7; color: #78350f; }
 .badge.ok { background: #d1fae5; color: #065f46; }
 .badge.blue { background: #dbeafe; color: #1e40af; }
 .badge.gray { background: #d1d5db; color: #1f2937; }
-.toolbar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
-.toolbar input, .toolbar select { padding: 6px 12px; border: 1px solid #cbd5e0;
-  border-radius: 6px; font-size: 13px; }
-.toolbar input { flex: 1; max-width: 280px; }
-.idle { color: #dd6b20; font-weight: 600; }
-.idle-bad { color: #c53030; font-weight: 700; }
-.bar-chart { display: flex; flex-direction: column; gap: 6px; }
-.bar-chart .bar-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
-.bar-chart .bar-label { width: 160px; }
-.bar-chart .bar-track { flex: 1; background: #edf2f7; border-radius: 4px;
-  height: 18px; overflow: hidden; }
-.bar-chart .bar-fill { background: #1f4e78; height: 100%; color: white;
-  padding: 2px 8px; font-size: 11px; min-width: 24px; text-align: right; box-sizing: border-box; }
-.btn-detail { padding: 4px 10px; background: #1f4e78; color: white; border: none;
-  border-radius: 4px; cursor: pointer; font-size: 12px; }
-.btn-detail:hover { background: #2c5f8a; }
-.timeline { padding-left: 16px; border-left: 2px solid #cbd5e0; margin: 12px 0; }
-.timeline-item { padding: 6px 0; font-size: 12px; }
-.timeline-item .date { color: #4a5568; font-weight: 600; margin-right: 8px; }
-.modal-bg { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
-.modal-bg.open { display: flex; }
-.modal { background: white; border-radius: 12px; max-width: 720px;
-  width: 90%; max-height: 80vh; overflow-y: auto; }
-.modal-header { padding: 16px 20px; border-bottom: 1px solid #e2e8f0;
+.badge.red { background: #fee2e2; color: #991b1b; }
+.badge.purple { background: #ede9fe; color: #5b21b6; }
+/* Comments panel */
+.comment-panel { position: fixed; right: 0; top: 0; width: 340px; height: 100vh;
+  background: white; box-shadow: -4px 0 20px rgba(0,0,0,0.1); z-index: 200;
+  display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.2s; }
+.comment-panel.open { transform: translateX(0); }
+.cp-header { padding: 16px; border-bottom: 1px solid #e2e8f0;
   display: flex; justify-content: space-between; align-items: center; }
-.modal-header h2 { margin: 0; }
-.modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #4a5568; }
-.modal-body { padding: 20px; }
+.cp-header h3 { font-size: 15px; margin: 0; }
+.cp-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #4a5568; }
+.cp-body { flex: 1; overflow-y: auto; padding: 16px; }
+.cp-comment { background: #f7fafc; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; font-size: 13px; }
+.cp-comment .cp-meta { font-size: 11px; color: #718096; margin-top: 4px; }
+.cp-input { border-top: 1px solid #e2e8f0; padding: 12px 16px; display: flex; gap: 8px; }
+.cp-input textarea { flex: 1; padding: 8px; border: 1px solid #cbd5e0; border-radius: 6px;
+  font-size: 13px; font-family: inherit; resize: none; height: 60px; }
+.cp-input button { background: #1f4e78; color: white; border: none; border-radius: 6px;
+  padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 600; }
+.cp-input button:hover { background: #2c5f8a; }
+.overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3); z-index: 199; }
+.overlay.open { display: block; }
+.saved-flash { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: #065f46; color: white; padding: 8px 20px; border-radius: 8px; font-size: 13px;
+  z-index: 300; opacity: 0; transition: opacity 0.2s; }
+.saved-flash.show { opacity: 1; }
 {% endblock %}
 {% block body %}
 <header class="bar">
-  <h1>Renter Portal — {{ org.name }}</h1>
-  <div style="display:flex;align-items:center;gap:12px;">
-    <button id="downloadReportBtn" style="background:rgba(255,255,255,0.2);padding:6px 12px;border-radius:6px;font-size:12px;border:none;color:white;cursor:pointer;">📊 Weekly Report</button>
-    <a href="/auth/microsoft/start" style="background:rgba(255,255,255,0.2);padding:6px 12px;border-radius:6px;font-size:12px;">🔗 Connect Microsoft 365</a>
-    <a href="/api/sync" style="background:rgba(255,255,255,0.2);padding:6px 12px;border-radius:6px;font-size:12px;">↻ Sync</a>
+  <h1>Renter Portal</h1>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <a href="/auth/microsoft/start">🔗 Connect Microsoft 365</a>
+    <a href="/api/sync">↻ Sync</a>
     <span style="font-size:13px;opacity:0.9;">{{ user.email }}</span>
-    <a href="/auth/logout" onclick="event.preventDefault(); fetch('/auth/logout',{method:'POST',credentials:'include'}).then(()=>location.href='/')" style="font-size:13px;">Sign out</a>
+    <a href="/auth/logout" onclick="event.preventDefault(); fetch('/auth/logout',{method:'POST',credentials:'include'}).then(()=>location.href='/')">Sign out</a>
   </div>
 </header>
 
-<div class="container">
-  {% if stats.pending_cmas > 0 %}
-  <div class="alert" style="padding:12px;background:#fef3c7;border-radius:8px;margin-bottom:16px;color:#78350f;">
-    ⚠ {{ stats.pending_cmas }} CMA requests pending — old enough to need a comp report
+<div class="tabs" id="tabBar">
+  <button class="tab active" data-tab="apps">Applications</button>
+  <button class="tab" data-tab="sales">Sales Deals</button>
+  <button class="tab" data-tab="leads">Leads</button>
+  <button class="tab" data-tab="props">Properties</button>
+  <button class="tab" data-tab="cmas">CMAs</button>
+</div>
+
+<div class="toolbar">
+  <input type="text" id="searchInput" placeholder="Search all columns...">
+  <select id="statusFilter"><option value="">All statuses</option></select>
+  <span id="rowCount" style="font-size:12px;color:#4a5568;"></span>
+</div>
+
+<div class="grid-wrap"><table class="grid" id="grid"></table></div>
+
+<!-- Comment panel -->
+<div class="overlay" id="overlay"></div>
+<div class="comment-panel" id="commentPanel">
+  <div class="cp-header">
+    <h3 id="cpTitle">Comments</h3>
+    <button class="cp-close" onclick="closeComments()">×</button>
   </div>
-  {% endif %}
-
-  <div class="stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px;">
-    <div class="stat" style="background:white;border-radius:12px;padding:20px;border:1px solid #e2e8f0;">
-      <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:.5px;font-weight:600;">Active Leads</div>
-      <div style="font-size:28px;font-weight:700;color:#1f4e78;margin-top:4px;">{{ stats.active_leads }}</div>
-    </div>
-    <div class="stat" style="background:white;border-radius:12px;padding:20px;border:1px solid #e2e8f0;">
-      <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:.5px;font-weight:600;">In Pipeline</div>
-      <div style="font-size:28px;font-weight:700;color:#38a169;margin-top:4px;">{{ stats.in_pipeline }}</div>
-    </div>
-    <div class="stat" style="background:white;border-radius:12px;padding:20px;border:1px solid #e2e8f0;">
-      <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:.5px;font-weight:600;">Active Sales</div>
-      <div style="font-size:28px;font-weight:700;color:#1f4e78;margin-top:4px;">{{ stats.active_sales }}</div>
-    </div>
-    <div class="stat" style="background:white;border-radius:12px;padding:20px;border:1px solid #e2e8f0;">
-      <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:.5px;font-weight:600;">Pending CMAs</div>
-      <div style="font-size:28px;font-weight:700;color:#dd6b20;margin-top:4px;">{{ stats.pending_cmas }}</div>
-    </div>
-  </div>
-
-  <div class="tabs">
-    <button class="tab active" data-tab="apps">Applications ({{ stats.in_pipeline }})</button>
-    <button class="tab" data-tab="sales">Sales ({{ stats.active_sales }})</button>
-    <button class="tab" data-tab="cmas">CMAs ({{ stats.pending_cmas }})</button>
-    <button class="tab" data-tab="leads">Leads ({{ stats.active_leads }})</button>
-    <button class="tab" data-tab="props">Properties</button>
-    <button class="tab" data-tab="analytics">Analytics</button>
-  </div>
-
-  <div id="apps" class="tab-content">
-    <div class="toolbar">
-      <input type="text" id="appSearch" placeholder="Search applicant, property, handler...">
-      <select id="appStatusFilter">
-        <option value="">All statuses</option>
-        <option value="application_received">Application Received</option>
-        <option value="offer_sent">Offer Sent</option>
-        <option value="welcome_sent">Welcome Sent</option>
-        <option value="approved">Approved</option>
-        <option value="moved_in">Moved In</option>
-        <option value="denied">Denied</option>
-        <option value="needs_review">⚠ Needs Review</option>
-      </select>
-    </div>
-    <div style="background:white;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
-      <table style="width:100%;border-collapse:collapse;">
-        <thead><tr style="background:#f7fafc;">
-          <th style="padding:10px 12px;text-align:left;">Property</th>
-          <th style="padding:10px 12px;text-align:left;">Applicant</th>
-          <th style="padding:10px 12px;text-align:left;">Status</th>
-          <th style="padding:10px 12px;text-align:left;">Handler</th>
-          <th style="padding:10px 12px;text-align:center;">Days</th>
-          <th style="padding:10px 12px;text-align:center;">Events</th>
-          <th style="padding:10px 12px;text-align:left;">Updated</th>
-        </tr></thead>
-        <tbody id="appsTable"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div id="sales" class="tab-content" style="display:none;">
-    <h2>Active Sales Deals <span class="count">({{ active_deals|length }})</span></h2>
-    {% if active_deals %}
-    <div style="background:white;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
-      <table style="width:100%;border-collapse:collapse;">
-        <thead><tr style="background:#f7fafc;">
-          <th style="padding:10px 12px;text-align:left;">Property</th>
-          <th style="padding:10px 12px;text-align:left;">Status</th>
-          <th style="padding:10px 12px;text-align:left;">TC</th>
-          <th style="padding:10px 12px;text-align:center;">Days Idle</th>
-          <th style="padding:10px 12px;text-align:center;">Events</th>
-          <th style="padding:10px 12px;text-align:left;">Last Update</th>
-        </tr></thead>
-        <tbody>
-          {% for d in active_deals %}
-          <tr style="border-bottom:1px solid #edf2f7;">
-            <td style="padding:10px 12px;"><strong>{{ d.property_address }}</strong></td>
-            <td style="padding:10px 12px;"><span class="badge {% if d.status.value == 'under_contract' or d.status.value == 'contract_signed' %}ok{% elif d.status.value == 'in_escrow' %}warn{% else %}blue{% endif %}">{{ d.status.value|replace('_', ' ')|title }}</span></td>
-            <td style="padding:10px 12px;">{{ d.transaction_coordinator or '—' }}</td>
-            <td style="padding:10px 12px;text-align:center;">
-              {% if d.days_idle and d.days_idle > 14 %}<span class="idle-bad">{{ d.days_idle }}d</span>
-              {% elif d.days_idle and d.days_idle > 7 %}<span class="idle">{{ d.days_idle }}d</span>
-              {% else %}{{ d.days_idle or 0 }}d{% endif %}
-            </td>
-            <td style="padding:10px 12px;text-align:center;">{{ d.event_count or 0 }}</td>
-            <td style="padding:10px 12px;color:#4a5568;">{{ d.last_update.strftime('%Y-%m-%d') if d.last_update else '—' }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}<p class="empty-state">No active sales deals.</p>{% endif %}
-  </div>
-
-  <div id="cmas" class="tab-content" style="display:none;">
-    <h2>Pending CMA Requests <span class="count">({{ cmas|length }})</span></h2>
-    {% if cmas %}
-    <div style="background:white;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
-      <table style="width:100%;border-collapse:collapse;">
-        <thead><tr style="background:#f7fafc;">
-          <th style="padding:10px 12px;text-align:left;">Property</th>
-          <th style="padding:10px 12px;text-align:left;">Type</th>
-          <th style="padding:10px 12px;text-align:center;">Requests</th>
-          <th style="padding:10px 12px;text-align:center;">Days Idle</th>
-          <th style="padding:10px 12px;text-align:left;">First</th>
-          <th style="padding:10px 12px;text-align:left;">Last</th>
-        </tr></thead>
-        <tbody>
-          {% for c in cmas %}
-          <tr style="border-bottom:1px solid #edf2f7;">
-            <td style="padding:10px 12px;"><strong>{{ c.property_address }}</strong> {% if c.unit %}#{{ c.unit }}{% endif %}</td>
-            <td style="padding:10px 12px;"><span class="badge {% if c.kind == 'sale' %}purple{% else %}blue{% endif %}">{{ c.kind or 'rental' }}</span></td>
-            <td style="padding:10px 12px;text-align:center;">{{ c.request_count }}</td>
-            <td style="padding:10px 12px;text-align:center;">
-              {% if c.last_request %}
-                {% set days_since = (now - c.last_request).days %}
-                {% if days_since > 14 %}<span class="idle-bad">{{ days_since }}d</span>
-                {% elif days_since > 7 %}<span class="idle">{{ days_since }}d</span>
-                {% else %}{{ days_since }}d{% endif %}
-              {% else %}—{% endif %}
-            </td>
-            <td style="padding:10px 12px;color:#4a5568;">{{ c.first_request.strftime('%Y-%m-%d') if c.first_request else '—' }}</td>
-            <td style="padding:10px 12px;color:#4a5568;">{{ c.last_request.strftime('%Y-%m-%d') if c.last_request else '—' }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}<p class="empty-state">No pending CMAs.</p>{% endif %}
-  </div>
-
-  <div id="leads" class="tab-content" style="display:none;">
-    <h2>Call Next <span style="font-size:12px;font-weight:normal;color:#4a5568;">(freshest leads)</span></h2>
-    <div style="background:linear-gradient(135deg, #d4f4dd 0%, #bee3f8 100%);border-radius:12px;padding:20px;margin-bottom:20px;border:1px solid #e2e8f0;">
-      <div style="font-size:13px;color:#22543d;font-weight:600;margin-bottom:12px;">📞 Call these leads today:</div>
-      <div id="call-next-list" style="display:grid;gap:12px;"></div>
-    </div>
-
-    <h2>Recent Leads <span class="count">(showing 20 of {{ stats.active_leads }})</span></h2>
-    <div style="background:white;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
-      <table style="width:100%;border-collapse:collapse;">
-        <thead><tr style="background:#f7fafc;">
-          <th style="padding:10px 12px;text-align:left;">Name</th>
-          <th style="padding:10px 12px;text-align:left;">Property</th>
-          <th style="padding:10px 12px;text-align:left;">Source</th>
-          <th style="padding:10px 12px;text-align:left;">Contact</th>
-          <th style="padding:10px 12px;text-align:center;">Days Old</th>
-        </tr></thead>
-        <tbody>
-          {% for l in recent_leads %}
-          <tr style="border-bottom:1px solid #edf2f7;">
-            <td style="padding:10px 12px;"><strong>{{ l.name or '(no name)' }}</strong></td>
-            <td style="padding:10px 12px;">{{ l.property.address if l.property else '—' }}{% if l.property and l.property.unit %} #{{ l.property.unit }}{% endif %}</td>
-            <td style="padding:10px 12px;"><span class="badge">{{ l.source or '—' }}</span></td>
-            <td style="padding:10px 12px;font-size:12px;">{{ l.email or '' }}<br>{{ l.phone or '' }}</td>
-            <td style="padding:10px 12px;text-align:center;">
-              {% if l.days_old and l.days_old > 30 %}<span class="idle-bad">{{ l.days_old }}d</span>
-              {% elif l.days_old and l.days_old > 14 %}<span class="idle">{{ l.days_old }}d</span>
-              {% else %}{{ l.days_old or 0 }}d{% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div id="props" class="tab-content" style="display:none;">
-    <h2>Top Properties by Lead Volume <span class="count">(showing 10)</span></h2>
-    <div style="background:white;border-radius:12px;border:1px solid #e2e8f0;padding:16px;">
-      <div class="bar-chart">
-        {% for addr, unit, cnt in top_properties %}
-        <div class="bar-row">
-          <div class="bar-label">{{ addr[:25] }}{% if unit %} #{{ unit }}{% endif %}</div>
-          <div class="bar-track"><div class="bar-fill" style="width: {{ [cnt * 6, 100]|min }}%">{{ cnt }}</div></div>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-  </div>
-
-  <div id="analytics" class="tab-content" style="display:none;">
-    <h2>Application Status Distribution</h2>
-    <div style="background:white;border-radius:12px;border:1px solid #e2e8f0;padding:16px;">
-      <div class="bar-chart">
-        {% for status, cnt in status_dist %}
-        <div class="bar-row">
-          <div class="bar-label">{{ status.value|replace('_', ' ')|title }}</div>
-          <div class="bar-track"><div class="bar-fill" style="width: {{ [cnt * 4, 100]|min }}%">{{ cnt }}</div></div>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
+  <div class="cp-body" id="cpBody"><p style="color:#a0aec0;text-align:center;margin-top:40px;">Select a row to see comments</p></div>
+  <div class="cp-input" id="cpInput" style="display:none;">
+    <textarea id="cpText" placeholder="Add a comment..."></textarea>
+    <button onclick="addComment()">Post</button>
   </div>
 </div>
 
-<div id="modal" class="modal-bg">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 id="modalTitle">Application Detail</h2>
-      <button class="modal-close" onclick="closeModal()">×</button>
-    </div>
-    <div class="modal-body" id="modalBody"></div>
-  </div>
-</div>
+<div class="saved-flash" id="savedFlash">✓ Saved</div>
 
 <script>
-let allApps = [];
-let allLeads = [];
+// ═══════ State ═══════
+let currentTab = 'apps';
+let allRows = {};
+let selectedRowId = null, selectedRowType = null;
+const STATUS_COLORS = {
+  // Application statuses
+  application_received: 'blue', offer_sent: 'warn', welcome_sent: 'warn',
+  approved: 'ok', lease_signed: 'ok', moved_in: 'ok', denied: 'red',
+  // Lead statuses
+  NEW: 'blue', CONTACTED: 'warn', QUALIFIED: 'ok', CLOSED: 'gray', LOST: 'red',
+  // Sales statuses
+  ACTIVE_LISTING: 'blue', UNDER_CONTRACT: 'ok', CONTRACT_SIGNED: 'ok',
+  IN_ESCROW: 'warn', OFFER_RECEIVED: 'warn', CLOSED: 'gray', CMA_REQUESTED: 'purple',
+  LISTING_PREP: 'warn', NEW_LISTING_ALERT: 'blue',
+  // Property statuses
+  AVAILABLE: 'ok', RENTED: 'blue', OCCUPIED: 'warn', OFF_MARKET: 'gray', FOR_SALE: 'purple', PENDING: 'warn',
+};
 
-async function loadAll() {
-  const [appsR, leadsR] = await Promise.all([
-    fetch('/api/applications?limit=200').then(r => r.json()),
-    fetch('/api/leads?limit=200').then(r => r.json()),
-  ]);
-  allApps = appsR;
-  allLeads = leadsR;
-  
-  // Populate "Call Next" with freshest leads (days_old <= 7)
-  const freshLeads = allLeads
-    .filter(l => l.days_old !== null && l.days_old <= 7)
-    .sort((a, b) => a.days_old - b.days_old)
-    .slice(0, 5);
-  
-  const callNextList = document.getElementById('call-next-list');
-  if (freshLeads.length > 0) {
-    callNextList.innerHTML = freshLeads.map(l => `
-      <div style="background:white;border-radius:8px;padding:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-        <div>
-          <div style="font-weight:600;font-size:14px;">${l.name || '(no name)'}</div>
-          <div style="font-size:12px;color:#4a5568;">${l.property || 'Unknown property'}${l.status ? ' • ' + l.status : ''}</div>
-          <div style="font-size:11px;color:#718096;">${l.source || 'Unknown source'} • ${l.days_old}d ago</div>
-        </div>
-        <div style="text-align:right;">
-          ${l.phone ? `<a href="tel:${l.phone}" style="display:inline-block;padding:8px 16px;background:#38a169;color:white;text-decoration:none;border-radius:6px;font-size:13px;font-weight:600;">📞 ${l.phone}</a>` : ''}
-          ${l.email ? `<a href="mailto:${l.email}" style="display:inline-block;margin-left:8px;padding:8px 16px;background:#3182ce;color:white;text-decoration:none;border-radius:6px;font-size:13px;font-weight:600;">✉️ Email</a>` : ''}
-        </div>
-      </div>
-    `).join('');
+const STATUS_OPTIONS = {
+  apps: ['application_received','offer_sent','welcome_sent','approved','lease_signed','moved_in','denied'],
+  sales: ['NEW_LISTING_ALERT','CMA_REQUESTED','LISTING_PREP','ACTIVE_LISTING','IN_ESCROW','UNDER_CONTRACT','CONTRACT_SIGNED','OFFER_RECEIVED','CLOSED'],
+  leads: ['NEW','CONTACTED','QUALIFIED','CLOSED','LOST'],
+  props: ['AVAILABLE','RENTED','OCCUPIED','OFF_MARKET','FOR_SALE','PENDING'],
+  cmas: ['pending','sent','resolved'],
+};
+
+// ═══════ Column definitions ═══════
+const COLUMNS = {
+  apps: [
+    {key:'applicant', label:'Applicant', editable:true, width:'150px'},
+    {key:'property', label:'Property', width:'200px'},
+    {key:'status', label:'Status', editable:true, type:'status', width:'140px'},
+    {key:'handler', label:'Handler', editable:true, width:'140px'},
+    {key:'days_in_pipeline', label:'Days', width:'60px'},
+    {key:'event_count', label:'Evts', width:'50px'},
+    {key:'last_update', label:'Updated', width:'100px'},
+  ],
+  sales: [
+    {key:'address', label:'Property', width:'220px'},
+    {key:'status', label:'Status', editable:true, type:'status', width:'140px'},
+    {key:'tc', label:'Coordinator', editable:true, width:'150px'},
+    {key:'list_price', label:'Price', editable:true, width:'100px'},
+    {key:'days_idle', label:'Idle', width:'60px'},
+    {key:'event_count', label:'Evts', width:'50px'},
+    {key:'last_update', label:'Updated', width:'100px'},
+  ],
+  leads: [
+    {key:'name', label:'Name', editable:true, width:'150px'},
+    {key:'email', label:'Email', editable:true, width:'180px'},
+    {key:'phone', label:'Phone', editable:true, width:'130px'},
+    {key:'property', label:'Property', width:'200px'},
+    {key:'source', label:'Source', width:'100px'},
+    {key:'status', label:'Status', editable:true, type:'status', width:'110px'},
+    {key:'days_old', label:'Age', width:'55px'},
+    {key:'received_at', label:'Received', width:'100px'},
+  ],
+  props: [
+    {key:'address', label:'Address', width:'200px'},
+    {key:'unit', label:'Unit', width:'60px'},
+    {key:'status', label:'Status', editable:true, type:'status', width:'110px'},
+    {key:'tenant', label:'Tenant', editable:true, width:'140px'},
+    {key:'rent', label:'Rent', editable:true, width:'80px'},
+    {key:'bedrooms', label:'BR', editable:true, width:'50px'},
+    {key:'bathrooms', label:'BA', editable:true, width:'50px'},
+    {key:'notes', label:'Notes', editable:true, width:'200px'},
+  ],
+  cmas: [
+    {key:'property', label:'Property', width:'220px'},
+    {key:'unit', label:'Unit', width:'60px'},
+    {key:'kind', label:'Type', width:'70px'},
+    {key:'status', label:'Status', editable:true, type:'status', width:'100px'},
+    {key:'requests', label:'Reqs', width:'55px'},
+    {key:'last_request', label:'Last Request', width:'110px'},
+    {key:'first_request', label:'First Request', width:'110px'},
+  ],
+};
+
+// ═══════ Load data ═══════
+async function loadTab(tab) {
+  currentTab = tab;
+  const urls = {apps:'/api/applications?limit=200', sales:'/api/sales?limit=200',
+                leads:'/api/leads?limit=200', props:'/api/properties?limit=200',
+                cmas:'/api/cmas?limit=200'};
+  const res = await fetch(urls[tab], {credentials:'include'});
+  allRows[tab] = await res.json();
+  populateStatusFilter(tab);
+  renderGrid(tab);
+}
+
+function populateStatusFilter(tab) {
+  const sel = document.getElementById('statusFilter');
+  sel.innerHTML = '<option value="">All</option>';
+  const opts = STATUS_OPTIONS[tab] || [];
+  opts.forEach(o => { sel.innerHTML += `<option value="${o}">${o.replace(/_/g,' ')}</option>`; });
+}
+
+function renderGrid(tab) {
+  const rows = allRows[tab] || [];
+  const cols = COLUMNS[tab];
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const statusF = document.getElementById('statusFilter').value;
+
+  let filtered = rows;
+  if (statusF) filtered = filtered.filter(r => (r.status||'').toLowerCase() === statusF.toLowerCase());
+  if (search) filtered = filtered.filter(r => cols.some(c => String(r[c.key]||'').toLowerCase().includes(search)));
+
+  document.getElementById('rowCount').textContent = `${filtered.length} records`;
+
+  let html = '<thead><tr>';
+  cols.forEach(c => {
+    html += `<th style="width:${c.width||'auto'}">${c.label}</th>`;
+  });
+  html += '<th style="width:36px;"></th></tr></thead><tbody>';
+
+  filtered.forEach(r => {
+    html += `<tr data-id="${r.id}" data-type="${tab}" class="${r.id===selectedRowId ? 'selected' : ''}" onclick="selectRow('${tab}',${r.id},event)">`;
+    cols.forEach(c => {
+      const val = r[c.key];
+      let display = val != null ? String(val) : '';
+      if (c.key === 'last_update' || c.key === 'first_request' || c.key === 'received_at' || c.key === 'last_request') {
+        display = display ? display.slice(0,10) : '';
+      }
+      if (c.key === 'list_price' && val) display = '$' + Number(val).toLocaleString();
+      if (c.type === 'status') {
+        const color = STATUS_COLORS[val] || '';
+        display = `<span class="badge ${color}">${(display||'').replace(/_/g,' ')}</span>`;
+      }
+      html += `<td data-col="${c.key}" data-editable="${c.editable||false}" data-type="${c.type||'text'}">${display}</td>`;
+    });
+    html += `<td><span style="color:#a0aec0;cursor:pointer;" onclick="event.stopPropagation();selectRow('${tab}',${r.id},event);openComments('${tab}',${r.id})">💬</span></td>`;
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  document.getElementById('grid').innerHTML = html;
+}
+
+// ═══════ Row selection ═══════
+function selectRow(type, id, event) {
+  selectedRowId = id;
+  selectedRowType = type;
+  document.querySelectorAll('tr.selected').forEach(r => r.classList.remove('selected'));
+  const tr = document.querySelector(`tr[data-id="${id}"]`);
+  if (tr) tr.classList.add('selected');
+  // Enable inline edit on double-click
+  if (event && event.target.tagName === 'TD') enableEdit(event.target);
+}
+
+// ═══════ Inline editing ═══════
+let editingCell = null;
+
+document.getElementById('grid').addEventListener('dblclick', function(e) {
+  const td = e.target.closest('td');
+  if (!td || td.dataset.editable !== 'true') {
+    // If clicking a non-editable cell on a selected row, open the comment
+    if (td && selectedRowId) { openComments(selectedRowType, selectedRowId); }
+    return;
+  }
+  enableEdit(td);
+});
+
+function enableEdit(td) {
+  if (editingCell) cancelEdit();
+  const currentVal = cleanupCellValue(td);
+  const col = td.dataset.col;
+  const type = td.dataset.type;
+
+  if (type === 'status') {
+    const opts = STATUS_OPTIONS[currentTab] || [];
+    const sel = document.createElement('select');
+    sel.className = 'cell-select';
+    opts.forEach(o => {
+      sel.innerHTML += `<option value="${o}" ${o===currentVal?'selected':''}>${o.replace(/_/g,' ')}</option>`;
+    });
+    td.textContent = '';
+    td.appendChild(sel);
+    sel.focus();
+    sel.addEventListener('blur', () => saveEdit(td, col, sel.value));
+    sel.addEventListener('keydown', e => { if (e.key==='Enter') saveEdit(td, col, sel.value); if (e.key==='Escape') cancelEdit(); });
   } else {
-    callNextList.innerHTML = '<div style="background:white;border-radius:8px;padding:20px;text-align:center;color:#a0aec0;">No fresh leads to call today</div>';
+    const inp = document.createElement('input');
+    inp.className = 'cell-editor';
+    inp.value = currentVal;
+    td.textContent = '';
+    td.appendChild(inp);
+    inp.focus(); inp.select();
+    inp.addEventListener('blur', () => saveEdit(td, col, inp.value));
+    inp.addEventListener('keydown', e => { if (e.key==='Enter') saveEdit(td, col, inp.value); if (e.key==='Escape') cancelEdit(); });
   }
-  renderApps();
+  editingCell = td;
 }
 
-function renderApps() {
-  const search = document.getElementById('appSearch').value.toLowerCase();
-  const statusF = document.getElementById('appStatusFilter').value;
-  const filtered = allApps.filter(a => {
-    if (statusF === 'needs_review') {
-      if (!a.needs_review) return false;
-    } else if (statusF && a.status !== statusF) {
-      return false;
-    }
-    if (search) {
-      const hay = (a.applicant + ' ' + a.property + ' ' + (a.handler || '')).toLowerCase();
-      if (!hay.includes(search)) return false;
-    }
-    return true;
-  });
-  const tbody = document.getElementById('appsTable');
-  tbody.innerHTML = filtered.map(a => {
-    const daysClass = a.days_in_pipeline > 14 ? 'idle-bad' : (a.days_in_pipeline > 7 ? 'idle' : '');
-    return `<tr style="border-bottom:1px solid #edf2f7;">
-      <td style="padding:10px 12px;"><strong>${a.property || ''}</strong></td>
-      <td style="padding:10px 12px;">${a.applicant || ''}${a.needs_review ? ' <span class="badge warn" style="font-size:9px;padding:1px 6px;" title="Name looks garbled, click to review">?</span>' : ''}</td>
-      <td style="padding:10px 12px;"><span class="badge ${a.status === 'moved_in' ? 'ok' : (a.status === 'denied' ? 'gray' : 'blue')}">${(a.status || '').replace(/_/g, ' ')}</span></td>
-      <td style="padding:10px 12px;">${a.handler || '—'}</td>
-      <td style="padding:10px 12px;text-align:center;" class="${daysClass}">${a.days_in_pipeline}d</td>
-      <td style="padding:10px 12px;text-align:center;">${a.event_count}</td>
-      <td style="padding:10px 12px;color:#4a5568;font-size:12px;">${(a.last_update || '').slice(0,10)}</td>
-    </tr>`;
-  }).join('') || '<tr><td colspan="7" style="padding:40px;text-align:center;color:#4a5568;">No applications match filters.</td></tr>';
+function cleanupCellValue(td) {
+  // Strip badge span if present
+  const badge = td.querySelector('.badge');
+  if (badge) return badge.textContent.trim().replace(/ /g, '_').toLowerCase();
+  // Strip currency sign
+  let v = td.textContent.trim();
+  if (v.startsWith('$')) v = v.slice(1).replace(/,/g, '');
+  return v;
 }
 
-document.getElementById('appSearch').addEventListener('input', renderApps);
-document.getElementById('appStatusFilter').addEventListener('change', renderApps);
+async function saveEdit(td, col, newValue) {
+  if (!selectedRowId) { cancelEdit(); return; }
+  const type = selectedRowType;
+  const id = selectedRowId;
+  const apiMap = {apps: 'applications', sales: 'sales', leads: 'leads', props: 'properties', cmas: 'cmas'};
+  const apiType = apiMap[type];
 
-// ----- Weekly Report Download -----
-document.getElementById('downloadReportBtn').addEventListener('click', () => {
-  const now = new Date();
-  const dateStr = now.toISOString().split('T')[0];
-  const weekAgo = new Date(now - 7*24*60*60*1000).toISOString().split('T')[0];
-  
-  let report = `WEEKLY REPORT — ${dateStr}\n`;
-  report += `Period: ${weekAgo} to ${dateStr}\n`;
-  report += `Generated: ${now.toLocaleString()}\n`;
-  report += `${'='.repeat(60)}\n\n`;
-  
-  // Stats
-  report += `PIPELINE SUMMARY\n${'-'.repeat(20)}\n`;
-  report += `Active Leads:      {{ stats.active_leads }}\n`;
-  report += `In Pipeline:       {{ stats.in_pipeline }}\n`;
-  report += `Active Sales:      {{ stats.active_sales }}\n`;
-  report += `Pending CMAs:      {{ stats.pending_cmas }}\n`;
-  report += `New Apps (7d):     {{ stats.new_apps_7d }}\n\n`;
-  
-  // Applications
-  report += `APPLICATIONS BY STATUS\n${'-'.repeat(20)}\n`;
-  const appCounts = {};
-  allApps.forEach(a => { appCounts[a.status] = (appCounts[a.status] || 0) + 1; });
-  Object.entries(appCounts).sort((a,b) => b[1]-a[1]).forEach(([s,c]) => {
-    report += `  ${(s || 'unknown').replace(/_/g, ' ').padEnd(20)} ${c}\n`;
-  });
-  report += `\n`;
-  
-  // Stuck applications (>14 days)
-  const stuck = allApps.filter(a => a.days_in_pipeline > 14).sort((a,b) => b.days_in_pipeline - a.days_in_pipeline);
-  if (stuck.length > 0) {
-    report += `STUCK IN PIPELINE (>14 days)\n${'-'.repeat(20)}\n`;
-    stuck.slice(0, 15).forEach(a => {
-      report += `  ${a.days_in_pipeline}d  ${(a.applicant||'(no name)').padEnd(25)}  ${(a.property||'').slice(0,40)}\n`;
-    });
-    report += `\n`;
+  // Field name mapping (API uses different names than columns)
+  const fieldMap = {tc: 'transaction_coordinator', tenant: 'tenant_name', address: 'property_address'};
+  const field = fieldMap[col] || col;
+
+  const body = {};
+  if (col === 'status') {
+    // For apps, keep lowercase; for others, use as-is
+    body[field] = type === 'apps' ? newValue.toLowerCase() : newValue;
+  } else if (col === 'rent' || col === 'list_price') {
+    body[field] = parseFloat(newValue.replace(/[$,]/g,'')) || null;
+  } else if (col === 'bedrooms' || col === 'bathrooms') {
+    body[field] = parseFloat(newValue) || null;
+  } else {
+    body[field] = newValue;
   }
-  
-  // Fresh leads
-  const freshLeads = allLeads.filter(l => l.days_old !== null && l.days_old <= 7).sort((a,b) => a.days_old - b.days_old);
-  if (freshLeads.length > 0) {
-    report += `FRESH LEADS (<=7 days) — ${freshLeads.length} total\n${'-'.repeat(20)}\n`;
-    freshLeads.slice(0, 20).forEach(l => {
-      report += `  ${l.days_old}d  ${(l.name||'(no name)').padEnd(25)}  ${(l.phone||'').padEnd(15)}  ${(l.property||'').slice(0,30)}\n`;
+
+  try {
+    const res = await fetch(`/api/${apiType}/${id}`, {
+      method: 'PATCH', credentials: 'include',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
     });
-    report += `\n`;
-  }
-  
-  // Download
-  const blob = new Blob([report], {type: 'text/plain'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `weekly_report_${dateStr}.txt`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+    if (res.ok) {
+      // Update local cache
+      const row = allRows[type].find(r => r.id === id);
+      if (row) row[col] = newValue;
+      cancelEdit();
+      renderGrid(type);
+      flashSaved();
+    }
+  } catch(e) { cancelEdit(); }
+}
+
+function cancelEdit() {
+  if (editingCell) { editingCell = null; renderGrid(currentTab); }
+}
+
+function flashSaved() {
+  const el = document.getElementById('savedFlash');
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1500);
+}
+
+// ═══════ Comments ═══════
+async function openComments(type, id) {
+  selectedRowType = type;
+  selectedRowId = id;
+  document.getElementById('commentPanel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('cpInput').style.display = 'flex';
+
+  const row = allRows[type].find(r => r.id === id);
+  const title = row ? (row.applicant || row.name || row.address || row.property || type) : type;
+  document.getElementById('cpTitle').textContent = `💬 ${title}`;
+
+  await loadComments(type, id);
+}
+
+async function loadComments(type, id) {
+  try {
+    const res = await fetch(`/api/comments/${type === 'props' ? 'property' : type}/${id}`, {credentials:'include'});
+    const comments = await res.json();
+    const body = document.getElementById('cpBody');
+    if (comments.length === 0) {
+      body.innerHTML = '<p style="color:#a0aec0;text-align:center;margin-top:20px;">No comments yet</p>';
+    } else {
+      body.innerHTML = comments.map(c => `
+        <div class="cp-comment">
+          <div>${c.content}</div>
+          <div class="cp-meta">${c.user_name || 'Unknown'} · ${(c.created_at||'').slice(0,10)}</div>
+        </div>`).join('');
+    }
+  } catch(e) {}
+}
+
+async function addComment() {
+  const text = document.getElementById('cpText').value.trim();
+  if (!text || !selectedRowId) return;
+  const recordType = selectedRowType === 'props' ? 'property' : selectedRowType;
+  try {
+    const res = await fetch('/api/comments', {
+      method: 'POST', credentials: 'include',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({record_type: recordType, record_id: selectedRowId, content: text}),
+    });
+    if (res.ok) {
+      document.getElementById('cpText').value = '';
+      await loadComments(recordType, selectedRowId);
+    }
+  } catch(e) {}
+}
+
+function closeComments() {
+  document.getElementById('commentPanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// ═══════ Tabs ═══════
+document.getElementById('tabBar').addEventListener('click', function(e) {
+  if (!e.target.classList.contains('tab')) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  e.target.classList.add('active');
+  selectedRowId = null; editingCell = null;
+  loadTab(e.target.dataset.tab);
 });
 
-document.querySelectorAll('.tab').forEach(t => {
-  t.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(x => x.style.display = 'none');
-    t.classList.add('active');
-    document.getElementById(t.dataset.tab).style.display = 'block';
-  });
+// ═══════ Search & filter ═══════
+document.getElementById('searchInput').addEventListener('input', () => renderGrid(currentTab));
+document.getElementById('statusFilter').addEventListener('change', () => renderGrid(currentTab));
+
+// ═══════ Keyboard ═══════
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    if (editingCell) cancelEdit();
+    else closeComments();
+  }
+  if (e.key === 'Enter' && !editingCell && selectedRowId && document.activeElement === document.body) {
+    openComments(selectedRowType, selectedRowId);
+  }
 });
 
-function closeModal() {
-  document.getElementById('modal').classList.remove('open');
-}
-
-loadAll();
+// ═══════ Start ═══════
+loadTab('apps');
 </script>
 {% endblock %}

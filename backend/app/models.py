@@ -219,6 +219,20 @@ class EmailAccount(Base):
     created_at = Column(DateTime, server_default=func.now())
 
 
+class Comment(Base):
+    """User comments on any record — applications, leads, sales, properties, CMAs."""
+    __tablename__ = "comments"
+    id = Column(Integer, primary_key=True)
+    org_id = Column(Integer, ForeignKey("organizations.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    record_type = Column(String(30), nullable=False, index=True)  # 'application' | 'lead' | 'sales_deal' | 'cma' | 'property'
+    record_id = Column(Integer, nullable=False, index=True)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+    user = relationship("User")
+    __table_args__ = (Index("ix_comment_record", "record_type", "record_id"),)
+
+
 class EmailMessage(Base):
     """Raw email captured from an email account, before parsing into leads/applications/sales."""
     __tablename__ = "email_messages"

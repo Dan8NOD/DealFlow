@@ -415,7 +415,79 @@ async def patch_cma(
     return {"ok": True, "id": cma_id}
 
 
-# ═══════════ Comments ═══════════
+# ═══════════ Create new records ═══════════
+
+@router.post("/api/applications")
+async def create_application(
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    body = await request.json()
+    a = Application(
+        org_id=user.org_id,
+        applicant_name=body.get("applicant_name", ""),
+        status=body.get("status", "APPLICATION_RECEIVED"),
+        handler=body.get("handler", ""),
+        property_id=body.get("property_id"),
+        unit=body.get("unit", ""),
+        first_seen=datetime.now(timezone.utc),
+        last_update=datetime.now(timezone.utc),
+        days_in_pipeline=0,
+        event_count=0,
+    )
+    db.add(a)
+    db.commit()
+    db.refresh(a)
+    return {"id": a.id, "ok": True}
+
+
+@router.post("/api/leads")
+async def create_lead(
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    body = await request.json()
+    l = Lead(
+        org_id=user.org_id,
+        name=body.get("name", ""),
+        email=body.get("email", ""),
+        phone=body.get("phone", ""),
+        source=body.get("source", "manual"),
+        status=body.get("status", "NEW"),
+        property_id=body.get("property_id"),
+        received_at=datetime.now(timezone.utc),
+        days_old=0,
+    )
+    db.add(l)
+    db.commit()
+    db.refresh(l)
+    return {"id": l.id, "ok": True}
+
+
+@router.post("/api/sales")
+async def create_sales_deal(
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    body = await request.json()
+    s = SalesDeal(
+        org_id=user.org_id,
+        property_address=body.get("property_address", ""),
+        status=body.get("status", "ACTIVE_LISTING"),
+        transaction_coordinator=body.get("transaction_coordinator", ""),
+        list_price=body.get("list_price"),
+        first_seen=datetime.now(timezone.utc),
+        last_update=datetime.now(timezone.utc),
+        days_idle=0,
+        event_count=0,
+    )
+    db.add(s)
+    db.commit()
+    db.refresh(s)
+    return {"id": s.id, "ok": True}
 
 @router.post("/api/comments")
 async def create_comment(

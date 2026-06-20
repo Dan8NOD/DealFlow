@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — {{ org.name }}{% endblock %}
+{% block extra_css %}
+header.bar { background: linear-gradient(135deg, #1f4e78 0%, #2c5f8a 100%);
+  color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+header.bar h1 { font-size: 20px; font-weight: 700; }
+header.bar a { color: white; text-decoration: none; margin-left: 16px; opacity: 0.9; }
+.tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0;
+  overflow-x: auto; flex-wrap: wrap; }
+.tab { padding: 10px 16px; background: transparent; border: none; cursor: pointer;
+  font-size: 14px; font-weight: 600; color: #4a5568; border-bottom: 3px solid transparent;
+  margin-bottom: -2px; white-space: nowrap; }
+.tab.active { color: #1f4e78; border-bottom-color: #1f4e78; }
+h2 { font-size: 16px; margin: 24px 0 12px; color: #1f4e78; }
+table { font-size: 13px; }
+table th { font-size: 11px; text-transform: uppercase; color: #4a5568; }
+table tr:hover { background: #f7fafc; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 600; background: #edf2f7; }
+.badge.warn { background: #fef3c7; color: #78350f; }
+.badge.ok { background: #d1fae5; color: #065f46; }
+.badge.blue { background: #dbeafe; color: #1e40af; }
+.badge.gray { background: #d1d5db; color: #1f2937; }
+.toolbar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+.toolbar input, .toolbar select { padding: 6px 12px; border: 1px solid #cbd5e0;
+  border-radius: 6px; font-size: 13px; }
+.toolbar input { flex: 1; max-width: 280px; }
+.idle { color: #dd6b20; font-weight: 600; }
+.idle-bad { color: #c53030; font-weight: 700; }
+.bar-chart { display: flex; flex-direction: column; gap: 6px; }
+.bar-chart .bar-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.bar-chart .bar-label { width: 160px; }
+.bar-chart .bar-track { flex: 1; background: #edf2f7; border-radius: 4px;
+  height: 18px; overflow: hidden; }
+.bar-chart .bar-fill { background: #1f4e78; height: 100%; color: white;
+  padding: 2px 8px; font-size: 11px; min-width: 24px; text-align: right; box-sizing: border-box; }
+.btn-detail { padding: 4px 10px; background: #1f4e78; color: white; border: none;
+  border-radius: 4px; cursor: pointer; font-size: 12px; }
+.btn-detail:hover { background: #2c5f8a; }
+.timeline { padding-left: 16px; border-left: 2px solid #cbd5e0; margin: 12px 0; }
+.timeline-item { padding: 6px 0; font-size: 12px; }
+.timeline-item .date { color: #4a5568; font-weight: 600; margin-right: 8px; }
+.modal-bg { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
+.modal-bg.open { display: flex; }
+.modal { background: white; border-radius: 12px; max-width: 720px;
+  width: 90%; max-height: 80vh; overflow-y: auto; }
+.modal-header { padding: 16px 20px; border-bottom: 1px solid #e2e8f0;
+  display: flex; justify-content: space-between; align-items: center; }
+.modal-header h2 { margin: 0; }
+.modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #4a5568; }
+.modal-body { padding: 20px; }
+{% endblock %}
+{% block body %}
+<header class="bar">
+  <h1>Renter Portal — {{ org.name }}</h1>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="/auth/microsoft/start" style="background:rgba(255,255,255,0.2);padding:6px 12px;border-radius:6px;font-size:12px;">🔗 Connect Microsoft 365</a>
+    <a href="/api/sync" style="background:rgba(255,255,255,0.2);padding:6px 12px;border-radius:6px;font-size:12px;">↻ Sync</a>
+    <span style="font-size:13px;opacity:0.9;">{{ user.email }}</span>
+    <a href="/auth/logout" onclick="event.preventDefault(); fetch('/auth/logout',{method:'POST',credentials:'include'}).then(()=>location.href='/')" style="font-size:13px;">Sign out</a>
+  </div>
+</header>
+
+<div class="container">
+  {% if stats.pending_cmas > 0 %}
+  <div class="alert" style="padding:12px;background:#fef3c7;border-radius:8px;margin-bottom:16px;color:#78350f;">
+    ⚠ {{ stats.pending_cmas }} CMA requests pending — old enough to need a comp report
+  </div>
+  {% endif %}
+
+  <div class="stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px;">
+    <div class="stat" style="background:white;border-radius:12px;padding:20px;border:1px solid #e2e8f0;">
+      <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:.5px;font-weight:600;">Active Leads</div>
+      <div style="font-size:28px;font-weight:700;color:#1f4e78;margin-top:4px;">{{ stats.active_leads }}</div>
+    </div>
+    <div class="stat" style="background:white;border-radius:12px;padding:20px;border:1px solid #e2e8f0;">
+      <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:.5px;font-weight:600;">In Pipeline</div>
+      <div style="font-size:28px;font-weight:700;color:#38a169;margin-top:4px;">{{ stats.in_pipeline }}</div>
+    </div>
+    <div class="stat" style="background:white;border-radius:12px;padding:20px;border:1px solid #e2e8f0;">
+      <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:.5px;font-weight:600;">Active Sales</div>
+      <div style="font-size:28px;font-weight:700;color:#1f4e78;margin-top:4px;">{{ stats.active_sales }}</div>
+    </div>
+    <div class="stat" style="background:white;border-radius:12px;padding:20px;border:1px solid #e2e8f0;">
+      <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:.5px;font-weight:600;">Pending CMAs</div>
+      <div style="font-size:28px;font-weight:700;color:#dd6b20;margin-top:4px;">{{ stats.pending_cmas }}</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="apps">Applications ({{ stats.in_pipeline }})</button>
+    <button class="tab" data-tab="sales">Sales ({{ stats.active_sales }})</button>
+    <button class="tab" data-tab="cmas">CMAs ({{ stats.pending_cmas }})</button>
+    <button class="tab" data-tab="leads">Leads ({{ stats.active_leads }})</button>
+    <button class="tab" data-tab="props">Properties</button>
+    <button class="tab" data-tab="analytics">Analytics</button>
+  </div>
+
+  <div id="apps" class="tab-content">
+    <div class="toolbar">
+      <input type="text" id="appSearch" placeholder="Search applicant, property, handler...">
+      <select id="appStatusFilter">
+        <option value="">All statuses</option>
+        <option value="application_received">Application Received</option>
+        <option value="offer_sent">Offer Sent</option>
+        <option value="welcome_sent">Welcome Sent</option>
+        <option value="approved">Approved</option>
+        <option value="moved_in">Moved In</option>
+        <option value="denied">Denied</option>
+      </select>
+    </div>
+    <div style="background:white;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="background:#f7fafc;">
+          <th style="padding:10px 12px;text-align:left;">Property</th>
+          <th style="padding:10px 12px;text-align:left;">Applicant</th>
+          <th style="padding:10px 12px;text-align:left;">Status</th>
+          <th style="padding:10px 12px;text-align:left;">Handler</th>
+          <th style="padding:10px 12px;text-align:center;">Days</th>
+          <th style="padding:10px 12px;text-align:center;">Events</th>
+          <th style="padding:10px 12px;text-align:left;">Updated</th>
+        </tr></thead>
+        <tbody id="appsTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="sales" class="tab-content" style="display:none;">
+    <h2>Active Sales Deals <span class="count">({{ active_deals|length }})</span></h2>
+    {% if active_deals %}
+    <div style="background:white;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="background:#f7fafc;">
+          <th style="padding:10px 12px;text-align:left;">Property</th>
+          <th style="padding:10px 12px;text-align:left;">Status</th>
+          <th style="padding:10px 12px;text-align:left;">TC</th>
+          <th style="padding:10px 12px;text-align:center;">Days Idle</th>
+          <th style="padding:10px 12px;text-align:center;">Events</th>
+          <th style="padding:10px 12px;text-align:left;">Last Update</th>
+        </tr></thead>
+        <tbody>
+          {% for d in active_deals %}
+          <tr style="border-bottom:1px solid #edf2f7;">
+            <td style="padding:10px 12px;"><strong>{{ d.property_address }}</strong></td>
+            <td style="padding:10px 12px;"><span class="badge {% if d.status.value == 'under_contract' or d.status.value == 'contract_signed' %}ok{% elif d.status.value == 'in_escrow' %}warn{% else %}blue{% endif %}">{{ d.status.value|replace('_', ' ')|title }}</span></td>
+            <td style="padding:10px 12px;">{{ d.transaction_coordinator or '—' }}</td>
+            <td style="padding:10px 12px;text-align:center;">
+              {% if d.days_idle and d.days_idle > 14 %}<span class="idle-bad">{{ d.days_idle }}d</span>
+              {% elif d.days_idle and d.days_idle > 7 %}<span class="idle">{{ d.days_idle }}d</span>
+              {% else %}{{ d.days_idle or 0 }}d{% endif %}
+            </td>
+            <td style="padding:10px 12px;text-align:center;">{{ d.event_count or 0 }}</td>
+            <td style="padding:10px 12px;color:#4a5568;">{{ d.last_update.strftime('%Y-%m-%d') if d.last_update else '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}<p class="empty-state">No active sales deals.</p>{% endif %}
+  </div>
+
+  <div id="cmas" class="tab-content" style="display:none;">
+    <h2>Pending CMA Requests <span class="count">({{ cmas|length }})</span></h2>
+    {% if cmas %}
+    <div style="background:white;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="background:#f7fafc;">
+          <th style="padding:10px 12px;text-align:left;">Property</th>
+          <th style="padding:10px 12px;text-align:left;">Type</th>
+          <th style="padding:10px 12px;text-align:center;">Requests</th>
+          <th style="padding:10px 12px;text-align:center;">Days Idle</th>
+          <th style="padding:10px 12px;text-align:left;">First</th>
+          <th style="padding:10px 12px;text-align:left;">Last</th>
+        </tr></thead>
+        <tbody>
+          {% for c in cmas %}
+          <tr style="border-bottom:1px solid #edf2f7;">
+            <td style="padding:10px 12px;"><strong>{{ c.property_address }}</strong> {% if c.unit %}#{{ c.unit }}{% endif %}</td>
+            <td style="padding:10px 12px;"><span class="badge {% if c.kind == 'sale' %}purple{% else %}blue{% endif %}">{{ c.kind or 'rental' }}</span></td>
+            <td style="padding:10px 12px;text-align:center;">{{ c.request_count }}</td>
+            <td style="padding:10px 12px;text-align:center;">
+              {% if c.last_request %}
+                {% set days_since = (now - c.last_request).days %}
+                {% if days_since > 14 %}<span class="idle-bad">{{ days_since }}d</span>
+                {% elif days_since > 7 %}<span class="idle">{{ days_since }}d</span>
+                {% else %}{{ days_since }}d{% endif %}
+              {% else %}—{% endif %}
+            </td>
+            <td style="padding:10px 12px;color:#4a5568;">{{ c.first_request.strftime('%Y-%m-%d') if c.first_request else '—' }}</td>
+            <td style="padding:10px 12px;color:#4a5568;">{{ c.last_request.strftime('%Y-%m-%d') if c.last_request else '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}<p class="empty-state">No pending CMAs.</p>{% endif %}
+  </div>
+
+  <div id="leads" class="tab-content" style="display:none;">
+    <h2>Recent Leads <span class="count">(showing 20 of {{ stats.active_leads }})</span></h2>
+    <div style="background:white;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="background:#f7fafc;">
+          <th style="padding:10px 12px;text-align:left;">Name</th>
+          <th style="padding:10px 12px;text-align:left;">Property</th>
+          <th style="padding:10px 12px;text-align:left;">Source</th>
+          <th style="padding:10px 12px;text-align:left;">Contact</th>
+          <th style="padding:10px 12px;text-align:center;">Days Old</th>
+        </tr></thead>
+        <tbody>
+          {% for l in recent_leads %}
+          <tr style="border-bottom:1px solid #edf2f7;">
+            <td style="padding:10px 12px;"><strong>{{ l.name or '(no name)' }}</strong></td>
+            <td style="padding:10px 12px;">{{ l.property.address if l.property else '—' }}{% if l.property and l.property.unit %} #{{ l.property.unit }}{% endif %}</td>
+            <td style="padding:10px 12px;"><span class="badge">{{ l.source or '—' }}</span></td>
+            <td style="padding:10px 12px;font-size:12px;">{{ l.email or '' }}<br>{{ l.phone or '' }}</td>
+            <td style="padding:10px 12px;text-align:center;">
+              {% if l.days_old and l.days_old > 30 %}<span class="idle-bad">{{ l.days_old }}d</span>
+              {% elif l.days_old and l.days_old > 14 %}<span class="idle">{{ l.days_old }}d</span>
+              {% else %}{{ l.days_old or 0 }}d{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="props" class="tab-content" style="display:none;">
+    <h2>Top Properties by Lead Volume <span class="count">(showing 10)</span></h2>
+    <div style="background:white;border-radius:12px;border:1px solid #e2e8f0;padding:16px;">
+      <div class="bar-chart">
+        {% for addr, unit, cnt in top_properties %}
+        <div class="bar-row">
+          <div class="bar-label">{{ addr[:25] }}{% if unit %} #{{ unit }}{% endif %}</div>
+          <div class="bar-track"><div class="bar-fill" style="width: {{ [cnt * 6, 100]|min }}%">{{ cnt }}</div></div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div id="analytics" class="tab-content" style="display:none;">
+    <h2>Application Status Distribution</h2>
+    <div style="background:white;border-radius:12px;border:1px solid #e2e8f0;padding:16px;">
+      <div class="bar-chart">
+        {% for status, cnt in status_dist %}
+        <div class="bar-row">
+          <div class="bar-label">{{ status.value|replace('_', ' ')|title }}</div>
+          <div class="bar-track"><div class="bar-fill" style="width: {{ [cnt * 4, 100]|min }}%">{{ cnt }}</div></div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal" class="modal-bg">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Application Detail</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+let allApps = [];
+let allLeads = [];
+
+async function loadAll() {
+  const [appsR, leadsR] = await Promise.all([
+    fetch('/api/applications?limit=200').then(r => r.json()),
+    fetch('/api/leads?limit=200').then(r => r.json()),
+  ]);
+  allApps = appsR;
+  allLeads = leadsR;
+  renderApps();
+}
+
+function renderApps() {
+  const search = document.getElementById('appSearch').value.toLowerCase();
+  const statusF = document.getElementById('appStatusFilter').value;
+  const filtered = allApps.filter(a => {
+    if (statusF && a.status !== statusF) return false;
+    if (search) {
+      const hay = (a.applicant + ' ' + a.property + ' ' + (a.handler || '')).toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+  const tbody = document.getElementById('appsTable');
+  tbody.innerHTML = filtered.map(a => {
+    const daysClass = a.days_in_pipeline > 14 ? 'idle-bad' : (a.days_in_pipeline > 7 ? 'idle' : '');
+    return `<tr style="border-bottom:1px solid #edf2f7;">
+      <td style="padding:10px 12px;"><strong>${a.property || ''}</strong></td>
+      <td style="padding:10px 12px;">${a.applicant || ''}</td>
+      <td style="padding:10px 12px;"><span class="badge ${a.status === 'moved_in' ? 'ok' : (a.status === 'denied' ? 'gray' : 'blue')}">${(a.status || '').replace(/_/g, ' ')}</span></td>
+      <td style="padding:10px 12px;">${a.handler || '—'}</td>
+      <td style="padding:10px 12px;text-align:center;" class="${daysClass}">${a.days_in_pipeline}d</td>
+      <td style="padding:10px 12px;text-align:center;">${a.event_count}</td>
+      <td style="padding:10px 12px;color:#4a5568;font-size:12px;">${(a.last_update || '').slice(0,10)}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="padding:40px;text-align:center;color:#4a5568;">No applications match filters.</td></tr>';
+}
+
+document.getElementById('appSearch').addEventListener('input', renderApps);
+document.getElementById('appStatusFilter').addEventListener('change', renderApps);
+
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(x => x.style.display = 'none');
+    t.classList.add('active');
+    document.getElementById(t.dataset.tab).style.display = 'block';
+  });
+});
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+loadAll();
+</script>
+{% endblock %}

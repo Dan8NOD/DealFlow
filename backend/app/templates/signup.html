@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Create Account — Renter Portal{% endblock %}
+{% block body %}
+<div style="background: linear-gradient(135deg, #1f4e78 0%, #2c5f8a 100%); padding: 40px 24px; text-align: center;">
+  <h1 style="color: white; font-size: 28px;">Renter Portal</h1>
+</div>
+<div class="container">
+  <form method="post" action="/auth/signup">
+    <h2 style="text-align: center; margin-bottom: 24px;">Start free</h2>
+    <label>Full name</label>
+    <input type="text" name="full_name" placeholder="Jane Smith">
+    <label>Email</label>
+    <input type="email" name="email" required>
+    <label>Organization name</label>
+    <input type="text" name="org_name" placeholder="Smith Realty" required>
+    <label>Password (8+ characters)</label>
+    <input type="password" name="password" minlength="8" required>
+    <button type="submit" class="btn" style="width: 100%; margin-top: 8px;">Create Account</button>
+    <p style="text-align: center; margin-top: 16px; color: #4a5568;">
+      Already have an account? <a href="/login" style="color: #1f4e78;">Sign in</a>
+    </p>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Renter Portal — Track leads, applications, and sales deals{% endblock %}
+{% block body %}
+<div style="background: linear-gradient(135deg, #1f4e78 0%, #2c5f8a 100%); color: white; padding: 80px 24px; text-align: center;">
+  <h1 style="font-size: 48px; margin-bottom: 16px;">Renter Portal</h1>
+  <p style="font-size: 20px; opacity: 0.9; max-width: 640px; margin: 0 auto 32px;">
+    Track rental leads, applications, sales deals, and CMA requests in one place. Built for property managers and real estate agents.
+  </p>
+  <div style="display: flex; gap: 12px; justify-content: center;">
+    <a href="/signup" class="btn" style="background: white; color: #1f4e78;">Start Free</a>
+    <a href="/login" class="btn" style="background: transparent; border: 2px solid white;">Sign In</a>
+  </div>
+</div>
+
+<div class="container" style="padding: 60px 24px;">
+  <h2 style="text-align: center; margin-bottom: 40px; font-size: 32px;">Everything in one dashboard</h2>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
+      <h3 style="color: #1f4e78; margin-bottom: 8px;">📥 Leads inbox</h3>
+      <p style="color: #4a5568;">Auto-import from Zillow, Trulia, HotPads, Apartments.com, Realtor.com. Sort by property, age, status.</p>
+    </div>
+    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
+      <h3 style="color: #1f4e78; margin-bottom: 8px;">📝 Applications</h3>
+      <p style="color: #4a5568;">Track every application from received → offer → approved → moved-in. See handler, days in pipeline, full timeline.</p>
+    </div>
+    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
+      <h3 style="color: #1f4e78; margin-bottom: 8px;">🏠 Sales deals</h3>
+      <p style="color: #4a5568;">CMA requests → listings → under contract → closed. Capture every status update from your inbox.</p>
+    </div>
+    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
+      <h3 style="color: #1f4e78; margin-bottom: 8px;">⚠️ Stale lead cleanup</h3>
+      <p style="color: #4a5568;">Find leads >40 days old for rented properties. One-click Mail.app smart mailbox.</p>
+    </div>
+    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
+      <h3 style="color: #1f4e78; margin-bottom: 8px;">📁 File linking</h3>
+      <p style="color: #4a5568;">Connect Google Drive, OneDrive, iCloud folders to properties. Find docs without searching.</p>
+    </div>
+    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
+      <h3 style="color: #1f4e78; margin-bottom: 8px;">📅 Weekly reports</h3>
+      <p style="color: #4a5568;">Auto-generated markdown reports ready to paste into email to leasing directors.</p>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 60px; padding: 40px; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
+    <h2 style="font-size: 24px; margin-bottom: 16px;">Pricing</h2>
+    <div style="display: flex; justify-content: center; gap: 32px; flex-wrap: wrap;">
+      <div><strong>Free</strong> — 50 leads/mo, 1 user</div>
+      <div><strong>$49/mo Pro</strong> — Unlimited leads, 3 email accounts</div>
+      <div><strong>$149/mo Team</strong> — Unlimited users, unlimited emails</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

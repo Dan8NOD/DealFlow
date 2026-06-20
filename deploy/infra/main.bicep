@@ -121,7 +121,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 }
 
 // ── Outputs ───────────────────────────────────────────────────────────────────
-output webAppUrl      string = 'https://${webApp.defaultHostName}'
+output webAppUrl      string = 'https://${webApp.properties.defaultHostName}'
 output acrLoginServer string = acrLoginServer
 output postgresHost   string = postgresServer.properties.fullyQualifiedDomainName
 output webAppName     string = webAppName

@@ -28,11 +28,11 @@ async def dashboard(
     # Pipeline counts
     in_pipeline = db.query(Application).filter(
         Application.org_id == org_id,
-        Application.status.in_(["application_received", "offer_sent", "approved"])
+        Application.status.in_(["APPLICATION_RECEIVED", "OFFER_SENT", "APPROVED"])
     ).count()
     active_sales = db.query(SalesDeal).filter(
         SalesDeal.org_id == org_id,
-        SalesDeal.status.in_(["under_contract", "active_listing", "in_escrow", "contract_signed", "offer_received"])
+        SalesDeal.status.in_(["UNDER_CONTRACT", "ACTIVE_LISTING", "IN_ESCROW", "CONTRACT_SIGNED", "OFFER_RECEIVED"])
     ).count()
     pending_cmas = db.query(CmaRequest).filter(
         CmaRequest.org_id == org_id,
@@ -40,7 +40,7 @@ async def dashboard(
     ).count()
     active_leads = db.query(Lead).filter(
         Lead.org_id == org_id,
-        Lead.status.in_(["new", "contacted", "qualified"])
+        Lead.status.in_(["NEW", "CONTACTED", "QUALIFIED"])
     ).count()
     week_ago = datetime.now(timezone.utc) - timedelta(days=7)
     new_apps_7d = db.query(Application).filter(
@@ -50,12 +50,12 @@ async def dashboard(
     # Top pending (apps in pipeline)
     pending_apps = db.query(Application).filter(
         Application.org_id == org_id,
-        Application.status.in_(["application_received", "offer_sent", "welcome_sent", "approved"])
+        Application.status.in_(["APPLICATION_RECEIVED", "OFFER_SENT", "WELCOME_SENT", "APPROVED"])
     ).order_by(desc(Application.days_in_pipeline)).limit(50).all()
     # Active sales
     active_deals = db.query(SalesDeal).filter(
         SalesDeal.org_id == org_id,
-        SalesDeal.status != "closed"
+        SalesDeal.status != "CLOSED"
     ).order_by(desc(SalesDeal.last_update)).limit(20).all()
     # Pending CMAs
     cmas = db.query(CmaRequest).filter(
@@ -107,15 +107,15 @@ async def dashboard_json(
         "stats": {
             "active_leads": db.query(Lead).filter(
                 Lead.org_id == org_id,
-                Lead.status.in_(["new", "contacted"])
+                Lead.status.in_(["NEW", "CONTACTED"])
             ).count(),
             "in_pipeline": db.query(Application).filter(
                 Application.org_id == org_id,
-                Application.status.in_(["application_received", "offer_sent", "approved"])
+                Application.status.in_(["APPLICATION_RECEIVED", "OFFER_SENT", "APPROVED"])
             ).count(),
             "active_sales": db.query(SalesDeal).filter(
                 SalesDeal.org_id == org_id,
-                SalesDeal.status != "closed"
+                SalesDeal.status != "CLOSED"
             ).count(),
             "pending_cmas": db.query(CmaRequest).filter(
                 CmaRequest.org_id == org_id, CmaRequest.status == "pending"
@@ -202,11 +202,13 @@ async def api_sales(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
     status: str = Query(None),
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
 ):
     q = db.query(SalesDeal).filter(SalesDeal.org_id == user.org_id)
     if status:
         q = q.filter(SalesDeal.status == status)
-    deals = q.order_by(desc(SalesDeal.last_update)).all()
+    deals = q.order_by(desc(SalesDeal.last_update)).offset(offset).limit(limit).all()
     return [
         {
             "id": d.id, "address": d.property_address,
@@ -225,11 +227,13 @@ async def api_cmas(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
     status: str = Query(None),
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
 ):
     q = db.query(CmaRequest).filter(CmaRequest.org_id == user.org_id)
     if status:
         q = q.filter(CmaRequest.status == status)
-    cmas = q.order_by(desc(CmaRequest.last_request)).all()
+    cmas = q.order_by(desc(CmaRequest.last_request)).offset(offset).limit(limit).all()
     return [
         {
             "id": c.id, "property": c.property_address, "unit": c.unit,
@@ -269,8 +273,14 @@ async def api_leads(
 async def api_properties(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
+    status: str = Query(None),
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
 ):
-    props = db.query(Property).filter(Property.org_id == user.org_id).all()
+    q = db.query(Property).filter(Property.org_id == user.org_id)
+    if status:
+        q = q.filter(Property.status == status)
+    props = q.order_by(Property.address).offset(offset).limit(limit).all()
     return [
         {
             "id": p.id, "address": p.address, "unit": p.unit,

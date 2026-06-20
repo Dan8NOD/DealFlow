@@ -1,12 +1,13 @@
 """Application settings loaded from environment."""
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+import sys
 
 
 class Settings(BaseSettings):
     database_url: str = "sqlite:///./renter_portal.db"
     secret_key: str = "dev-secret-change-me"
-    access_token_minutes: int = 60 * 24
+    access_token_minutes: int = 60 * 8   # 8 hours (was 24 — reduced for security)
     refresh_token_days: int = 30
     environment: str = "development"
     debug: bool = True
@@ -26,4 +27,8 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    s = Settings()
+    if s.environment == "production" and s.secret_key == "dev-secret-change-me":
+        print("FATAL: SECRET_KEY is the default value in production. Set SECRET_KEY env var.", flush=True)
+        sys.exit(1)
+    return s

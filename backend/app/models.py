@@ -20,42 +20,42 @@ class UserRole(str, enum.Enum):
 
 
 class PropertyStatus(str, enum.Enum):
-    AVAILABLE = "available"
-    RENTED = "rented"
-    OCCUPIED = "occupied"
-    OFF_MARKET = "off_market"
-    FOR_SALE = "for_sale"
-    PENDING = "pending"
+    AVAILABLE  = "AVAILABLE"
+    RENTED     = "RENTED"
+    OCCUPIED   = "OCCUPIED"
+    OFF_MARKET = "OFF_MARKET"
+    FOR_SALE   = "FOR_SALE"
+    PENDING    = "PENDING"
 
 
 class LeadStatus(str, enum.Enum):
-    NEW = "new"
-    CONTACTED = "contacted"
-    QUALIFIED = "qualified"
-    CLOSED = "closed"
-    LOST = "lost"
+    NEW       = "NEW"
+    CONTACTED = "CONTACTED"
+    QUALIFIED = "QUALIFIED"
+    CLOSED    = "CLOSED"
+    LOST      = "LOST"
 
 
 class ApplicationStatus(str, enum.Enum):
-    APPLICATION_RECEIVED = "application_received"
-    OFFER_SENT = "offer_sent"
-    WELCOME_SENT = "welcome_sent"
-    APPROVED = "approved"
-    LEASE_SIGNED = "lease_signed"
-    MOVED_IN = "moved_in"
-    DENIED = "denied"
+    APPLICATION_RECEIVED = "APPLICATION_RECEIVED"
+    OFFER_SENT           = "OFFER_SENT"
+    WELCOME_SENT         = "WELCOME_SENT"
+    APPROVED             = "APPROVED"
+    LEASE_SIGNED         = "LEASE_SIGNED"
+    MOVED_IN             = "MOVED_IN"
+    DENIED               = "DENIED"
 
 
 class SalesStatus(str, enum.Enum):
-    NEW_LISTING_ALERT = "new_listing_alert"
-    CMA_REQUESTED = "cma_requested"
-    LISTING_PREP = "listing_prep"
-    ACTIVE_LISTING = "active_listing"
-    IN_ESCROW = "in_escrow"
-    UNDER_CONTRACT = "under_contract"
-    CONTRACT_SIGNED = "contract_signed"
-    OFFER_RECEIVED = "offer_received"
-    CLOSED = "closed"
+    NEW_LISTING_ALERT = "NEW_LISTING_ALERT"
+    CMA_REQUESTED     = "CMA_REQUESTED"
+    LISTING_PREP      = "LISTING_PREP"
+    ACTIVE_LISTING    = "ACTIVE_LISTING"
+    IN_ESCROW         = "IN_ESCROW"
+    UNDER_CONTRACT    = "UNDER_CONTRACT"
+    CONTRACT_SIGNED   = "CONTRACT_SIGNED"
+    OFFER_RECEIVED    = "OFFER_RECEIVED"
+    CLOSED            = "CLOSED"
 
 
 class Organization(Base):

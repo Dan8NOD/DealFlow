@@ -152,12 +152,12 @@ def parse_deals(sheet_lines):
         # Classify
         is_sale = bool(price and price > 50000)
         status_map = {
-            "LIVE": "available", "EXECUTE": "available", "WAIT": "available",
-            "FINISHED": "rented",  "FOR APPROVAL": "pending",
-            "APPROVED APPLICANT": "pending", "CMA": "available",
-            "LOAD PICS": "available", "GET LISTING AGREEMENT": "available",
+            "LIVE": "AVAILABLE", "EXECUTE": "AVAILABLE", "WAIT": "AVAILABLE",
+            "FINISHED": "RENTED",  "FOR APPROVAL": "AVAILABLE",
+            "APPROVED APPLICANT": "AVAILABLE", "CMA": "AVAILABLE",
+            "LOAD PICS": "AVAILABLE", "GET LISTING AGREEMENT": "AVAILABLE",
         }
-        status = "for_sale" if is_sale else status_map.get(fb, "available")
+        status = "FOR_SALE" if is_sale else status_map.get(fb, "AVAILABLE")
 
         records.append(dict(address=address, unit=unit, price=price, status=status, is_sale=is_sale))
     return records
@@ -187,7 +187,7 @@ def parse_rented(sheet_lines):
                     v = safe_float(parts[j])
                     if v and 400 < v < 15000:
                         price = v; break
-                records.append(dict(address=address, unit=unit, price=price, status="rented"))
+                records.append(dict(address=address, unit=unit, price=price, status="RENTED"))
                 break  # one address per row
     return records
 
@@ -283,7 +283,7 @@ def main():
             counters["prop_new"] += 1
             # If it's a sale listing, also create a sales_deal record
             if d["is_sale"]:
-                upsert_sales_deal(cur, org_id, d["address"], "active", d["price"])
+                upsert_sales_deal(cur, org_id, d["address"], "ACTIVE_LISTING", d["price"])
                 counters["sale_new"] += 1
         else:
             counters["prop_exist"] += 1
@@ -312,8 +312,8 @@ def main():
     sales = parse_sales_sheet(sheets.get("Sales", []))
     for s in sales:
         # Ensure property exists too
-        get_or_create_property(cur, org_id, s["address"], "", s["price"], "for_sale")
-        ok = upsert_sales_deal(cur, org_id, s["address"], "active", s["price"], s["notes"])
+        get_or_create_property(cur, org_id, s["address"], "", s["price"], "FOR_SALE")
+        ok = upsert_sales_deal(cur, org_id, s["address"], "ACTIVE_LISTING", s["price"], s["notes"])
         if ok: counters["sale_new"] += 1
         else:  counters["sale_skip"] += 1
     print(f"Sales sheet: {counters['sale_new']} sales deals added, {counters['sale_skip']} skipped (duplicate)")

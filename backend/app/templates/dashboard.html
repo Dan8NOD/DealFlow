@@ -378,7 +378,13 @@ function advanceDeal(id,status){
 
 function showBudgetLeads(){
   budgetOnly=true;
-  switchTab('leads');
+  currentTab='leads';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector(`[data-tab="leads"]`).classList.add('active');
+  sortCol=null;
+  document.getElementById('searchInput').value='';
+  document.getElementById('rowCount').textContent='';
+  renderAll();
 }
 
 function switchTab(tab){

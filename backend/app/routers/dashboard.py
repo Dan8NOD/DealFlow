@@ -658,26 +658,41 @@ async def property_detail(
     
     days_on_market = None
     if prop.created_at:
-        days_on_market = (datetime.now(timezone.utc) - prop.created_at.replace(tzinfo=timezone.utc)).days
+        try:
+            from datetime import timezone as tz
+            ct = prop.created_at
+            if ct.tzinfo is None:
+                ct = ct.replace(tzinfo=tz.utc)
+            days_on_market = (datetime.now(tz.utc) - ct).days
+        except Exception:
+            pass
     
-    leads = db.query(Lead).filter(
-        Lead.org_id == org_id, Lead.property_id == prop_id
-    ).order_by(desc(Lead.received_at)).limit(20).all()
+    leads = []
+    obsidian = []
+    apps = []
     
-    obsidian = db.query(PropertyFile).filter(
-        PropertyFile.org_id == org_id,
-        PropertyFile.property_id == prop_id,
-        PropertyFile.source == "obsidian",
-    ).all()
+    try:
+        leads = db.query(Lead).filter(
+            Lead.org_id == org_id, Lead.property_id == prop_id
+        ).order_by(desc(Lead.received_at)).limit(20).all()
+    except Exception:
+        pass
     
-    from app.routers.showings import Showing
-    showings = db.query(Showing).filter(
-        Showing.org_id == org_id, Showing.property_id == prop_id,
-    ).order_by(Showing.scheduled_at).limit(10).all()
+    try:
+        obsidian = db.query(PropertyFile).filter(
+            PropertyFile.org_id == org_id,
+            PropertyFile.property_id == prop_id,
+            PropertyFile.source == "obsidian",
+        ).all()
+    except Exception:
+        pass
     
-    apps = db.query(Application).filter(
-        Application.org_id == org_id, Application.property_id == prop_id,
-    ).order_by(desc(Application.last_update)).limit(10).all()
+    try:
+        apps = db.query(Application).filter(
+            Application.org_id == org_id, Application.property_id == prop_id,
+        ).order_by(desc(Application.last_update)).limit(10).all()
+    except Exception:
+        pass
     
     return {
         "property": {
@@ -696,11 +711,8 @@ async def property_detail(
         } for l in leads],
         "obsidian_notes": [{
             "id": f.id, "name": f.name, "kind": f.kind,
-            "section": f.section, "obsidian_vault": f.obsidian_vault,
+            "section": f.section,
         } for f in obsidian],
-        "showings": [{
-            "id": s.id, "prospect_name": s.prospect_name, "status": s.status,
-        } for s in showings],
         "applications": [{
             "id": a.id, "applicant_name": a.applicant_name,
             "status": a.status.value if a.status else "",

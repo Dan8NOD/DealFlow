@@ -153,7 +153,7 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
 <div class="toast" id="toast"></div>
 
 <script>
-let token='',currentTab='kanban',selectedId=null,selectedType=null;
+let token='',currentTab='kanban',selectedId=null,selectedType=null,budgetOnly=false;
 let allLeads=[],allDeals=[],allApps=[],allProps=[],allCmas=[],allShowings=[];
 let obsidianNotes=[],sortCol=null,sortDir=1;
 const isMobile=window.innerWidth<768;
@@ -231,8 +231,8 @@ function renderStats(){
     <div class="stat-card" style="border-top-color:var(--red)" onclick="switchTab('leads')"><div class="sn">${fmt(hotLeads)}</div><div class="sl">Hot Leads</div></div>
     <div class="stat-card" style="border-top-color:var(--green)" onclick="switchTab('apps')"><div class="sn">${fmt(inPipe)}</div><div class="sl">Pipeline</div></div>
     <div class="stat-card" style="border-top-color:var(--purple)" onclick="switchTab('deals')"><div class="sn">${fmt(activeDeals)}</div><div class="sl">Deals</div></div>
-    <div class="stat-card" style="border-top-color:var(--amber)"><div class="sn">${fmt(withBudget)}</div><div class="sl">Budget</div></div>
-    <div class="stat-card" style="border-top-color:var(--blue)"><div class="sn">${fmt(allLeads.length)}</div><div class="sl">Total</div></div>
+    <div class="stat-card" style="border-top-color:var(--amber)" onclick="showBudgetLeads()"><div class="sn">${fmt(withBudget)}</div><div class="sl">Budget</div></div>
+    <div class="stat-card" style="border-top-color:var(--blue)" onclick="switchTab('leads')"><div class="sn">${fmt(allLeads.length)}</div><div class="sl">Total</div></div>
   `;
 }
 
@@ -283,7 +283,8 @@ function renderTabView(tab){
     document.getElementById('gridWrap').style.display='none';
     let h='';
     const s=document.getElementById('searchInput').value.toLowerCase();
-    let f=s?rows.filter(r=>cols.some(c=>String(r[c.k]||'').toLowerCase().includes(s))):rows;
+    let f=budgetOnly?rows.filter(r=>r.monthly_income&&r.monthly_income>0):rows;
+    if(s)f=f.filter(r=>cols.some(c=>String(r[c.k]||'').toLowerCase().includes(s)));
     f.slice(0,50).forEach(l=>{
       const init=(l.name||'?')[0].toUpperCase();
       h+=`<div class="lcard" onclick="openPanel('lead',${l.id})">
@@ -301,10 +302,11 @@ function renderTabView(tab){
     const s=document.getElementById('searchInput').value.toLowerCase();
     const sf=document.getElementById('statusFilter').value;
     let f=rows;
+    if(budgetOnly&&tab==='leads')f=f.filter(r=>r.monthly_income&&r.monthly_income>0);
     if(sf)f=f.filter(r=String(r.status||'').toLowerCase()===sf.toLowerCase());
     if(s)f=f.filter(r=>cols.some(c=>String(r[c.k]||'').toLowerCase().includes(s)));
     if(sortCol)f.sort((a,b)=>{let va=a[sortCol]||'',vb=b[sortCol]||'';return(va<vb?-1:va>vb?1:0)*sortDir});
-    document.getElementById('rowCount').textContent=f.length+' records';
+    document.getElementById('rowCount').textContent=(budgetOnly&&tab==='leads'?f.length+' with budget':f.length+' records');
 
     let h='<thead><tr>';
     cols.forEach(c=>h+=`<th style="width:${c.w||100}px" onclick="sortBy('${c.k}')">${c.l}${sortCol===c.k?(sortDir===1?' ▴':' ▾'):''}</th>`);
@@ -374,8 +376,14 @@ function advanceDeal(id,status){
     .then(()=>{toast('Moved to '+next.replace(/_/g,' '));loadAll()});
 }
 
+function showBudgetLeads(){
+  budgetOnly=true;
+  switchTab('leads');
+}
+
 function switchTab(tab){
   currentTab=tab;
+  budgetOnly=false;
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
   sortCol=null;

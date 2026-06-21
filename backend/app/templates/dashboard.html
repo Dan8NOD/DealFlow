@@ -106,6 +106,14 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
 <!-- LOW HANGING FRUIT -->
 <div class="lhf-strip" id="lhfStrip"></div>
 
+<!-- QUICK ACTIONS -->
+<div class="lhf-strip" style="padding-top:0" id="quickActions">
+  <div class="lhf-card" style="border-left-color:var(--blue);cursor:pointer" onclick="switchTab('leads')"><div class="lhf-icon">👤</div><div class="lhf-title">Add Lead</div><div class="lhf-sub">Log new inquiry</div></div>
+  <div class="lhf-card" style="border-left-color:var(--green);cursor:pointer" onclick="switchTab('deals')"><div class="lhf-icon">💰</div><div class="lhf-title">New Deal</div><div class="lhf-sub">Track a sale</div></div>
+  <div class="lhf-card" style="border-left-color:var(--amber);cursor:pointer" onclick="switchTab('props')"><div class="lhf-icon">🏠</div><div class="lhf-title">Properties</div><div class="lhf-sub">View inventory</div></div>
+  <div class="lhf-card" style="border-left-color:var(--purple);cursor:pointer" onclick="switchTab('apps')"><div class="lhf-icon">📋</div><div class="lhf-title">Applications</div><div class="lhf-sub">Pipeline</div></div>
+</div>
+
 <!-- STATS -->
 <div class="stats" id="statsRow"></div>
 
@@ -232,7 +240,8 @@ function renderStats(){
 function renderKanban(){
   const cols={todo:[],progress:[],done:[]};
   allDeals.forEach(d=>{
-    const c={id:d.id,type:'deal',title:d.address.split(',')[0],sub:d.status.replace(/_/g,' '),status:d.status,days:d.days_idle||0,price:d.list_price};
+    const nextSteps={'CMA_REQUESTED':'Prepare CMA report','LISTING_PREP':'Take photos, write description','ACTIVE_LISTING':'Follow up on showings','IN_ESCROW':'Check closing timeline','UNDER_CONTRACT':'Send docs to title','CONTRACT_SIGNED':'Schedule closing','OFFER_RECEIVED':'Review and counter','NEW_LISTING_ALERT':'Call owner to discuss'};
+    const c={id:d.id,type:'deal',title:d.address.split(',')[0],sub:d.status.replace(/_/g,' '),status:d.status,days:d.days_idle||0,price:d.list_price,nextStep:nextSteps[d.status]||''};
     if(d.status==='CLOSED')cols.done.push(c);
     else if(['UNDER_CONTRACT','CONTRACT_SIGNED','IN_ESCROW','OFFER_RECEIVED'].includes(d.status))cols.progress.push(c);
     else cols.todo.push(c);
@@ -251,6 +260,7 @@ function renderKanban(){
       h+=`<div class="kcard ${ur} ${dn}" onclick="openPanel('${c.type}',${c.id})">
         <div class="kc-title">${c.title||'?'}</div><div class="kc-sub">${c.sub} · ${c.days>0?c.days+'d':'today'}</div>
         ${c.price?`<div class="kc-meta"><span class="badge green">$${Number(c.price/1000).toFixed(0)}k</span></div>`:''}
+        ${c.nextStep?`<div style="background:#ebf8ff;padding:6px 8px;border-radius:6px;font-size:11px;margin-top:6px;color:var(--navy);font-weight:600">→ ${c.nextStep}</div>`:''}
         ${c.type==='deal'?`<button class="kc-btn move" onclick="event.stopPropagation();advanceDeal(${c.id},'${c.status}')">Move →</button>`:''}
       </div>`;
     });

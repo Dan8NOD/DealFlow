@@ -37,7 +37,27 @@ def _fix_lowercase_enums(engine):
     
     # Ensure property_files table exists
     if 'property_files' not in insp.get_table_names():
-        PropertyFile.__table__.create(bind=engine, checkfirst=True)
+        try:
+            PropertyFile.__table__.create(bind=engine, checkfirst=True)
+        except Exception:
+            # Fallback: create manually
+            with engine.connect() as conn:
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS property_files (
+                        id SERIAL PRIMARY KEY,
+                        org_id INTEGER NOT NULL REFERENCES organizations(id),
+                        property_id INTEGER REFERENCES properties(id),
+                        kind VARCHAR(50),
+                        name VARCHAR(500),
+                        path VARCHAR(1000),
+                        source VARCHAR(50),
+                        size_bytes INTEGER,
+                        obsidian_vault VARCHAR(50),
+                        section VARCHAR(50),
+                        created_at TIMESTAMP DEFAULT NOW()
+                    )
+                """))
+                conn.commit()
     
     if 'applications' not in insp.get_table_names():
         return

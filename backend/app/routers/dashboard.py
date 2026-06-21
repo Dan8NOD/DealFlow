@@ -90,12 +90,6 @@ async def dashboard(
     })
 
 
-@router.get("/m", response_class=HTMLResponse)
-async def mobile_dashboard(request: Request):
-    """Mobile-optimized Kanban dashboard."""
-    return templates.TemplateResponse("mobile.html", {"request": request})
-
-
 @router.get("/api/debug-dashboard")
 async def debug_dashboard(
     user: User = Depends(get_current_user),

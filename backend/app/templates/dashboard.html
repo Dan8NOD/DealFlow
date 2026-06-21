@@ -1,831 +1,392 @@
 {% extends "base.html" %}
-{% block title %}Renter Portal — {{ org.name }}{% endblock %}
+{% block title %}Renter — {{ org.name }}{% endblock %}
 {% block extra_css %}
-:root { --navy: #1a365d; --blue: #2b6cb0; --green: #276749; --red: #c53030; --amber: #b7791f; --purple: #6b46c1; --gray: #718096; }
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: #f0f2f5; color: #1a202c; }
+:root{--navy:#1a365d;--blue:#2b6cb0;--green:#276749;--red:#c53030;--amber:#b7791f;--purple:#6b46c1;--gray:#718096;--bg:#f5f5f5;--card:#fff;--r:10px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:#1a202c;font-size:15px;padding-bottom:60px}
 
-/* ── HEADER ── */
-header.bar { background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%); color: white; padding: 10px 20px; display: flex;
-  justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-header.bar h1 { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
-header.bar .bar-right { display: flex; align-items: center; gap: 8px; }
-header.bar a { color: white; text-decoration: none; font-size: 11px; background: rgba(255,255,255,0.12);
-  padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; white-space: nowrap; }
-header.bar a:hover { background: rgba(255,255,255,0.22); }
-header.bar a.pulse { animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.3); }
-  50% { box-shadow: 0 0 0 8px rgba(255,255,255,0); } }
+header.bar{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;padding:12px 16px;position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+header.bar h1{font-size:18px;font-weight:800}
+header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,255,255,.12);padding:6px 10px;border-radius:6px;border:none;cursor:pointer;font-weight:600}
 
-/* ── STAT CARDS ── */
-.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; padding: 16px 20px; }
-.stat-card { background: white; border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-  cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; border-left: 4px solid transparent; }
-.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-.stat-card .stat-num { font-size: 28px; font-weight: 800; line-height: 1; }
-.stat-card .stat-label { font-size: 11px; color: #718096; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-.stat-card.active { border-left-color: #2b6cb0; }
-.stat-card.apps { border-left-color: #276749; }
-.stat-card.sales { border-left-color: #6b46c1; }
-.stat-card.cmas { border-left-color: #b7791f; }
-.stat-card.showings { border-left-color: #e53e3e; }
-.stat-card.files { border-left-color: #00a3c4; }
-.stat-card .stat-num.blue { color: #2b6cb0; }
-.stat-card .stat-num.green { color: #276749; }
-.stat-card .stat-num.purple { color: #6b46c1; }
-.stat-card .stat-num.amber { color: #b7791f; }
-.stat-card .stat-num.red { color: #c53030; }
-.stat-card .stat-num.teal { color: #00a3c4; }
+/* ── LOW HANGING FRUIT ── */
+.lhf-strip{padding:12px 12px 0;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.lhf-card{flex:0 0 auto;background:var(--card);border-radius:var(--r);padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.06);min-width:160px;max-width:200px;cursor:pointer;border-left:4px solid var(--green);transition:transform .1s}
+.lhf-card:active{transform:scale(.97)}
+.lhf-card.hot{border-left-color:var(--red)}.lhf-card.deal{border-left-color:var(--purple)}.lhf-card.bounce{border-left-color:var(--amber)}
+.lhf-card .lhf-icon{font-size:20px}.lhf-card .lhf-title{font-size:13px;font-weight:700;margin:4px 0 2px}.lhf-card .lhf-sub{font-size:11px;color:var(--gray)}
+@media(min-width:768px){.lhf-strip{flex-wrap:wrap;overflow-x:visible}.lhf-card{flex:1;min-width:0;max-width:none}}
 
-/* ── PIPELINE FUNNEL ── */
-.funnel-row { display: flex; gap: 6px; padding: 0 20px 16px; align-items: stretch; }
-.funnel-stage { flex: 1; background: white; border-radius: 8px; padding: 12px; text-align: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06); position: relative; }
-.funnel-stage .fs-num { font-size: 22px; font-weight: 800; }
-.funnel-stage .fs-label { font-size: 10px; color: #718096; text-transform: uppercase; }
-.funnel-arrow { display: flex; align-items: center; color: #cbd5e0; font-size: 20px; }
+/* ── STATS ── */
+.stats{display:flex;gap:8px;padding:12px;overflow-x:auto}
+.stat-card{flex:1;min-width:70px;background:var(--card);border-radius:var(--r);padding:12px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06);cursor:pointer;border-top:3px solid transparent}
+.stat-card .sn{font-size:22px;font-weight:800}.stat-card .sl{font-size:10px;color:var(--gray);text-transform:uppercase;margin-top:2px}
+@media(min-width:768px){.stats{max-width:1200px;margin:0 auto}.stat-card .sn{font-size:28px}}
 
 /* ── TABS ── */
-.tabs { display: flex; gap: 0; border-bottom: 2px solid #e2e8f0; overflow-x: auto; padding: 0 20px; background: white; }
-.tab { padding: 10px 16px; background: transparent; border: none; cursor: pointer; font-size: 13px;
-  font-weight: 600; color: #4a5568; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap;
-  transition: color 0.15s; }
-.tab.active { color: #1a365d; border-bottom-color: #1a365d; }
-.tab .count { font-size: 10px; color: #888; font-weight: 400; margin-left: 4px; background: #edf2f7; padding: 1px 6px; border-radius: 10px; }
-.tab .count.hot { background: #fed7d7; color: #c53030; }
+.tabs{display:flex;background:var(--card);border-bottom:1px solid #e2e8f0;position:sticky;top:48px;z-index:99;overflow-x:auto}
+.tab{flex:1;text-align:center;padding:10px 8px;font-size:12px;font-weight:700;color:var(--gray);border:none;background:none;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;min-width:60px}
+.tab.active{color:var(--navy);border-bottom-color:var(--navy)}
+.tab .count{font-size:10px;background:#edf2f7;padding:1px 6px;border-radius:10px;margin-left:3px}.tab .count.hot{background:#fee2e2;color:#991b1b}
 
 /* ── TOOLBAR ── */
-.toolbar { display: flex; gap: 8px; padding: 10px 20px; align-items: center; flex-wrap: wrap; background: white; border-bottom: 1px solid #edf2f7; }
-.toolbar input { padding: 6px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 12px; width: 220px; }
-.toolbar select { padding: 6px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 12px; }
-.btn-sm { padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; border: none; cursor: pointer; }
-.btn-sm.blue { background: #2b6cb0; color: white; }
-.btn-sm.green { background: #276749; color: white; }
-.btn-sm.amber { background: #b7791f; color: white; }
-.btn-sm:hover { opacity: 0.88; }
+.toolbar{display:flex;gap:8px;padding:8px 12px;align-items:center;background:var(--card);border-bottom:1px solid #edf2f7;flex-wrap:wrap}
+.toolbar input{padding:8px 12px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;flex:1;min-width:120px}
+.toolbar select{padding:8px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px}
+.btn-sm{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer;white-space:nowrap}
+.btn-sm.blue{background:var(--blue);color:#fff}.btn-sm.green{background:var(--green);color:#fff}
 
-/* ── GRID ── */
-.grid-wrap { overflow-x: auto; margin: 0 20px; background: white; border-radius: 8px; border: 1px solid #dde1e6; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-.grid { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; min-width: 900px; }
-.grid th { background: #f7fafc; padding: 8px 8px; text-align: left; font-size: 10px;
-  font-weight: 700; color: #4a5568; border-bottom: 1px solid #dde1e6; cursor: pointer; user-select: none; white-space: nowrap; }
-.grid th:hover { background: #edf2f7; }
-.grid td { padding: 5px 8px; border-bottom: 1px solid #f0f2f5; cursor: cell;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.grid tr:hover td { background: #ebf4ff; }
-.grid tr.selected td { background: #c2d9ff !important; }
-.grid td.has-obsidian { position: relative; }
-.grid td.has-obsidian::after { content: "📓"; font-size: 9px; margin-left: 3px; opacity: 0.6; }
+/* ── KANBAN ── */
+.kanban{display:flex;gap:10px;padding:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.kanban-col{flex:0 0 85vw;max-width:360px;background:#edf2f7;border-radius:var(--r);padding:10px}
+@media(min-width:768px){.kanban-col{flex:0 0 30%;max-width:none}}
+.kanban-col h2{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin-bottom:10px;display:flex;justify-content:space-between}
+.kanban-col h2 .col-count{background:var(--gray);color:#fff;border-radius:10px;padding:1px 8px;font-size:11px}
+.kcard{background:var(--card);border-radius:8px;padding:12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.06);cursor:pointer;border-left:4px solid var(--blue)}
+.kcard:active{transform:scale(.98)}.kcard.urgent{border-left-color:var(--red)}.kcard.todo{border-left-color:var(--gray)}.kcard.done{border-left-color:var(--green)}
+.kcard .kc-title{font-size:14px;font-weight:700}.kcard .kc-sub{font-size:12px;color:var(--gray)}.kcard .kc-meta{display:flex;gap:6px;margin-top:4px;font-size:11px;flex-wrap:wrap}
+.kcard .kc-btn{flex:1;padding:5px 8px;border:none;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;margin-top:6px}
+.kc-btn.move{background:#edf2f7;color:var(--navy)}
 
-.cell-editor { width: calc(100% + 2px); padding: 3px 5px; border: 2px solid #2b6cb0;
-  border-radius: 3px; font-size: 12px; font-family: inherit; background: white; outline: none; margin: -3px -5px; }
-.cell-select { width: 100%; padding: 2px 4px; border: 2px solid #2b6cb0; border-radius: 3px;
-  font-size: 12px; font-family: inherit; background: white; margin: -3px -5px; }
-.badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; }
-.badge.warn { background: #fef3c7; color: #78350f; }
-.badge.ok { background: #d1fae5; color: #065f46; }
-.badge.blue { background: #dbeafe; color: #1e40af; }
-.badge.gray { background: #e5e7eb; color: #374151; }
-.badge.red { background: #fee2e2; color: #991b1b; }
-.badge.purple { background: #ede9fe; color: #5b21b6; }
-.badge.gold { background: #fef9c3; color: #854d0e; font-weight: 700; animation: pulse 2s infinite; }
-.badge.teal { background: #ccfbf1; color: #0d9488; }
+/* ── GRID (desktop table) ── */
+.grid-wrap{overflow-x:auto;margin:0 12px;background:var(--card);border-radius:var(--r);border:1px solid #dde1e6;display:none}
+@media(min-width:768px){.grid-wrap{display:block}.kanban{display:none}}
+.grid-wrap.mobile-table{display:block}@media(min-width:768px){.grid-wrap.mobile-table{display:none}}
+.grid{width:100%;border-collapse:collapse;font-size:12px;min-width:800px}
+.grid th{background:#f7fafc;padding:8px;text-align:left;font-size:10px;font-weight:700;color:#4a5568;border-bottom:1px solid #dde1e6;cursor:pointer;white-space:nowrap}
+.grid td{padding:5px 8px;border-bottom:1px solid #f0f2f5;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grid tr:hover td{background:#ebf4ff}.grid tr.selected td{background:#c2d9ff!important}
 
-/* ── SIDE PANEL (expanded) ── */
-.side-panel { position: fixed; right: 0; top: 0; width: 420px; height: 100vh;
-  background: white; box-shadow: -4px 0 24px rgba(0,0,0,0.15); z-index: 200;
-  display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.25s ease; }
-.side-panel.open { transform: translateX(0); }
-.sp-header { padding: 14px 16px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
-.sp-header h3 { font-size: 15px; margin: 0; }
-.sp-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #4a5568; padding: 4px 8px; border-radius: 4px; }
-.sp-close:hover { background: #edf2f7; }
-.sp-body { flex: 1; overflow-y: auto; padding: 14px 16px; }
-.sp-section { margin-bottom: 16px; }
-.sp-section h4 { font-size: 12px; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
-  border-bottom: 1px solid #edf2f7; padding-bottom: 6px; }
-.sp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-bottom: 8px; font-size: 12px; }
-.sp-row .label { color: #718096; font-size: 10px; }
-.sp-row .value { font-weight: 600; }
-.sp-file { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; margin-bottom: 4px;
-  font-size: 12px; cursor: pointer; }
-.sp-file:hover { background: #f7fafc; }
-.sp-file .file-icon { font-size: 16px; }
-.sp-file .file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sp-file .file-badge { font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #edf2f7; color: #4a5568; }
-.sp-input { border-top: 1px solid #e2e8f0; padding: 10px 16px; display: flex; gap: 6px; }
-.sp-input textarea { flex: 1; padding: 8px; border: 1px solid #cbd5e0; border-radius: 6px;
-  font-size: 12px; font-family: inherit; resize: none; height: 54px; }
-.sp-input button { background: #1a365d; color: white; border: none; border-radius: 6px;
-  padding: 6px 16px; cursor: pointer; font-size: 12px; font-weight: 600; }
-.sp-input button:hover { background: #2b6cb0; }
+/* ── LEAD CARDS (mobile) ── */
+.lead-cards{display:flex;flex-direction:column;gap:8px;padding:12px}
+@media(min-width:768px){.lead-cards{display:none}}
+.lcard{background:var(--card);border-radius:var(--r);padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;cursor:pointer}
+.lcard:active{background:#f0f4ff}
+.lcard .lc-avatar{width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0}
+.lcard .lc-info{flex:1;min-width:0}.lc-info .name{font-weight:700;font-size:14px}.lc-info .prop{font-size:12px;color:var(--gray);overflow:hidden;text-overflow:ellipsis}.lc-info .budget{font-size:12px;color:var(--green);font-weight:600}
+.lcard .lc-actions{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+.lcard .lc-actions a{display:block;padding:8px 14px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;text-align:center}.lca-call{background:var(--green);color:#fff}.lca-email{background:var(--blue);color:#fff}
 
-.overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.3); z-index: 199; }
-.overlay.open { display: block; }
-.saved-flash { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-  background: #276749; color: white; padding: 8px 20px; border-radius: 8px; font-size: 13px;
-  z-index: 300; opacity: 0; transition: opacity 0.15s; pointer-events: none; font-weight: 600; }
-.saved-flash.show { opacity: 1; }
+/* ── BADGES ── */
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700}
+.badge.green{background:#d1fae5;color:#065f46}.badge.amber{background:#fef3c7;color:#78350f}.badge.red{background:#fee2e2;color:#991b1b}.badge.blue{background:#dbeafe;color:#1e40af}.badge.gray{background:#e5e7eb;color:#374151}.badge.purple{background:#ede9fe;color:#5b21b6}.badge.gold{background:#fef9c3;color:#854d0e;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
 
-/* ── SHOWING QUICK-ADD ── */
-.quick-add { padding: 10px 16px; background: #f7fafc; border-radius: 8px; margin-bottom: 12px; }
-.quick-add input, .quick-add select { padding: 5px 8px; border: 1px solid #cbd5e0; border-radius: 5px; font-size: 11px; width: 100%; margin-bottom: 4px; }
-.quick-add .qa-row { display: flex; gap: 6px; }
-.quick-add .qa-row input { flex: 1; }
+/* ── SIDE PANEL ── */
+.panel{position:fixed;top:0;right:0;width:100%;max-width:440px;height:100vh;background:var(--card);box-shadow:-4px 0 24px rgba(0,0,0,.15);z-index:200;transform:translateX(100%);transition:transform .25s;overflow-y:auto;padding:16px}
+.panel.open{transform:translateX(0)}
+.panel h3{font-size:16px;margin-bottom:12px}
+.panel .p-close{position:absolute;top:8px;right:12px;background:none;border:none;font-size:22px;cursor:pointer;padding:8px}
+.panel .p-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #edf2f7;font-size:13px}
+.panel .p-label{color:var(--gray)}.panel .p-value{font-weight:600;text-align:right}
+.panel .p-actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.panel .p-actions a,.panel .p-actions button{flex:1;min-width:100px;padding:12px;border-radius:8px;font-weight:700;font-size:14px;text-align:center;text-decoration:none;border:none;cursor:pointer}
+.pa-call{background:var(--green);color:#fff}.pa-email{background:var(--blue);color:#fff}.pa-move{background:#edf2f7;color:var(--navy)}
+.overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.3);z-index:199}.overlay.open{display:block}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:8px 20px;border-radius:20px;font-size:13px;font-weight:700;z-index:300;opacity:0;transition:opacity .2s;pointer-events:none}.toast.show{opacity:1}
+
+/* ── CELL EDITING ── */
+.cell-editor{width:calc(100% + 4px);padding:3px 6px;border:2px solid var(--blue);border-radius:4px;font-size:12px;font-family:inherit;background:#fff;outline:none;margin:-3px -6px}
+.cell-select{width:100%;padding:3px 6px;border:2px solid var(--blue);border-radius:4px;font-size:12px;font-family:inherit;background:#fff}
+</style>
 {% endblock %}
 
 {% block body %}
 <header class="bar">
-  <h1>🏠 Renter Portal</h1>
-  <div class="bar-right">
-    <a href="#" onclick="syncObsidian();return false" class="pulse" title="Sync Obsidian">📓 Sync Vault</a>
-    <a href="/auth/microsoft/start">🔗 Connect 365</a>
-    <a href="/api/sync">↻ Sync</a>
-    <span style="font-size:12px;opacity:0.9;padding:0 6px;">{{ user.email }}</span>
-    <a href="/auth/logout" onclick="event.preventDefault();fetch('/auth/logout',{method:'POST',credentials:'include'}).then(()=>location.href='/')">Logout</a>
+  <h1>🏠 Renter</h1>
+  <div style="display:flex;gap:6px;align-items:center">
+    <a href="#" onclick="syncObsidian();return false">📓</a>
+    <a href="#" onclick="refreshAll();return false">↻</a>
+    <a href="/auth/logout" onclick="event.preventDefault();fetch('/auth/logout',{method:'POST'}).then(()=>location.href='/')">⏻</a>
   </div>
 </header>
 
-<!-- STAT CARDS -->
-<div class="stats-row" id="statsRow">
-  <div class="stat-card apps" onclick="switchTab('apps')">
-    <div class="stat-num green" id="statPipeline">-</div>
-    <div class="stat-label">Apps in Pipeline</div>
-  </div>
-  <div class="stat-card active" onclick="switchTab('leads')">
-    <div class="stat-num blue" id="statLeads">-</div>
-    <div class="stat-label">Active Leads</div>
-  </div>
-  <div class="stat-card sales" onclick="switchTab('sales')">
-    <div class="stat-num purple" id="statSales">-</div>
-    <div class="stat-label">Active Sales</div>
-  </div>
-  <div class="stat-card cmas" onclick="switchTab('cmas')">
-    <div class="stat-num amber" id="statCmas">-</div>
-    <div class="stat-label">Pending CMAs</div>
-  </div>
-  <div class="stat-card showings" onclick="switchTab('showings')">
-    <div class="stat-num red" id="statShowings">-</div>
-    <div class="stat-label">Upcoming Showings</div>
-  </div>
-  <div class="stat-card files">
-    <div class="stat-num teal" id="statFiles">-</div>
-    <div class="stat-label">Linked Files</div>
-  </div>
-</div>
+<!-- LOW HANGING FRUIT -->
+<div class="lhf-strip" id="lhfStrip"></div>
 
-<!-- PIPELINE FUNNEL -->
-<div class="funnel-row" id="funnelRow" style="display:none;">
-  <div class="funnel-stage"><div class="fs-num" id="funNew">-</div><div class="fs-label">New</div></div>
-  <div class="funnel-arrow">→</div>
-  <div class="funnel-stage"><div class="fs-num" id="funContacted">-</div><div class="fs-label">Contacted</div></div>
-  <div class="funnel-arrow">→</div>
-  <div class="funnel-stage"><div class="fs-num" id="funQualified">-</div><div class="fs-label">Qualified</div></div>
-</div>
+<!-- STATS -->
+<div class="stats" id="statsRow"></div>
 
 <!-- TABS -->
 <div class="tabs" id="tabBar">
-  <button class="tab active" data-tab="apps">Applications</button>
-  <button class="tab" data-tab="sales">Sales</button>
-  <button class="tab" data-tab="leads">Leads<span class="count" id="upsellCount"></span></button>
-  <button class="tab" data-tab="props">Properties</button>
-  <button class="tab" data-tab="cmas">CMAs</button>
-  <button class="tab" data-tab="showings">Showings</button>
-  <button class="tab" data-tab="maintenance">Maintenance</button>
-  <button class="tab" data-tab="bounce">🔄 Bounce</button>
+  <button class="tab active" data-tab="kanban">📋 Kanban</button>
+  <button class="tab" data-tab="leads">📧 Leads<span class="count" id="upsellCount"></span></button>
+  <button class="tab" data-tab="deals">💰 Deals</button>
+  <button class="tab" data-tab="apps">📋 Apps</button>
+  <button class="tab" data-tab="props">🏠 Props</button>
 </div>
 
 <!-- TOOLBAR -->
-<div class="toolbar">
-  <input type="text" id="searchInput" placeholder="Search..." oninput="renderGrid()">
-  <select id="statusFilter" onchange="renderGrid()"><option value="">All</option></select>
-  <span id="rowCount" style="font-size:11px;color:#666;margin-right:auto;"></span>
-  <button class="btn-sm blue" onclick="quickAddRecord()" id="btnQuickAdd" style="display:none;">+ New</button>
-  <button class="btn-sm green" onclick="refreshAll()">↻ Refresh All</button>
+<div class="toolbar" id="toolbar">
+  <input type="text" id="searchInput" placeholder="Search..." oninput="renderView()">
+  <select id="statusFilter" onchange="renderView()"><option value="">All</option></select>
+  <span id="rowCount" style="font-size:11px;color:var(--gray)"></span>
+  <button class="btn-sm green" onclick="refreshAll()">↻ Refresh</button>
 </div>
 
-<!-- GRID -->
-<div class="grid-wrap"><table class="grid" id="grid"></table></div>
+<!-- KANBAN -->
+<div id="kanbanView"><div class="kanban" id="kanban"></div></div>
 
-<!-- SIDE PANEL -->
+<!-- LEAD CARDS (mobile) -->
+<div class="lead-cards" id="leadCards" style="display:none"></div>
+
+<!-- DESKTOP TABLE -->
+<div class="grid-wrap" id="gridWrap" style="display:none"><table class="grid" id="grid"></table></div>
+
+<!-- PANEL -->
 <div class="overlay" id="overlay"></div>
-<div class="side-panel" id="sidePanel">
-  <div class="sp-header">
-    <h3 id="spTitle">Details</h3>
-    <button class="sp-close" onclick="closePanel()">✕</button>
-  </div>
-  <div class="sp-body" id="spBody"></div>
-  <div class="sp-input" id="spInput" style="display:none;">
-    <textarea id="spText" placeholder="Add comment..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addComment();}"></textarea>
-    <button onclick="addComment()">Post</button>
-  </div>
+<div class="panel" id="panel">
+  <button class="p-close" onclick="closePanel()">✕</button>
+  <h3 id="panelTitle"></h3>
+  <div id="panelBody"></div>
 </div>
-
-<div class="saved-flash" id="savedFlash">✓ Saved</div>
+<div class="toast" id="toast"></div>
 
 <script>
-let currentTab='apps',allRows={},selectedId=null,selectedType=null,editingCell=null,sortCol=null,sortDir=1;
-let obsidianNotes=[], propertyFiles={};
+let token='',currentTab='kanban',selectedId=null,selectedType=null;
+let allLeads=[],allDeals=[],allApps=[],allProps=[],allCmas=[],allShowings=[];
+let obsidianNotes=[],sortCol=null,sortDir=1;
+const isMobile=window.innerWidth<768;
 
-const STATUS_C={
-  application_received:'blue',offer_sent:'warn',welcome_sent:'warn',approved:'ok',lease_signed:'ok',moved_in:'ok',denied:'red',
-  NEW:'blue',CONTACTED:'warn',QUALIFIED:'ok',CLOSED:'gray',LOST:'red',
-  ACTIVE_LISTING:'blue',UNDER_CONTRACT:'ok',CONTRACT_SIGNED:'ok',IN_ESCROW:'warn',OFFER_RECEIVED:'warn',CLOSED:'gray',
-  CMA_REQUESTED:'purple',LISTING_PREP:'warn',NEW_LISTING_ALERT:'blue',
-  AVAILABLE:'ok',RENTED:'blue',OCCUPIED:'warn',OFF_MARKET:'gray',FOR_SALE:'purple',PENDING:'warn',
-  scheduled:'blue',confirmed:'ok',completed:'green',cancelled:'gray',no_show:'red',SHOWING:'blue',
-  submitted:'blue',acknowledged:'warn',in_progress:'warn',resolved:'ok',closed:'gray',
-};
-const STATUS_O={
-  apps:['application_received','offer_sent','welcome_sent','approved','lease_signed','moved_in','denied'],
-  sales:['NEW_LISTING_ALERT','CMA_REQUESTED','LISTING_PREP','ACTIVE_LISTING','IN_ESCROW','UNDER_CONTRACT','CONTRACT_SIGNED','OFFER_RECEIVED','CLOSED'],
-  leads:['NEW','CONTACTED','QUALIFIED','CLOSED','LOST'],
-  props:['AVAILABLE','RENTED','OCCUPIED','OFF_MARKET','FOR_SALE','PENDING'],
-  cmas:['pending','sent','resolved'],
-  showings:['scheduled','confirmed','completed','cancelled','no_show'],
-  maintenance:['submitted','acknowledged','in_progress','resolved','closed'],
-  bounce:[],
-};
 const COLS={
-  apps:[
-    {k:'applicant',l:'Applicant',e:1,w:140},{k:'property',l:'Property',w:180},
-    {k:'status',l:'Status',e:1,t:'status',w:130},{k:'handler',l:'Handler',e:1,w:130},
-    {k:'monthly_income',l:'Income',e:1,w:80},{k:'credit_score',l:'Credit',e:1,w:65},
-    {k:'pets',l:'Pets',w:65},{k:'move_in_date',l:'Move-in',w:85},
-    {k:'days_in_pipeline',l:'Days',w:48},{k:'last_update',l:'Updated',w:90},
-  ],
-  sales:[
-    {k:'address',l:'Property',w:200},{k:'status',l:'Status',e:1,t:'status',w:135},
-    {k:'tc',l:'Coordinator',e:1,w:135},{k:'list_price',l:'Price',e:1,w:85},
-    {k:'days_idle',l:'Idle',w:48},{k:'event_count',l:'#',w:38},{k:'last_update',l:'Updated',w:90},
-  ],
-  leads:[
-    {k:'name',l:'Name',e:1,w:140},{k:'phone',l:'Phone',e:1,w:120},
-    {k:'email',l:'Email',w:180},{k:'property',l:'Property',w:170},
-    {k:'source',l:'Source',w:90},{k:'status',l:'Status',e:1,t:'status',w:100},
-    {k:'monthly_income',l:'Income',e:1,w:90},{k:'days_old',l:'Age',w:48},
-    {k:'received_at',l:'Received',w:90},
-  ],
-  props:[
-    {k:'address',l:'Address',w:200},{k:'unit',l:'Unit',w:48},
-    {k:'status',l:'Status',e:1,t:'status',w:110},{k:'tenant',l:'Tenant',e:1,w:140},
-    {k:'rent',l:'Rent',e:1,w:70},{k:'bedrooms',l:'BR',e:1,w:38},
-    {k:'bathrooms',l:'BA',e:1,w:38},{k:'has_obsidian',l:'📓',w:38},
-    {k:'notes',l:'Notes',e:1,w:190},
-  ],
-  cmas:[
-    {k:'property',l:'Property',w:200},{k:'unit',l:'Unit',w:48},
-    {k:'kind',l:'Type',w:58},{k:'status',l:'Status',e:1,t:'status',w:90},
-    {k:'requests',l:'Reqs',w:48},{k:'last_request',l:'Last',w:95},{k:'first_request',l:'First',w:95},
-  ],
-  showings:[
-    {k:'property_address',l:'Property',w:200},{k:'prospect_name',l:'Prospect',e:1,w:140},
-    {k:'prospect_phone',l:'Phone',w:120},{k:'scheduled_at',l:'When',e:1,w:160},
-    {k:'status',l:'Status',e:1,t:'status',w:95},{k:'method',l:'Type',e:1,w:90},
-    {k:'agent',l:'Agent',e:1,w:120},
-  ],
-  maintenance:[
-    {k:'property_address',l:'Property',w:200},{k:'subject',l:'Issue',w:180},
-    {k:'tenant_name',l:'Tenant',w:130},{k:'urgency',l:'Urgency',e:1,t:'status',w:85},
-    {k:'status',l:'Status',e:1,t:'status',w:95},{k:'category',l:'Cat',w:80},
-    {k:'created_at',l:'Opened',w:90},
-  ],
-  bounce:[
-    {k:'lead_name',l:'Lead',w:140},{k:'lead_phone',l:'Phone',w:115},
-    {k:'lead_email',l:'Email',w:180},{k:'property_address',l:'Target Property',w:190},
-    {k:'property_status',l:'Status',t:'status',w:95},
-    {k:'property_bedrooms',l:'BR',w:35},{k:'property_bathrooms',l:'BA',w:35},
-    {k:'property_rent',l:'Rent',w:65},{k:'received_at',l:'Inquired',w:90},
-  ],
+  leads:[{k:'name',l:'Name',e:1,w:130},{k:'phone',l:'Phone',w:115},{k:'email',l:'Email',w:170},{k:'property',l:'Property',w:160},{k:'source',l:'Source',w:80},{k:'status',l:'Status',t:'status',w:95},{k:'monthly_income',l:'Income',e:1,w:80},{k:'days_old',l:'Age',w:45},{k:'received_at',l:'Received',w:85}],
+  deals:[{k:'address',l:'Property',w:190},{k:'status',l:'Status',t:'status',w:130},{k:'tc',l:'Coordinator',e:1,w:120},{k:'list_price',l:'Price',e:1,w:70},{k:'days_idle',l:'Idle',w:45},{k:'event_count',l:'#',w:35},{k:'last_update',l:'Updated',w:85}],
+  apps:[{k:'applicant',l:'Applicant',e:1,w:130},{k:'property',l:'Property',w:170},{k:'status',l:'Status',t:'status',w:125},{k:'handler',l:'Handler',e:1,w:120},{k:'days_in_pipeline',l:'Days',w:45},{k:'last_update',l:'Updated',w:85}],
+  props:[{k:'address',l:'Address',w:190},{k:'unit',l:'Unit',w:45},{k:'status',l:'Status',t:'status',w:100},{k:'tenant',l:'Tenant',e:1,w:120},{k:'rent',l:'Rent',w:65},{k:'bedrooms',l:'BR',w:35},{k:'bathrooms',l:'BA',w:35}],
 };
-// URL mapping
-const URLS={apps:'/api/applications?limit=300',sales:'/api/sales?limit=300',leads:'/api/leads?limit=300',
-  props:'/api/properties?limit=300',cmas:'/api/cmas?limit=300',
-  showings:'/api/showings?limit=200',maintenance:'/api/maintenance?limit=100',
-  bounce:'/api/bounce/leads-to-bounce?limit=200'};
+const STATUS_O={leads:['NEW','CONTACTED','QUALIFIED','CLOSED','LOST'],deals:['NEW_LISTING_ALERT','CMA_REQUESTED','LISTING_PREP','ACTIVE_LISTING','IN_ESCROW','UNDER_CONTRACT','CONTRACT_SIGNED','OFFER_RECEIVED','CLOSED'],apps:['APPLICATION_RECEIVED','OFFER_SENT','WELCOME_SENT','APPROVED','LEASE_SIGNED','MOVED_IN','DENIED'],props:['AVAILABLE','RENTED','OCCUPIED','OFF_MARKET','FOR_SALE','PENDING']};
+const STATUS_C={application_received:'blue',offer_sent:'amber',approved:'green',lease_signed:'green',moved_in:'green',denied:'red',NEW:'blue',CONTACTED:'amber',QUALIFIED:'green',CLOSED:'gray',LOST:'red',ACTIVE_LISTING:'blue',UNDER_CONTRACT:'green',CONTRACT_SIGNED:'green',IN_ESCROW:'amber',OFFER_RECEIVED:'amber',CMA_REQUESTED:'purple',LISTING_PREP:'amber',AVAILABLE:'green',RENTED:'blue',OCCUPIED:'amber',OFF_MARKET:'gray',FOR_SALE:'purple',PENDING:'amber'};
 
-// ── LOAD ──
-async function loadTab(tab, silent) {
-  if (!silent) { currentTab = tab; selectedId = null; sortCol = null; }
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  const tb = document.querySelector(`.tab[data-tab="${tab}"]`);
-  if (tb) tb.classList.add('active');
-
-  try {
-    const r = await fetch(URLS[tab], {credentials:'include'});
-    const data = await r.json();
-    // Bounce endpoint returns {count, leads} wrapped
-    allRows[tab] = tab === 'bounce' ? (data.leads || []) : data;
-  } catch(e) { allRows[tab] = []; }
-
-  const opts = STATUS_O[tab] || [];
-  document.getElementById('statusFilter').innerHTML = '<option value="">All</option>' +
-    opts.map(o => `<option value="${o}">${o.replace(/_/g,' ')}</option>`).join('');
-
-  if (tab === 'leads') updateUpsellCount(allRows[tab]);
-  // Show/hide quick add button
-  document.getElementById('btnQuickAdd').style.display =
-    ['showings','maintenance'].includes(tab) ? 'inline-block' : 'none';
-
-  // Enrich properties with obsidian status
-  if (tab === 'props') enrichProps();
-  renderGrid();
-  if (!silent) updateStats(tab);
+async function loginSilent(){
+  try{const r=await fetch('/api/leads?limit=1');if(r.ok)return true}catch(e){}
+  return false;
 }
 
-function enrichProps() {
-  (allRows.props || []).forEach(p => {
-    const note = obsidianNotes.find(n => n.property_id === p.id);
-    p.has_obsidian = note ? note.kind || '✓' : '';
-    p.obsidian_status = note ? note.kind : '';
+async function loadAll(){
+  try{
+    const[lr,dr,ar,pr]=await Promise.all([
+      fetch('/api/leads?limit=500').then(r=>r.json()),
+      fetch('/api/sales?limit=50').then(r=>r.json()),
+      fetch('/api/applications?limit=200').then(r=>r.json()),
+      fetch('/api/properties?limit=300').then(r=>r.json()),
+    ]);
+    allLeads=lr;allDeals=dr;allApps=ar;allProps=pr;
+  }catch(e){}
+  renderAll();
+}
+
+function renderAll(){
+  renderStats();
+  renderLHF();
+  if(currentTab==='kanban')renderKanban();
+  else renderTabView(currentTab);
+}
+
+// ── LOW HANGING FRUIT ──
+function renderLHF(){
+  let cards=[];
+  // 1. Hot leads — NEW leads with phone numbers, last 48h
+  const hot=allLeads.filter(l=>l.status==='NEW'&&l.phone&&l.days_old<3).slice(0,4);
+  hot.forEach(l=>cards.push({icon:'🔥',title:l.name||'Lead',sub:(l.property||'')+' · '+(l.source||''),type:'lead',id:l.id,cls:'hot'}));
+  // 2. Deals near closing — under contract, recent activity
+  const nearClose=allDeals.filter(d=>['UNDER_CONTRACT','CONTRACT_SIGNED','OFFER_RECEIVED'].includes(d.status)&&d.days_idle<7).slice(0,3);
+  nearClose.forEach(d=>cards.push({icon:'💰',title:d.address.split(',')[0],sub:'Near close · '+(d.status||'').replace(/_/g,' '),type:'deal',id:d.id,cls:'deal'}));
+  // 3. Bounce candidates — leads on rented units
+  allLeads.filter(l=>l.property_id).forEach(l=>{
+    const p=allProps.find(p=>p.id===l.property_id);
+    if(p&&['RENTED','OCCUPIED'].includes(p.status)&&cards.length<8){
+      cards.push({icon:'🔄',title:l.name||'Lead',sub:'Bounce from '+(p.address||'').substring(0,25),type:'lead',id:l.id,cls:'bounce'});
+    }
   });
+  // 4. Stale deals needing attention
+  const stale=allDeals.filter(d=>d.days_idle>20&&!['CLOSED'].includes(d.status)).slice(0,2);
+  stale.forEach(d=>cards.push({icon:'⚠️',title:d.address.split(',')[0],sub:'Stale · '+(d.days_idle||0)+'d idle',type:'deal',id:d.id,cls:'hot'}));
+  
+  document.getElementById('lhfStrip').innerHTML=cards.map(c=>
+    `<div class="lhf-card ${c.cls}" onclick="openPanel('${c.type}',${c.id})">
+      <div class="lhf-icon">${c.icon}</div>
+      <div class="lhf-title">${c.title||'?'}</div>
+      <div class="lhf-sub">${c.sub}</div>
+    </div>`
+  ).join('')||'';
 }
 
 // ── STATS ──
-async function updateStats(activeTab) {
-  try {
-    // Dashboard stats
-    const dr = await fetch('/api/dashboard.json', {credentials:'include'});
-    const ds = await dr.json();
-    document.getElementById('statLeads').textContent = ds.stats.active_leads || 0;
-    document.getElementById('statPipeline').textContent = ds.stats.in_pipeline || 0;
-    document.getElementById('statSales').textContent = ds.stats.active_sales || 0;
-    document.getElementById('statCmas').textContent = ds.stats.pending_cmas || 0;
-
-    // Showing stats
-    try {
-      const sr = await fetch('/api/showings/stats', {credentials:'include'});
-      const ss = await sr.json();
-      document.getElementById('statShowings').textContent = ss.upcoming || 0;
-    } catch(e) {}
-
-    // File stats
-    try {
-      const fr = await fetch('/api/files/stats', {credentials:'include'});
-      const fs = await fr.json();
-      document.getElementById('statFiles').textContent = fs.total || 0;
-    } catch(e) {}
-  } catch(e) {}
+function renderStats(){
+  const hotLeads=allLeads.filter(l=>['NEW','CONTACTED'].includes(l.status)).length;
+  const inPipe=allApps.filter(a=>['APPLICATION_RECEIVED','OFFER_SENT','APPROVED'].includes(a.status)).length;
+  const activeDeals=allDeals.filter(d=>!['CLOSED'].includes(d.status)).length;
+  const withBudget=allLeads.filter(l=>l.monthly_income).length;
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat-card" style="border-top-color:var(--red)" onclick="switchTab('leads')"><div class="sn">${fmt(hotLeads)}</div><div class="sl">Hot Leads</div></div>
+    <div class="stat-card" style="border-top-color:var(--green)" onclick="switchTab('apps')"><div class="sn">${fmt(inPipe)}</div><div class="sl">Pipeline</div></div>
+    <div class="stat-card" style="border-top-color:var(--purple)" onclick="switchTab('deals')"><div class="sn">${fmt(activeDeals)}</div><div class="sl">Deals</div></div>
+    <div class="stat-card" style="border-top-color:var(--amber)"><div class="sn">${fmt(withBudget)}</div><div class="sl">Budget</div></div>
+    <div class="stat-card" style="border-top-color:var(--blue)"><div class="sn">${fmt(allLeads.length)}</div><div class="sl">Total</div></div>
+  `;
 }
 
-async function refreshAll() {
-  // Refresh current tab data
-  await loadTab(currentTab, true);
-  await updateStats();
-  flash('✓ Refreshed');
-}
-
-// ── OBSIDIAN SYNC ──
-async function syncObsidian() {
-  flash('Scanning Obsidian vaults...');
-  try {
-    const r = await fetch('/api/obsidian/sync', {method:'POST',credentials:'include'});
-    const data = await r.json();
-    flash(`✓ Synced ${data.scanned} Obsidian notes — ${data.stats.matched} matched, ${data.stats.new_files} new files`);
-    // Reload obsidian notes for enrichment
-    await loadObsidianNotes();
-    if (currentTab === 'props') enrichProps();
-    renderGrid();
-  } catch(e) { flash('✗ Sync failed'); }
-}
-
-async function loadObsidianNotes() {
-  try {
-    const r = await fetch('/api/files/all?source=obsidian&limit=500', {credentials:'include'});
-    obsidianNotes = await r.json();
-  } catch(e) { obsidianNotes = []; }
-}
-
-// ── GRID ──
-function renderGrid() {
-  const tab = currentTab;
-  const rows = allRows[tab] || [], cols = COLS[tab];
-  const s = document.getElementById('searchInput').value.toLowerCase();
-  const sf = document.getElementById('statusFilter').value;
-  let f = rows;
-  if (sf) f = f.filter(r => (r.status || '').toLowerCase() === sf.toLowerCase());
-  if (s) f = f.filter(r => cols.some(c => String(r[c.k] || '').toLowerCase().includes(s)));
-  if (sortCol) f.sort((a, b) => {
-    let va = a[sortCol] || '', vb = b[sortCol] || '';
-    if (['rent','list_price','monthly_income','days_in_pipeline','days_old','days_idle'].includes(sortCol))
-      return ((Number(va) || 0) - (Number(vb) || 0)) * sortDir;
-    return (va < vb ? -1 : va > vb ? 1 : 0) * sortDir;
+// ── KANBAN ──
+function renderKanban(){
+  const cols={todo:[],progress:[],done:[]};
+  allDeals.forEach(d=>{
+    const c={id:d.id,type:'deal',title:d.address.split(',')[0],sub:d.status.replace(/_/g,' '),status:d.status,days:d.days_idle||0,price:d.list_price};
+    if(d.status==='CLOSED')cols.done.push(c);
+    else if(['UNDER_CONTRACT','CONTRACT_SIGNED','IN_ESCROW','OFFER_RECEIVED'].includes(d.status))cols.progress.push(c);
+    else cols.todo.push(c);
   });
-  document.getElementById('rowCount').textContent = `${f.length} records`;
+  // Add stale apps to todo
+  allApps.filter(a=>a.days_in_pipeline>10&&!['DENIED','LEASE_SIGNED','MOVED_IN'].includes(a.status)).forEach(a=>{
+    cols.todo.push({id:a.id,type:'app',title:a.applicant,sub:a.property+' · '+a.status.replace(/_/g,' '),status:a.status,days:a.days_in_pipeline});
+  });
 
-  let h = '<thead><tr>';
-  cols.forEach(c => h += `<th data-col="${c.k}" style="width:${c.w||100}px" onclick="sortBy('${c.k}')">${c.l}${sortCol===c.k?(sortDir===1?' ▴':' ▾'):''}</th>`);
-  h += '<th style="width:30px"></th></tr></thead><tbody>';
-
-  f.forEach(r => {
-    h += `<tr data-id="${r.id}" data-type="${tab}" class="${r.id===selectedId?'selected':''}" onclick="selectRow(event,'${tab}',${r.id})">`;
-    cols.forEach(c => {
-      let v = r[c.k], d = v != null ? String(v) : '';
-
-      // Date truncation
-      if (['last_update','first_request','received_at','last_request','first_seen','scheduled_at','created_at'].includes(c.k))
-        d = d ? d.slice(0,16).replace('T',' ') : '';
-
-      // Currency formatting
-      if (c.k === 'list_price' && v) d = '$' + Number(v).toLocaleString();
-      if (c.k === 'monthly_income' && v) d = '$' + Number(v).toLocaleString();
-      if (c.k === 'rent' && v) d = '$' + Number(v).toLocaleString();
-      if (c.k === 'property_rent' && v) d = '$' + Number(v).toLocaleString();
-
-      // Status badge
-      if (c.t === 'status') {
-        let extra = '';
-        if (tab === 'leads' && r.upsell_eligible && c.k === 'status')
-          extra = ' <span class="badge gold">🏠 UPSELL</span>';
-        d = `<span class="badge ${STATUS_C[v]||''}">${(d||'').replace(/_/g,' ')}</span>${extra}`;
-      }
-
-      // Obsidian indicator
-      let tdClass = '';
-      if (tab === 'props' && c.k === 'has_obsidian' && r.obsidian_status)
-        d = `<span title="Obsidian: ${r.obsidian_status}">📓</span>`;
-      if (tab === 'props' && c.k === 'address' && r.has_obsidian)
-        tdClass = 'has-obsidian';
-
-      // Upsell badges
-      if (tab === 'leads' && c.k === 'name' && r.upsell_eligible)
-        d = `<span class="badge gold" title="Income qualifies for purchase/upgrade">💰</span> ${d}`;
-      if (tab === 'leads' && c.k === 'name' && r.interested_in_buying)
-        d = `🏡 ${d}`;
-
-      h += `<td data-col="${c.k}" data-editable="${c.e||0}" data-type="${c.t||'text'}" class="${tdClass}" title="${String(d).replace(/<[^>]*>/g,'')}">${d||''}</td>`;
+  let h='';
+  [{key:'todo',label:'To Do',color:'#718096'},{key:'progress',label:'In Progress',color:'#2b6cb0'},{key:'done',label:'Done',color:'#276749'}].forEach(col=>{
+    h+=`<div class="kanban-col"><h2>${col.label} <span class="col-count">${cols[col.key].length}</span></h2>`;
+    cols[col.key].forEach(c=>{
+      const ur=c.days>14?'urgent':(c.days>7?'':'todo');
+      const dn=c.done?'done':'';
+      h+=`<div class="kcard ${ur} ${dn}" onclick="openPanel('${c.type}',${c.id})">
+        <div class="kc-title">${c.title||'?'}</div><div class="kc-sub">${c.sub} · ${c.days>0?c.days+'d':'today'}</div>
+        ${c.price?`<div class="kc-meta"><span class="badge green">$${Number(c.price/1000).toFixed(0)}k</span></div>`:''}
+        ${c.type==='deal'?`<button class="kc-btn move" onclick="event.stopPropagation();advanceDeal(${c.id},'${c.status}')">Move →</button>`:''}
+      </div>`;
     });
-    h += `<td style="text-align:center"><span style="color:#a0aec0;cursor:pointer;font-size:14px" title="Details" onclick="event.stopPropagation();openPanel(event,'${tab}',${r.id})">💬</span></td></tr>`;
+    h+='</div>';
   });
-  h += '</tbody>';
-  document.getElementById('grid').innerHTML = h;
+  document.getElementById('kanban').innerHTML=h;
+  document.getElementById('kanbanView').style.display='block';
+  document.getElementById('leadCards').style.display='none';
 }
 
-function sortBy(col) {
-  if (sortCol === col) sortDir *= -1;
-  else { sortCol = col; sortDir = 1; }
-  renderGrid();
-}
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  const tb = document.querySelector(`.tab[data-tab="${tab}"]`);
-  if (tb) tb.classList.add('active');
-  sortCol = null;
-  loadTab(tab);
-}
+// ── TAB VIEWS ──
+function renderTabView(tab){
+  document.getElementById('kanbanView').style.display='none';
+  const rows=tab==='leads'?allLeads:tab==='deals'?allDeals:tab==='apps'?allApps:allProps;
+  const cols=COLS[tab]||[];
+  
+  // Mobile: cards
+  if(isMobile&&tab==='leads'){
+    document.getElementById('leadCards').style.display='flex';
+    document.getElementById('gridWrap').style.display='none';
+    let h='';
+    const s=document.getElementById('searchInput').value.toLowerCase();
+    let f=s?rows.filter(r=>cols.some(c=>String(r[c.k]||'').toLowerCase().includes(s))):rows;
+    f.slice(0,50).forEach(l=>{
+      const init=(l.name||'?')[0].toUpperCase();
+      h+=`<div class="lcard" onclick="openPanel('lead',${l.id})">
+        <div class="lc-avatar">${init}</div>
+        <div class="lc-info"><div class="name">${l.name||'?'}${l.upsell_eligible?'💰':''}${l.interested_in_buying?'🏡':''}</div>
+        <div class="prop">${l.property||''}</div><div class="budget">${l.source||''}${l.monthly_income?' · $'+(l.monthly_income/1000).toFixed(1)+'k/mo':''}</div></div>
+        <div class="lc-actions">${l.phone?`<a href="tel:${l.phone}" class="lca-call" onclick="event.stopPropagation()">📞</a>`:''}${l.email?`<a href="mailto:${l.email}" class="lca-email" onclick="event.stopPropagation()">✉️</a>`:''}</div>
+      </div>`;
+    });
+    document.getElementById('leadCards').innerHTML=h||'<p style="text-align:center;color:var(--gray);padding:40px">No leads</p>';
+  }else{
+    // Desktop: table
+    document.getElementById('leadCards').style.display='none';
+    document.getElementById('gridWrap').style.display='block';
+    const s=document.getElementById('searchInput').value.toLowerCase();
+    const sf=document.getElementById('statusFilter').value;
+    let f=rows;
+    if(sf)f=f.filter(r=String(r.status||'').toLowerCase()===sf.toLowerCase());
+    if(s)f=f.filter(r=>cols.some(c=>String(r[c.k]||'').toLowerCase().includes(s)));
+    if(sortCol)f.sort((a,b)=>{let va=a[sortCol]||'',vb=b[sortCol]||'';return(va<vb?-1:va>vb?1:0)*sortDir});
+    document.getElementById('rowCount').textContent=f.length+' records';
 
-// ── EDITING ──
-function selectRow(event, type, id) {
-  selectedId = id; selectedType = type;
-  document.querySelectorAll('tr.selected').forEach(r => r.classList.remove('selected'));
-  const tr = document.querySelector(`tr[data-id="${id}"]`);
-  if (tr) tr.classList.add('selected');
-  const td = event.target.closest('td');
-  if (td && td.dataset.editable === '1') startEdit(td);
-}
-function startEdit(td) {
-  if (editingCell) cancelEdit(false);
-  const val = cleanVal(td), col = td.dataset.col, type = td.dataset.type;
-  if (type === 'status') {
-    const opts = STATUS_O[currentTab] || [];
-    const sel = document.createElement('select'); sel.className = 'cell-select';
-    opts.forEach(o => sel.innerHTML += `<option value="${o}" ${o===val?'selected':''}>${o.replace(/_/g,' ')}</option>`);
-    td.textContent = ''; td.appendChild(sel); sel.focus();
-    sel.onblur = () => saveEdit(td, col, sel.value);
-    sel.onkeydown = e => {
-      if (e.key === 'Enter') saveEdit(td, col, sel.value);
-      if (e.key === 'Escape') cancelEdit(true);
-      e.stopPropagation();
-    };
-  } else {
-    const inp = document.createElement('input'); inp.className = 'cell-editor'; inp.value = val;
-    td.textContent = ''; td.appendChild(inp); inp.focus(); inp.select();
-    inp.onblur = () => saveEdit(td, col, inp.value);
-    inp.onkeydown = e => {
-      if (e.key === 'Enter') saveEdit(td, col, inp.value);
-      if (e.key === 'Escape') cancelEdit(true);
-      if (e.key === 'Tab') { e.preventDefault(); saveEdit(td, col, inp.value);
-        setTimeout(() => moveToNextCell(td, e.shiftKey ? -1 : 1), 50); }
-      e.stopPropagation();
-    };
+    let h='<thead><tr>';
+    cols.forEach(c=>h+=`<th style="width:${c.w||100}px" onclick="sortBy('${c.k}')">${c.l}${sortCol===c.k?(sortDir===1?' ▴':' ▾'):''}</th>`);
+    h+='</tr></thead><tbody>';
+    f.forEach(r=>{
+      h+='<tr onclick="openPanel(\''+tab+'\','+r.id+')">';
+      cols.forEach(c=>{
+        let v=r[c.k],d=v!=null?String(v):'';
+        if(['last_update','received_at'].includes(c.k))d=d?d.slice(0,10):'';
+        if(['list_price','monthly_income','rent'].includes(c.k)&&v)d='$'+Number(v).toLocaleString();
+        if(c.t==='status')d=`<span class="badge ${STATUS_C[v]||'gray'}">${(d||'').replace(/_/g,' ')}</span>`;
+        h+=`<td>${d||''}</td>`;
+      });
+      h+='</tr>';
+    });
+    h+='</tbody>';
+    document.getElementById('grid').innerHTML=h;
   }
-  editingCell = td;
-}
-function cleanVal(td) {
-  const b = td.querySelector('.badge');
-  if (b) return b.textContent.trim().replace(/ /g, '_').toLowerCase();
-  let v = td.textContent.trim();
-  if (v.startsWith('$')) v = v.slice(1).replace(/,/g, '');
-  return v;
-}
-function moveToNextCell(td, dir) {
-  const tr = td.parentElement, cells = [...tr.querySelectorAll('td[data-editable="1"]')];
-  const idx = cells.indexOf(td), next = cells[idx + dir];
-  if (next) { selectRow({target: next}, tr.dataset.type, parseInt(tr.dataset.id)); startEdit(next); }
+
+  // Update status filter
+  const opts=STATUS_O[tab]||[];
+  document.getElementById('statusFilter').innerHTML='<option value="">All</option>'+opts.map(o=>`<option value="${o}">${o.replace(/_/g,' ')}</option>`).join('');
 }
 
-async function saveEdit(td, col, val) {
-  if (!selectedId) { cancelEdit(true); return; }
-  const type = selectedType, id = selectedId;
-  const apiMap = {apps:'applications', sales:'sales', leads:'leads', props:'properties', cmas:'cmas', showings:'showings', maintenance:'maintenance'};
-  const fMap = {tc:'transaction_coordinator', tenant:'tenant_name', address:'property_address', prospect_name:'prospect_name', method:'method'};
-  const field = fMap[col] || col;
-  const body = {};
-  if (col === 'status') body[field] = val.toLowerCase();
-  else if (['rent','list_price','monthly_income'].includes(col)) body[field] = parseFloat(val.replace(/[$,]/g, '')) || null;
-  else if (['bedrooms','bathrooms','credit_score'].includes(col)) body[field] = parseFloat(val) || null;
-  else body[field] = val;
+// ── PANEL ──
+function openPanel(type,id){
+  let data;
+  if(type==='lead')data=allLeads.find(x=>x.id===id);
+  else if(type==='deal')data=allDeals.find(x=>x.id===id);
+  else if(type==='app')data=allApps.find(x=>x.id===id);
+  else if(type==='props')data=allProps.find(x=>x.id===id);
+  if(!data)return;
 
-  try {
-    const r = await fetch(`/api/${apiMap[type]}/${id}`, {
-      method: 'PATCH', credentials: 'include',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(body)
-    });
-    if (r.ok) {
-      const row = allRows[type].find(r => r.id === id);
-      if (row) row[col] = val;
-      cancelEdit(true);
-      renderGrid();
-      flash();
-    }
-  } catch(e) { cancelEdit(true); }
-}
-function cancelEdit(keepSel) { editingCell = null; if (!keepSel) { selectedId = null; selectedType = null; } renderGrid(); }
-function flash(msg) {
-  const e = document.getElementById('savedFlash');
-  e.textContent = msg || '✓ Saved';
-  e.classList.add('show');
-  setTimeout(() => e.classList.remove('show'), 1500);
-}
-
-// ── SIDE PANEL ──
-async function openPanel(event, type, id) {
-  event.stopPropagation();
-  selectedType = type; selectedId = id;
-  document.getElementById('sidePanel').classList.add('open');
+  selectedType=type;selectedId=id;
+  document.getElementById('panel').classList.add('open');
   document.getElementById('overlay').classList.add('open');
-  document.getElementById('spInput').style.display = 'flex';
 
-  const row = allRows[type].find(r => r.id === id);
-  let title = row ? (row.applicant || row.lead_name || row.name || row.address || row.property_address || row.property || row.prospect_name || row.subject || type) : type;
-  document.getElementById('spTitle').textContent = '💬 ' + title;
+  let title='',body='';
+  const r=(l,v)=>v?`<div class="p-row"><span class="p-label">${l}</span><span class="p-value">${v}</span></div>`:'';
 
-  let html = '';
-  if (row) {
-    html += '<div class="sp-section"><h4>Details</h4>';
-    const showField = (l, v) => {
-      if (v === null || v === undefined || v === '') return '';
-      let display = v;
-      if (l === 'Income' && v) display = '$' + Number(v).toLocaleString();
-      if (l === 'Rent' && v) display = '$' + Number(v).toLocaleString();
-      if (l === 'Price' && v) display = '$' + Number(v).toLocaleString();
-      return `<div class="sp-row"><div><span class="label">${l}</span><br><span class="value">${display}</span></div></div>`;
-    };
-
-    if (type === 'leads' || type === 'bounce') {
-      // Bounce tab uses lead_name/lead_email/lead_phone, leads tab uses name/email/phone
-      const isBounce = type === 'bounce';
-      html += showField('Phone', row.lead_phone || row.phone) + 
-              showField('Email', row.lead_email || row.email) + 
-              showField('Property', row.property_address || row.property) +
-        showField('Source', row.source) + showField('Status', row.property_status || row.status) +
-        showField('Income', row.monthly_income) +
-        (row.upsell_eligible ? '<div class="sp-row"><div><span class="label">Upsell</span><br><span class="value" style="color:#b7791f;">🏠 Purchase Qualified</span></div></div>' : '') +
-        (row.interested_in_buying ? '<div class="sp-row"><div><span class="label">Interest</span><br><span class="value">🏡 Buying</span></div></div>' : '');
-    }
-    if (type === 'apps')
-      html += showField('Property', row.property) + showField('Status', row.status) + showField('Handler', row.handler) +
-        showField('Income', row.monthly_income) + showField('Credit', row.credit_score) +
-        showField('Pets', row.pets) + showField('Move-in', row.move_in_date);
-    if (type === 'sales')
-      html += showField('Property', row.address) + showField('Status', row.status) + showField('Coordinator', row.tc) +
-        showField('Price', row.list_price) + showField('Days Idle', row.days_idle);
-    if (type === 'props')
-      html += showField('Address', row.address) + showField('Unit', row.unit) + showField('Status', row.status) +
-        showField('Tenant', row.tenant) + showField('Rent', row.rent) +
-        showField('BR/BA', (row.bedrooms||'') + '/' + (row.bathrooms||''));
-    if (type === 'showings')
-      html += showField('Property', row.property_address) + showField('Prospect', row.prospect_name) +
-        showField('Phone', row.prospect_phone) + showField('When', row.scheduled_at) +
-        showField('Status', row.status) + showField('Type', row.method) + showField('Agent', row.agent);
-    if (type === 'maintenance')
-      html += showField('Property', row.property_address) + showField('Issue', row.subject) +
-        showField('Tenant', row.tenant_name) + showField('Urgency', row.urgency) +
-        showField('Status', row.status) + showField('Category', row.category);
-
-    html += '</div>';
-
-    // Obsidian notes for this property (props tab)
-    if (type === 'props') {
-      const notes = obsidianNotes.filter(n => n.property_id === id);
-      if (notes.length > 0) {
-        html += '<div class="sp-section"><h4>📓 Obsidian Notes</h4>';
-        notes.forEach(n => {
-          html += `<div class="sp-file" title="${n.path||''}">
-            <span class="file-icon">📓</span>
-            <span class="file-name">${n.name||''}</span>
-            <span class="file-badge">${n.kind||'note'}</span>
-          </div>`;
-        });
-        html += '</div>';
-      }
-    }
-
-    // Showings for this property
-    if (type === 'props' || type === 'apps') {
-      try {
-        const propId = type === 'apps' ? row.property_id : id;
-        if (propId) {
-          const sr = await fetch(`/api/showings?property_id=${propId}&limit=10`, {credentials:'include'});
-          const showings = await sr.json();
-          if (showings.length > 0) {
-            html += '<div class="sp-section"><h4>📅 Showings</h4>';
-            showings.forEach(s => {
-              html += `<div class="sp-file">
-                <span class="file-icon">📅</span>
-                <span class="file-name">${s.prospect_name||'?'} — ${(s.scheduled_at||'').slice(0,16).replace('T',' ')}</span>
-                <span class="file-badge">${s.status}</span>
-              </div>`;
-            });
-            html += '</div>';
-          }
-        }
-      } catch(e) {}
-    }
-
-    // Leads for this property (props tab) or same property leads (leads tab)
-    if (type === 'props' || type === 'leads') {
-      const propId = type === 'leads' ? row.property_id : id;
-      if (propId) {
-        try {
-          const lr = await fetch(`/api/leads?property_id=${propId}&limit=50`, {credentials:'include'});
-          const leads = await lr.json();
-          if (leads.length > 0) {
-            html += `<div class="sp-section"><h4>📧 Leads (${leads.length})</h4>`;
-            leads.forEach(l => {
-              const statusClass = STATUS_C[l.status] || '';
-              const badge = l.upsell_eligible ? ' 💰' : '';
-              const buy = l.interested_in_buying ? ' 🏡' : '';
-              html += `<div class="sp-file" onclick="switchTab('leads');loadTab('leads');setTimeout(()=>document.getElementById('searchInput').value='${(l.name||'').replace(/'/g,"\\'")}';renderGrid();closePanel();,300)" title="${l.email||''} ${l.phone||''}">
-                <span class="file-icon">📧</span>
-                <span class="file-name">${l.name||'?'}${badge}${buy}</span>
-                <span class="file-badge">${(l.status||'').replace(/_/g,' ')}</span>
-              </div>`;
-            });
-            if (leads.length >= 50) html += '<div style="font-size:10px;color:#a0aec0;text-align:center;padding:4px;">Showing 50 of more</div>';
-            html += '</div>';
-          }
-        } catch(e) {}
-      }
-    }
-
-    // Bounce suggestions — show when target property is rented
-    if (type === 'props' || type === 'leads') {
-      const propId = type === 'leads' ? row.property_id : id;
-      if (propId) {
-        try {
-          const br = await fetch(`/api/bounce/suggestions?property_id=${propId}`, {credentials:'include'});
-          const bounce = await br.json();
-          if (bounce.suggestions && bounce.suggestions.length > 0) {
-            html += `<div class="sp-section"><h4>🔄 Bounce to Available (${bounce.suggestions.length})</h4>`;
-            html += `<div style="font-size:11px;color:#b7791f;margin-bottom:6px;">${bounce.reason}</div>`;
-            bounce.suggestions.forEach(s => {
-              const reasons = (s.reasons||[]).join(', ');
-              html += `<div class="sp-file" title="${reasons}" style="border-left:3px solid #276749;padding-left:8px;">
-                <span class="file-icon">🏠</span>
-                <span class="file-name">${s.address}${s.unit?' #'+s.unit:''}</span>
-                <span class="file-badge" style="background:#d1fae5;color:#065f46;">${s.score}%</span>
-              </div>
-              <div style="font-size:10px;color:#718096;margin:-2px 0 4px 28px;">
-                ${s.bedrooms||'?'}BR / ${s.bathrooms||'?'}BA · $${s.rent?Number(s.rent).toLocaleString():'?'} · ${reasons}
-              </div>`;
-            });
-            html += '</div>';
-          }
-        } catch(e) {}
-      }
-    }
-
-    // Quick add showing form
-    if (type === 'props') {
-      html += `<div class="sp-section"><h4>+ Schedule Showing</h4>
-        <div class="quick-add">
-          <input type="text" id="qaName" placeholder="Prospect name">
-          <div class="qa-row">
-            <input type="text" id="qaPhone" placeholder="Phone">
-            <input type="text" id="qaEmail" placeholder="Email">
-          </div>
-          <input type="datetime-local" id="qaWhen">
-          <select id="qaMethod"><option value="in_person">In Person</option><option value="virtual">Virtual</option><option value="open_house">Open House</option></select>
-          <button class="btn-sm blue" style="margin-top:4px;width:100%;" onclick="quickAddShowing(${id})">Schedule Showing</button>
-        </div></div>`;
-    }
-
-    html += '<div style="font-size:10px;color:#a0aec0;margin:8px 0;">Comments:</div><div id="spComments"></div>';
-  } else {
-    html += '<p style="color:#a0aec0;text-align:center;margin-top:30px;">No data</p>';
+  if(type==='lead'){
+    title=data.name||'Lead';
+    body=r('Phone',data.phone)+r('Email',data.email)+r('Property',data.property)+r('Source',data.source)+r('Status',data.status)+r('Budget',data.monthly_income?'$'+Number(data.monthly_income).toLocaleString()+'/mo':'')+r('Notes',data.notes);
+    body+=`<div class="p-actions">${data.phone?`<a href="tel:${data.phone}" class="pa-call">📞 Call</a>`:''}${data.email?`<a href="mailto:${data.email}" class="pa-email">✉️ Email</a>`:''}</div>`;
+  }else if(type==='deal'){
+    title=data.address||'Deal';
+    body=r('Status',(data.status||'').replace(/_/g,' '))+r('Idle',(data.days_idle||0)+' days')+r('Events',data.event_count||0)+r('Price',data.list_price?'$'+Number(data.list_price).toLocaleString():'');
+    body+=`<div class="p-actions"><button class="pa-move" onclick="advanceDeal(${data.id},'${data.status}')">→ Next Stage</button></div>`;
+  }else if(type==='app'){
+    title=data.applicant||'Applicant';
+    body=r('Property',data.property)+r('Status',data.status)+r('Handler',data.handler)+r('Income',data.monthly_income?'$'+Number(data.monthly_income).toLocaleString():'');
+  }else{
+    title=data.address||'Property';
+    body=r('Unit',data.unit)+r('Status',data.status)+r('Rent',data.rent?'$'+Number(data.rent).toLocaleString():'')+r('Tenant',data.tenant)+r('BR/BA',(data.bedrooms||'?')+'/'+(data.bathrooms||'?'));
   }
-
-  document.getElementById('spBody').innerHTML = html;
-  await loadComments(type, id);
+  document.getElementById('panelTitle').textContent=title;
+  document.getElementById('panelBody').innerHTML=body;
 }
 
-async function loadComments(type, id) {
-  try {
-    const r = await fetch(`/api/comments/${type==='props'?'property':type}/${id}`, {credentials:'include'});
-    const comments = await r.json();
-    const container = document.getElementById('spComments');
-    if (container) {
-      container.innerHTML = comments.length
-        ? comments.map(c => `<div class="sp-file"><div style="flex:1"><div>${c.content}</div><div class="label">${c.user_name||'?'} · ${(c.created_at||'').slice(0,10)}</div></div></div>`).join('')
-        : '<p style="color:#a0aec0;text-align:center;">No comments yet</p>';
-    }
-  } catch(e) {}
+function closePanel(){document.getElementById('panel').classList.remove('open');document.getElementById('overlay').classList.remove('open')}
+
+// ── ACTIONS ──
+function advanceDeal(id,status){
+  const cycle={'CMA_REQUESTED':'LISTING_PREP','LISTING_PREP':'ACTIVE_LISTING','ACTIVE_LISTING':'IN_ESCROW','IN_ESCROW':'UNDER_CONTRACT','UNDER_CONTRACT':'CONTRACT_SIGNED','CONTRACT_SIGNED':'CLOSED','OFFER_RECEIVED':'UNDER_CONTRACT','NEW_LISTING_ALERT':'CMA_REQUESTED'};
+  const next=cycle[status]||status;
+  fetch('/api/sales/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:next})})
+    .then(()=>{toast('Moved to '+next.replace(/_/g,' '));loadAll()});
 }
 
-async function addComment() {
-  const t = document.getElementById('spText').value.trim();
-  if (!t || !selectedId) return;
-  try {
-    const typeMap = {props:'property'};
-    const r = await fetch('/api/comments', {
-      method: 'POST', credentials: 'include',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({record_type: typeMap[selectedType] || selectedType, record_id: selectedId, content: t})
-    });
-    if (r.ok) {
-      document.getElementById('spText').value = '';
-      await loadComments(selectedType, selectedId);
-      flash('Comment posted');
-    }
-  } catch(e) {}
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  sortCol=null;
+  document.getElementById('searchInput').value='';
+  document.getElementById('rowCount').textContent='';
+  renderAll();
 }
 
-async function quickAddShowing(propId) {
-  const name = document.getElementById('qaName').value.trim();
-  const phone = document.getElementById('qaPhone').value.trim();
-  const email = document.getElementById('qaEmail').value.trim();
-  const when = document.getElementById('qaWhen').value;
-  const method = document.getElementById('qaMethod').value;
-  if (!name || !when) { flash('✗ Name + date required'); return; }
-  try {
-    const r = await fetch('/api/showings', {
-      method: 'POST', credentials: 'include',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        property_id: propId, prospect_name: name,
-        prospect_phone: phone, prospect_email: email,
-        scheduled_at: when + ':00', method: method,
-        status: 'scheduled'
-      })
-    });
-    if (r.ok) {
-      flash('✓ Showing scheduled');
-      document.getElementById('qaName').value = '';
-      document.getElementById('qaWhen').value = '';
-      // Refresh showings tab data
-      if (currentTab === 'showings') loadTab('showings', true);
-    }
-  } catch(e) { flash('✗ Failed'); }
-}
+function sortBy(col){sortCol===col?sortDir*=-1:(sortCol=col,sortDir=1);renderTabView(currentTab)}
+function refreshAll(){loadAll();toast('✓ Refreshed')}
+function syncObsidian(){toast('Syncing vault...');fetch('/api/enrich-leads',{method:'POST'}).then(()=>{toast('✓ Enriched');loadAll()})}
+function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2000)}
+function fmt(n){return n>=1000?(n/1000).toFixed(1)+'k':String(n)}
 
-async function quickAddRecord() {
-  if (currentTab === 'showings') {
-    // Just focus the search to prompt search
-    flash('Use the property side panel to schedule showings');
-  } else if (currentTab === 'maintenance') {
-    flash('Tenants submit maintenance via the tenant portal');
-  }
-}
+document.getElementById('tabBar').onclick=e=>{if(e.target.classList.contains('tab'))switchTab(e.target.dataset.tab)};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePanel()});
+document.addEventListener('click',e=>{if(e.target===document.getElementById('overlay'))closePanel()});
+document.getElementById('searchInput').oninput=()=>renderTabView(currentTab);
+document.getElementById('statusFilter').onchange=()=>renderTabView(currentTab);
 
-function closePanel() {
-  document.getElementById('sidePanel').classList.remove('open');
-  document.getElementById('overlay').classList.remove('open');
-}
-
-// ── NAVIGATION ──
-document.getElementById('tabBar').onclick = e => {
-  if (!e.target.classList.contains('tab')) return;
-  sortCol = null;
-  loadTab(e.target.dataset.tab);
-};
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    if (editingCell) cancelEdit(true);
-    else if (document.getElementById('sidePanel').classList.contains('open')) closePanel();
-  }
-  if (e.key === 'Enter' && !editingCell && selectedId && document.activeElement === document.body) {
-    openPanel({stopPropagation: () => {}}, selectedType, selectedId);
-  }
-});
-
-// ── INIT ──
-(async function init() {
-  await loadObsidianNotes();
-  await loadTab('apps');
-  await updateStats();
-})();
+// Init
+loginSilent().then(authed=>{loadAll()});
 </script>
 {% endblock %}

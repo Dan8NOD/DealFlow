@@ -26,6 +26,28 @@ app.add_middleware(
 def on_startup():
     Base.metadata.create_all(bind=engine)
     _ensure_columns(engine)
+    _fix_lowercase_enums(engine)
+
+
+def _fix_lowercase_enums(engine):
+    """Fix: SQLite accepted lowercase enum values, PostgreSQL doesn't. Uppercase them."""
+    from sqlalchemy import text, inspect
+    insp = inspect(engine)
+    if 'applications' not in insp.get_table_names():
+        return
+    # Fix applications table
+    status_cols = {'applications': 'status', 'leads': 'status', 'properties': 'status',
+                   'sales_deals': 'status', 'cma_requests': 'status'}
+    for table, col in status_cols.items():
+        if table in insp.get_table_names():
+            cols = {c['name'] for c in insp.get_columns(table)}
+            if col in cols:
+                try:
+                    with engine.connect() as conn:
+                        conn.execute(text(f"UPDATE {table} SET {col} = UPPER({col}) WHERE {col} != UPPER({col})"))
+                        conn.commit()
+                except Exception:
+                    pass  # Table might not have the column or no rows to fix
 
 
 def _ensure_columns(engine):

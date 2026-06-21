@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Renter Portal</title>
+<style>
+:root{--bg:#f5f5f5;--card:#fff;--navy:#1a365d;--green:#276749;--red:#c53030;--amber:#b7791f;--blue:#2b6cb0;--purple:#6b46c1;--gray:#718096;--radius:10px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:#1a202c;font-size:15px;-webkit-tap-highlight-color:transparent;padding-bottom:80px}
+header{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;padding:12px 16px;position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+header h1{font-size:18px;font-weight:800}.header-actions{display:flex;gap:8px}
+.header-actions button{background:rgba(255,255,255,.15);border:none;color:#fff;padding:6px 10px;border-radius:6px;font-size:13px;cursor:pointer}
+
+/* Tabs */
+.tabs{display:flex;gap:0;background:var(--card);border-bottom:1px solid #e2e8f0;position:sticky;top:48px;z-index:99}
+.tab{flex:1;text-align:center;padding:12px 8px;font-size:13px;font-weight:700;color:var(--gray);border:none;background:none;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.tab.active{color:var(--navy);border-bottom-color:var(--navy)}
+
+/* Stat row */
+.stats{display:flex;gap:8px;padding:12px 12px 0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.stat-card{flex:0 0 auto;background:var(--card);border-radius:var(--radius);padding:12px 16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06);min-width:80px;border-top:3px solid transparent}
+.stat-card .num{font-size:24px;font-weight:800}.stat-card .lbl{font-size:10px;color:var(--gray);text-transform:uppercase;margin-top:2px}
+
+/* Kanban */
+.kanban{display:flex;gap:10px;padding:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;min-height:60vh}
+.kanban-col{flex:0 0 85vw;max-width:340px;background:#edf2f7;border-radius:var(--radius);padding:10px}
+.kanban-col h2{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin-bottom:10px;display:flex;justify-content:space-between}
+.kanban-col h2 .count{background:var(--gray);color:#fff;border-radius:10px;padding:1px 8px;font-size:11px}
+.kanban-card{background:var(--card);border-radius:8px;padding:14px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.06);cursor:pointer;border-left:4px solid var(--blue);position:relative}
+.kanban-card:active{transform:scale(.98)}
+.kanban-card .kc-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.kanban-card .kc-sub{font-size:12px;color:var(--gray)}
+.kanban-card .kc-meta{display:flex;gap:8px;margin-top:6px;font-size:11px}
+.kanban-card .kc-badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700}
+.kanban-card .kc-badge.green{background:#d1fae5;color:#065f46}
+.kanban-card .kc-badge.amber{background:#fef3c7;color:#78350f}.kc-badge.red{background:#fee2e2;color:#991b1b}
+.kanban-card.todo{border-left-color:var(--gray)}.kanban-card.progress{border-left-color:var(--blue)}.kanban-card.done{border-left-color:var(--green)}.kanban-card.urgent{border-left-color:var(--red)}
+.kanban-card .kc-actions{display:flex;gap:4px;margin-top:8px}
+.kanban-card .kc-btn{flex:1;padding:6px;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer}
+.kc-btn.move{background:#edf2f7;color:var(--navy)}.kc-btn.call{background:#d1fae5;color:#065f46}.kc-btn.email{background:#dbeafe;color:#1e40af}
+
+/* Lead cards */
+.lead-list{padding:12px}
+.lead-card{background:var(--card);border-radius:var(--radius);padding:14px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px}
+.lead-card:active{background:#f0f4ff}
+.lead-avatar{width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0}
+.lead-info{flex:1;min-width:0}
+.lead-info .li-name{font-weight:700;font-size:14px}.lead-info .li-prop{font-size:12px;color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lead-info .li-budget{font-size:12px;color:var(--green);font-weight:600}
+.lead-actions{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+.lead-actions a{display:block;padding:8px 12px;border-radius:6px;text-decoration:none;font-size:12px;font-weight:700;text-align:center}
+.la-call{background:var(--green);color:#fff}.la-email{background:var(--blue);color:#fff}
+
+/* Detail panel */
+.panel{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--card);z-index:200;transform:translateY(100%);transition:transform .25s;overflow-y:auto;padding:16px}
+.panel.open{transform:translateY(0)}
+.panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.panel-close{background:none;border:none;font-size:24px;cursor:pointer;padding:8px}
+.panel-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #edf2f7;font-size:14px}
+.panel-row .pr-label{color:var(--gray)}.panel-row .pr-value{font-weight:600;text-align:right}
+.panel-actions{margin-top:16px;display:flex;gap:8px}
+.panel-actions a,.panel-actions button{flex:1;padding:12px;border-radius:8px;font-weight:700;font-size:14px;text-align:center;text-decoration:none;border:none;cursor:pointer}
+.pa-call{background:var(--green);color:#fff}.pa-email{background:var(--blue);color:#fff}.pa-note{background:#edf2f7;color:var(--navy)}
+
+/* Filters */
+.filter-bar{display:flex;gap:8px;padding:8px 12px;overflow-x:auto}
+.filter-chip{flex:0 0 auto;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid #cbd5e0;background:var(--card);cursor:pointer;white-space:nowrap}
+.filter-chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* Bottom nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid #e2e8f0;display:flex;z-index:150;padding:4px 0 env(safe-area-inset-bottom)}
+.bottom-nav button{flex:1;background:none;border:none;padding:8px 4px;font-size:10px;color:var(--gray);display:flex;flex-direction:column;align-items:center;gap:2px}
+.bottom-nav button.active{color:var(--navy)}.bottom-nav button .bn-icon{font-size:20px}
+
+/* Toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:8px 20px;border-radius:20px;font-size:13px;font-weight:700;z-index:300;opacity:0;transition:opacity .2s}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏠 Renter</h1>
+  <div class="header-actions">
+    <button onclick="syncNow()">↻</button>
+    <span style="font-size:12px;opacity:.8">daniel</span>
+  </div>
+</header>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" onclick="switchView('kanban')">📋 Kanban</button>
+  <button class="tab" onclick="switchView('leads')">📧 Leads</button>
+  <button class="tab" onclick="switchView('deals')">💰 Deals</button>
+</div>
+
+<div class="stats" id="statsRow"></div>
+
+<!-- KANBAN VIEW -->
+<div id="kanbanView">
+  <div class="kanban" id="kanban"></div>
+</div>
+
+<!-- LEADS VIEW -->
+<div id="leadsView" style="display:none">
+  <div class="filter-bar" id="leadFilters"></div>
+  <div class="lead-list" id="leadList"></div>
+</div>
+
+<!-- DEALS VIEW -->
+<div id="dealsView" style="display:none">
+  <div class="lead-list" id="dealList"></div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="panel" id="panel">
+  <div class="panel-header">
+    <h2 id="panelTitle"></h2>
+    <button class="panel-close" onclick="closePanel()">✕</button>
+  </div>
+  <div id="panelBody"></div>
+</div>
+
+<div class="toast" id="toast">✓ Done</div>
+
+<script>
+let currentView='kanban',token='',allLeads=[],allDeals=[],allProps=[],allApps=[];
+
+async function init(){
+  // Get token from existing session cookie
+  try{const r=await fetch('/api/leads?limit=1');if(r.ok){allLeads=await r.json()}}catch(e){}
+  // Login if needed
+  if(!allLeads.length)await login();
+  await loadAll();
+}
+
+async function login(){
+  const r=await fetch('/auth/login',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'email=dancruzhomes@gmail.com&password=Leads2025!',redirect:'manual'});
+  if(r.status===303||r.ok)return true;
+}
+
+async function loadAll(){
+  try{
+    const[lr,dr,pr,ar]=await Promise.all([
+      fetch('/api/leads?limit=500').then(r=>r.json()),
+      fetch('/api/sales?limit=50').then(r=>r.json()),
+      fetch('/api/properties?limit=300').then(r=>r.json()),
+      fetch('/api/applications?limit=100').then(r=>r.json()),
+    ]);
+    allLeads=lr;allDeals=dr;allProps=pr;allApps=ar;
+  }catch(e){}
+  renderAll();
+}
+
+function renderAll(){
+  renderStats();
+  if(currentView==='kanban')renderKanban();
+  else if(currentView==='leads')renderLeads();
+  else renderDeals();
+}
+
+function renderStats(){
+  const hot=allLeads.filter(l=>l.status==='NEW'||l.status==='CONTACTED').length;
+  const inPipe=allApps.filter(a=>['APPLICATION_RECEIVED','OFFER_SENT','APPROVED'].includes(a.status)).length;
+  const activeDeals=allDeals.filter(d=>!['CLOSED'].includes(d.status)).length;
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat-card" style="border-top-color:var(--red)" onclick="switchView('leads')"><div class="num">${formatNum(hot)}</div><div class="lbl">Hot Leads</div></div>
+    <div class="stat-card" style="border-top-color:var(--green)" onclick="switchView('kanban')"><div class="num">${formatNum(inPipe)}</div><div class="lbl">Pipeline</div></div>
+    <div class="stat-card" style="border-top-color:var(--purple)" onclick="switchView('deals')"><div class="num">${formatNum(activeDeals)}</div><div class="lbl">Deals</div></div>
+    <div class="stat-card" style="border-top-color:var(--amber)"><div class="num">${formatNum(allLeads.length)}</div><div class="lbl">All Leads</div></div>
+  `;
+}
+
+function renderKanban(){
+  // Columns: To Do | In Progress | Done
+  const cols={todo:[],progress:[],done:[]};
+
+  // Sales deals → Kanban
+  allDeals.forEach(d=>{
+    const card={id:d.id,type:'deal',title:d.address,sub:d.status,status:d.status,days:d.days_idle||0,price:d.list_price};
+    if(['CLOSED'].includes(d.status))cols.done.push(card);
+    else if(['UNDER_CONTRACT','CONTRACT_SIGNED','IN_ESCROW','OFFER_RECEIVED'].includes(d.status))cols.progress.push(card);
+    else cols.todo.push(card);
+  });
+
+  // CMA requests
+  try{
+    fetch('/api/cmas?limit=50').then(r=>r.json()).then(cmas=>{
+      cmas.filter(c=>c.status==='pending').forEach(c=>{
+        cols.todo.push({id:c.id,type:'cma',title:c.property,sub:'CMA Needed · '+c.kind,status:'CMA',days:c.requests||1});
+      });
+    });
+  }catch(e){}
+
+  // Stale applications
+  allApps.filter(a=>a.days_in_pipeline>14&&a.status!=='DENIED').forEach(a=>{
+    cols.todo.push({id:a.id,type:'app',title:a.applicant,sub:a.property+' · '+a.status,status:a.status,days:a.days_in_pipeline});
+  });
+
+  let html='';
+  [
+    {key:'todo',label:'To Do',color:'#718096'},
+    {key:'progress',label:'In Progress',color:'#2b6cb0'},
+    {key:'done',label:'Done',color:'#276749'},
+  ].forEach(col=>{
+    html+=`<div class="kanban-col"><h2>${col.label} <span class="count">${cols[col.key].length}</span></h2>`;
+    cols[col.key].forEach(c=>{
+      const cls=c.days>14?'urgent':(c.days>7?'progress':'todo');
+      html+=`<div class="kanban-card ${cls}" onclick="openCard('${c.type}',${c.id})">
+        <div class="kc-title">${c.title||'?'}</div>
+        <div class="kc-sub">${c.sub||''} · ${c.days>0?c.days+'d':'today'}</div>
+        ${c.price?`<div class="kc-meta"><span class="kc-badge green">$${(c.price/1000).toFixed(0)}k</span></div>`:''}
+        <div class="kc-actions">
+          ${c.type==='deal'?`<button class="kc-btn move" onclick="event.stopPropagation();moveDeal(${c.id},'${c.status}')">Move →</button>`:''}
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  document.getElementById('kanban').innerHTML=html;
+}
+
+function renderLeads(){
+  // Filter chips
+  document.getElementById('leadFilters').innerHTML=`
+    <button class="filter-chip active" onclick="filterLeads('all',this)">All</button>
+    <button class="filter-chip" onclick="filterLeads('hot',this)">🔥 Hot</button>
+    <button class="filter-chip" onclick="filterLeads('qualified',this)">💰 Qualified</button>
+    <button class="filter-chip" onclick="filterLeads('buying',this)">🏡 Buying</button>
+  `;
+  filterLeads('all',document.querySelector('.filter-chip'));
+}
+
+function filterLeads(type,el){
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  if(el)el.classList.add('active');
+  
+  let leads=allLeads;
+  if(type==='hot')leads=allLeads.filter(l=>['NEW','CONTACTED'].includes(l.status));
+  if(type==='qualified')leads=allLeads.filter(l=>l.monthly_income&&l.monthly_income>4000);
+  if(type==='buying')leads=allLeads.filter(l=>l.interested_in_buying||l.upsell_eligible);
+  
+  let html='';
+  leads.slice(0,50).forEach(l=>{
+    const initial=(l.name||'?')[0].toUpperCase();
+    const budget=l.monthly_income?' · $'+(l.monthly_income/1000).toFixed(1)+'k/mo':'';
+    html+=`<div class="lead-card" onclick="openCard('lead',${l.id})">
+      <div class="lead-avatar">${initial}</div>
+      <div class="lead-info">
+        <div class="li-name">${l.name||'Unknown'} ${l.upsell_eligible?'💰':''}${l.interested_in_buying?'🏡':''}</div>
+        <div class="li-prop">${l.property||'Unknown'}</div>
+        <div class="li-budget">${l.source||''}${budget}</div>
+      </div>
+      <div class="lead-actions">
+        ${l.phone?`<a href="tel:${l.phone}" class="la-call" onclick="event.stopPropagation()">📞</a>`:''}
+        ${l.email?`<a href="mailto:${l.email}" class="la-email" onclick="event.stopPropagation()">✉️</a>`:''}
+      </div>
+    </div>`;
+  });
+  document.getElementById('leadList').innerHTML=html||'<p style="text-align:center;color:var(--gray);padding:40px">No leads</p>';
+}
+
+function renderDeals(){
+  let html='';
+  allDeals.forEach(d=>{
+    const statusColor={'ACTIVE_LISTING':'blue','UNDER_CONTRACT':'green','CONTRACT_SIGNED':'green','IN_ESCROW':'amber','CLOSED':'gray','LISTING_PREP':'blue','CMA_REQUESTED':'purple','OFFER_RECEIVED':'amber'};
+    const color=statusColor[d.status]||'gray';
+    html+=`<div class="lead-card" onclick="openCard('deal',${d.id})">
+      <div class="lead-avatar" style="background:var(--${color=='green'?'green':color=='amber'?'amber':color=='red'?'red':'blue'})">$</div>
+      <div class="lead-info">
+        <div class="li-name">${d.address||'?'}</div>
+        <div class="li-prop">${(d.status||'').replace(/_/g,' ')} · ${d.days_idle||0}d idle</div>
+        <div class="li-budget">${d.event_count||0} events · ${d.list_price?'$'+(d.list_price/1000).toFixed(0)+'k':''}</div>
+      </div>
+      <div><span class="kc-badge ${color=='green'?'green':color=='amber'?'amber':''}">${(d.status||'').replace(/_/g,' ')}</span></div>
+    </div>`;
+  });
+  document.getElementById('dealList').innerHTML=html||'<p style="text-align:center;color:var(--gray);padding:40px">No deals</p>';
+}
+
+function openCard(type,id){
+  let data;
+  if(type==='lead')data=allLeads.find(l=>l.id===id);
+  else if(type==='deal')data=allDeals.find(d=>d.id===id);
+  else if(type==='app')data=allApps.find(a=>a.id===id);
+  if(!data)return;
+
+  const panel=document.getElementById('panel');
+  let title='',body='',actions='';
+
+  if(type==='lead'){
+    title=data.name||'Lead';
+    body+=row('Phone',data.phone)+row('Email',data.email)+row('Property',data.property)+row('Source',data.source)+row('Status',data.status)+row('Budget',data.monthly_income?'$'+Number(data.monthly_income).toLocaleString()+'/mo':'')+row('Notes',data.notes);
+    actions=`
+      ${data.phone?`<a href="tel:${data.phone}" class="pa-call">📞 Call</a>`:''}
+      ${data.email?`<a href="mailto:${data.email}" class="pa-email">✉️ Email</a>`:''}
+    `;
+  }else if(type==='deal'){
+    title=data.address||'Deal';
+    body+=row('Status',(data.status||'').replace(/_/g,' '))+row('Idle',(data.days_idle||0)+' days')+row('Events',data.event_count||0)+row('Coordinator',data.tc||'—')+row('Price',data.list_price?'$'+Number(data.list_price).toLocaleString():'—');
+    actions=`<button class="pa-note" onclick="moveDeal(${data.id},'${data.status}')">Move → Next Stage</button>`;
+  }else{
+    title=data.applicant||data.applicant_name||'App';
+    body+=row('Property',data.property)+row('Status',data.status)+row('Handler',data.handler)+row('Income',data.monthly_income?'$'+Number(data.monthly_income).toLocaleString():'');
+  }
+
+  document.getElementById('panelTitle').textContent=title;
+  document.getElementById('panelBody').innerHTML=body+`<div class="panel-actions">${actions}</div>`;
+  panel.classList.add('open');
+}
+
+function row(label,value){
+  if(!value)return'';
+  return`<div class="panel-row"><span class="pr-label">${label}</span><span class="pr-value">${value}</span></div>`;
+}
+
+function closePanel(){document.getElementById('panel').classList.remove('open')}
+
+function switchView(view){
+  currentView=view;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector(`[onclick*="${view}"]`).classList.add('active');
+  document.getElementById('kanbanView').style.display=view==='kanban'?'block':'none';
+  document.getElementById('leadsView').style.display=view==='leads'?'block':'none';
+  document.getElementById('dealsView').style.display=view==='deals'?'block':'none';
+  renderAll();
+}
+
+function moveDeal(id,currentStatus){
+  // Simplified: cycle through statuses
+  const cycle={'CMA_REQUESTED':'LISTING_PREP','LISTING_PREP':'ACTIVE_LISTING','ACTIVE_LISTING':'IN_ESCROW','IN_ESCROW':'UNDER_CONTRACT','UNDER_CONTRACT':'CONTRACT_SIGNED','CONTRACT_SIGNED':'CLOSED','OFFER_RECEIVED':'UNDER_CONTRACT'};
+  const next=cycle[currentStatus]||currentStatus;
+  fetch(`/api/sales/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:next})}).then(()=>{toast('Moved to '+next.replace(/_/g,' '));loadAll()});
+}
+
+function syncNow(){toast('Syncing...');fetch('/api/enrich-leads',{method:'POST'}).then(()=>{toast('✓ Synced');loadAll()})}
+function toast(msg){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2000)}
+function formatNum(n){return n>=1000?(n/1000).toFixed(1)+'k':String(n)}
+
+document.addEventListener('click',e=>{if(e.target===document.getElementById('panel'))closePanel()});
+init();
+</script>
+</body>
+</html>

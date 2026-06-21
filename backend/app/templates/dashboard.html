@@ -594,6 +594,7 @@ async function openPanel(event, type, id) {
         showField('Income', row.monthly_income) +
         (row.upsell_eligible ? '<div class="sp-row"><div><span class="label">Upsell</span><br><span class="value" style="color:#b7791f;">🏠 Purchase Qualified</span></div></div>' : '') +
         (row.interested_in_buying ? '<div class="sp-row"><div><span class="label">Interest</span><br><span class="value">🏡 Buying</span></div></div>' : '');
+    }
     if (type === 'apps')
       html += showField('Property', row.property) + showField('Status', row.status) + showField('Handler', row.handler) +
         showField('Income', row.monthly_income) + showField('Credit', row.credit_score) +

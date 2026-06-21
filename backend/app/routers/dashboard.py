@@ -282,11 +282,14 @@ async def api_leads(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
     status: str = Query(None),
+    property_id: int = Query(None),
     limit: int = Query(200, le=500),
 ):
     q = db.query(Lead).filter(Lead.org_id == user.org_id)
     if status:
         q = q.filter(Lead.status == status)
+    if property_id:
+        q = q.filter(Lead.property_id == property_id)
     leads = q.order_by(desc(Lead.received_at)).limit(limit).all()
     return [
         {

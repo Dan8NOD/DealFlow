@@ -637,6 +637,32 @@ async function openPanel(event, type, id) {
       } catch(e) {}
     }
 
+    // Leads for this property (props tab) or same property leads (leads tab)
+    if (type === 'props' || type === 'leads') {
+      const propId = type === 'leads' ? row.property_id : id;
+      if (propId) {
+        try {
+          const lr = await fetch(`/api/leads?property_id=${propId}&limit=50`, {credentials:'include'});
+          const leads = await lr.json();
+          if (leads.length > 0) {
+            html += `<div class="sp-section"><h4>📧 Leads (${leads.length})</h4>`;
+            leads.forEach(l => {
+              const statusClass = STATUS_C[l.status] || '';
+              const badge = l.upsell_eligible ? ' 💰' : '';
+              const buy = l.interested_in_buying ? ' 🏡' : '';
+              html += `<div class="sp-file" onclick="switchTab('leads');loadTab('leads');setTimeout(()=>document.getElementById('searchInput').value='${(l.name||'').replace(/'/g,"\\'")}';renderGrid();closePanel();,300)" title="${l.email||''} ${l.phone||''}">
+                <span class="file-icon">📧</span>
+                <span class="file-name">${l.name||'?'}${badge}${buy}</span>
+                <span class="file-badge">${(l.status||'').replace(/_/g,' ')}</span>
+              </div>`;
+            });
+            if (leads.length >= 50) html += '<div style="font-size:10px;color:#a0aec0;text-align:center;padding:4px;">Showing 50 of more</div>';
+            html += '</div>';
+          }
+        } catch(e) {}
+      }
+    }
+
     // Quick add showing form
     if (type === 'props') {
       html += `<div class="sp-section"><h4>+ Schedule Showing</h4>

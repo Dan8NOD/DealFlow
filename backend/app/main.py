@@ -38,7 +38,7 @@ def _ensure_columns(engine):
                       ('interested_in_buying','BOOLEAN DEFAULT FALSE'),
                       ('upsell_eligible','BOOLEAN DEFAULT FALSE'),('notes','TEXT'),
                       # New call-tracking fields
-                      ('move_in_date','VARCHAR(30)'),('last_called','DATETIME'),
+                      ('move_in_date','VARCHAR(30)'),('last_called','TIMESTAMP'),
                       ('call_outcome','VARCHAR(100)'),('call_notes','TEXT'),('bounce_to','TEXT')]:
         if col not in lead_cols:
             with engine.connect() as conn:

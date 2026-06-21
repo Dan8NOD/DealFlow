@@ -820,6 +820,18 @@ async def dedup_properties(
             ).update({"property_id": keeper.id})
             leads_reassigned += reassigned
             
+            # Reassign applications
+            db.query(Application).filter(
+                Application.org_id == org_id,
+                Application.property_id == d.id
+            ).update({"property_id": keeper.id})
+            
+            # Reassign files
+            db.query(PropertyFile).filter(
+                PropertyFile.org_id == org_id,
+                PropertyFile.property_id == d.id
+            ).update({"property_id": keeper.id})
+            
             # Delete duplicate
             db.delete(d)
             deleted += 1

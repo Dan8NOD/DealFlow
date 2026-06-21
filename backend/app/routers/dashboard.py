@@ -119,6 +119,77 @@ async def debug_dashboard(
     return results
 
 
+@router.post("/api/enrich-leads")
+async def enrich_leads(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    One-shot: enrich all matched leads with estimated budget (property rent × 3).
+    Also backfills property_id for leads with a property address string.
+    """
+    org_id = user.org_id
+    enriched = 0
+    backfilled = 0
+
+    # Build property lookup by address key
+    props = db.query(Property).filter(Property.org_id == org_id).all()
+    import re
+    def extract_key(addr):
+        if not addr:
+            return ""
+        a = addr.lower().strip()
+        a = re.sub(r'\.', '', a)
+        a = re.sub(r'\b(street|st|avenue|ave|boulevard|blvd|road|rd|drive|dr)\b', '', a)
+        a = re.sub(r'\b(south|north|east|west)\b', '', a)
+        a = re.sub(r'[,;:]', '', a)
+        a = re.sub(r'\s*(?:-)\s*[a-z0-9]+\s*$', '', a)
+        a = re.sub(r'\s+', ' ', a).strip()
+        m = re.match(r'(\d+)\s+(\w+)', a)
+        return f"{m.group(1)} {m.group(2)}" if m else a[:30]
+
+    pidx = {}
+    for p in props:
+        k = extract_key(p.address)
+        if k:
+            pidx[k] = p
+
+    # 1. Backfill property_id for leads without one
+    orphan_leads = db.query(Lead).filter(
+        Lead.org_id == org_id,
+        Lead.property_id.is_(None),
+        Lead.subject.isnot(None),
+        Lead.subject != "",
+    ).all()
+
+    for lead in orphan_leads:
+        # Try to extract property address from subject
+        key = extract_key(lead.subject or "")
+        if key in pidx:
+            lead.property_id = pidx[key].id
+            backfilled += 1
+
+    # 2. Enrich leads with budget from property rent
+    matched_leads = db.query(Lead).filter(
+        Lead.org_id == org_id,
+        Lead.property_id.isnot(None),
+        Lead.monthly_income.is_(None),
+    ).all()
+
+    for lead in matched_leads:
+        prop = db.query(Property).filter(Property.id == lead.property_id).first()
+        if prop and prop.rent and prop.rent > 0:
+            budget = int(prop.rent * 3)  # 3x rent qualification
+            lead.monthly_income = float(budget)
+            lead.income_source = "estimated_from_rent"
+            if not lead.notes:
+                lead.notes = f"Budget: ${budget}/mo (3x ${int(prop.rent)} rent at {prop.address})"
+            enriched += 1
+
+    db.commit()
+    return {"backfilled": backfilled, "enriched": enriched, "total_leads": db.query(Lead).filter(Lead.org_id == org_id).count()}
+
+
 @router.get("/api/dashboard.json")
 async def dashboard_json(
     user: User = Depends(get_current_user),

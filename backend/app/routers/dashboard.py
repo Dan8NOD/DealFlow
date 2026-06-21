@@ -10,7 +10,7 @@ from app.db import get_db
 from app.auth import get_current_user
 from app.models import (
     User, Property, Lead, Application, ApplicationEvent,
-    SalesDeal, CmaRequest, PropertyFile, Organization, Comment,
+    SalesDeal, CmaRequest, PropertyFile, Organization, Comment, EmailMessage,
 )
 
 router = APIRouter(tags=["dashboard"])
@@ -644,6 +644,70 @@ async def patch_property(
     return {"ok": True, "id": prop_id}
 
 
+@router.get("/api/properties/{prop_id}/detail")
+async def property_detail(
+    prop_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Rich detail for property panel: leads, days on market, Obsidian notes, showings."""
+    org_id = user.org_id
+    prop = db.query(Property).filter(Property.id == prop_id, Property.org_id == org_id).first()
+    if not prop:
+        return JSONResponse({"error": "not found"}, status_code=404)
+    
+    days_on_market = None
+    if prop.created_at:
+        days_on_market = (datetime.now(timezone.utc) - prop.created_at.replace(tzinfo=timezone.utc)).days
+    
+    leads = db.query(Lead).filter(
+        Lead.org_id == org_id, Lead.property_id == prop_id
+    ).order_by(desc(Lead.received_at)).limit(20).all()
+    
+    obsidian = db.query(PropertyFile).filter(
+        PropertyFile.org_id == org_id,
+        PropertyFile.property_id == prop_id,
+        PropertyFile.source == "obsidian",
+    ).all()
+    
+    from app.routers.showings import Showing
+    showings = db.query(Showing).filter(
+        Showing.org_id == org_id, Showing.property_id == prop_id,
+    ).order_by(Showing.scheduled_at).limit(10).all()
+    
+    apps = db.query(Application).filter(
+        Application.org_id == org_id, Application.property_id == prop_id,
+    ).order_by(desc(Application.last_update)).limit(10).all()
+    
+    return {
+        "property": {
+            "id": prop.id, "address": prop.address, "unit": prop.unit,
+            "status": prop.status.value if prop.status else "",
+            "rent": prop.rent, "bedrooms": prop.bedrooms, "bathrooms": prop.bathrooms,
+            "tenant_name": prop.tenant_name, "notes": prop.notes,
+            "lockbox_code": prop.lockbox_code,
+            "days_on_market": days_on_market,
+        },
+        "leads": [{
+            "id": l.id, "name": l.name, "phone": l.phone, "email": l.email,
+            "status": l.status.value if l.status else "",
+            "source": l.source, "monthly_income": l.monthly_income,
+            "upsell_eligible": bool(l.upsell_eligible), "notes": l.notes,
+        } for l in leads],
+        "obsidian_notes": [{
+            "id": f.id, "name": f.name, "kind": f.kind,
+            "section": f.section, "obsidian_vault": f.obsidian_vault,
+        } for f in obsidian],
+        "showings": [{
+            "id": s.id, "prospect_name": s.prospect_name, "status": s.status,
+        } for s in showings],
+        "applications": [{
+            "id": a.id, "applicant_name": a.applicant_name,
+            "status": a.status.value if a.status else "",
+        } for a in apps],
+    }
+
+
 @router.post("/api/properties")
 async def create_property(
     request: Request,
@@ -669,6 +733,106 @@ async def create_property(
     db.commit()
     db.refresh(p)
     return {"ok": True, "id": p.id}
+
+
+@router.post("/api/properties/dedup")
+async def dedup_properties(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Merge duplicate properties with the same normalized address.
+    Keeps the one with most data, reassigns leads, deletes duplicates.
+    """
+    import re
+    org_id = user.org_id
+    
+    def norm(a):
+        if not a: return ""
+        a = a.lower().strip()
+        a = re.sub(r'\.', '', a)
+        a = re.sub(r'\b(avenue|ave|street|st|boulevard|blvd|drive|dr|road|rd|lane|ln)\b', '', a)
+        a = re.sub(r'\b(south|north|east|west)\b', '', a)
+        a = re.sub(r'[,;:]', '', a)
+        a = re.sub(r'\s*(?:-)\s*[a-z0-9]+\s*$', '', a)
+        a = re.sub(r'\bchicago\b', '', a)
+        a = re.sub(r'\bil\b', '', a)
+        a = re.sub(r'\d{5}', '', a)
+        a = re.sub(r'\s+', ' ', a).strip()
+        return a
+    
+    def score(p):
+        """Higher score = keep this one."""
+        s = 0
+        if p.status: s += 1
+        if p.rent and p.rent > 50: s += 5
+        if p.bedrooms: s += 3
+        if p.bathrooms: s += 3
+        if p.tenant_name: s += 5
+        if p.lockbox_code: s += 3
+        if p.notes: s += 2
+        if p.unit: s += 1
+        return s
+    
+    props = db.query(Property).filter(Property.org_id == org_id).all()
+    
+    # Group by normalized key
+    groups = {}
+    for p in props:
+        key = norm(p.address)
+        if key and len(key) > 3:
+            groups.setdefault(key, []).append(p)
+    
+    merged = 0
+    deleted = 0
+    leads_reassigned = 0
+    
+    for key, group in groups.items():
+        if len(group) < 2:
+            continue
+        
+        # Sort by score descending — keep the best
+        group.sort(key=score, reverse=True)
+        keeper = group[0]
+        dupes = group[1:]
+        
+        # Merge data from dupes into keeper
+        for d in dupes:
+            if not keeper.rent and d.rent:
+                keeper.rent = d.rent
+            if not keeper.bedrooms and d.bedrooms:
+                keeper.bedrooms = d.bedrooms
+            if not keeper.bathrooms and d.bathrooms:
+                keeper.bathrooms = d.bathrooms
+            if not keeper.tenant_name and d.tenant_name:
+                keeper.tenant_name = d.tenant_name
+            if not keeper.unit and d.unit:
+                keeper.unit = d.unit
+            if not keeper.lockbox_code and d.lockbox_code:
+                keeper.lockbox_code = d.lockbox_code
+            if not keeper.notes and d.notes:
+                keeper.notes = d.notes
+            
+            # Reassign leads
+            reassigned = db.query(Lead).filter(
+                Lead.org_id == org_id,
+                Lead.property_id == d.id
+            ).update({"property_id": keeper.id})
+            leads_reassigned += reassigned
+            
+            # Delete duplicate
+            db.delete(d)
+            deleted += 1
+        
+        merged += 1
+    
+    db.commit()
+    return {
+        "merged_groups": merged,
+        "deleted_duplicates": deleted,
+        "leads_reassigned": leads_reassigned,
+        "remaining_properties": db.query(Property).filter(Property.org_id == org_id).count(),
+    }
 
 
 @router.patch("/api/cmas/{cma_id}")
@@ -823,6 +987,33 @@ async def api_sync(
     from app.integrations.sync_engine import sync_org
     result = await sync_org(user.org_id)
     return result
+
+
+@router.get("/api/email-opportunities")
+async def email_opportunities(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    hours: int = Query(24, ge=1, le=168),
+):
+    """Recent Apple Mail / email messages that look like real-estate opportunities."""
+    since = datetime.now(timezone.utc) - timedelta(hours=hours)
+    msgs = db.query(EmailMessage).filter(
+        EmailMessage.org_id == user.org_id,
+        EmailMessage.received_at >= since,
+    ).order_by(desc(EmailMessage.received_at)).limit(100).all()
+    return [
+        {
+            "id": m.id,
+            "subject": m.subject,
+            "sender_email": m.sender_email,
+            "sender_name": m.sender_name,
+            "received_at": m.received_at.isoformat() if m.received_at else None,
+            "matched_kind": m.matched_kind,
+            "property_address": m.property.address if m.property else None,
+            "body_preview": m.body_preview,
+        }
+        for m in msgs
+    ]
 
 
 @router.get("/", response_class=HTMLResponse)

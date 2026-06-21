@@ -154,7 +154,7 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
 
 <script>
 let token='',currentTab='kanban',selectedId=null,selectedType=null,budgetOnly=false;
-let allLeads=[],allDeals=[],allApps=[],allProps=[],allCmas=[],allShowings=[];
+let allLeads=[],allDeals=[],allApps=[],allProps=[],allCmas=[],allShowings=[],allOpportunities=[];
 let obsidianNotes=[],sortCol=null,sortDir=1;
 const isMobile=window.innerWidth<768;
 
@@ -174,13 +174,14 @@ async function loginSilent(){
 
 async function loadAll(){
   try{
-    const[lr,dr,ar,pr]=await Promise.all([
+    const[lr,dr,ar,pr,or]=await Promise.all([
       fetch('/api/leads?limit=500').then(r=>r.json()),
       fetch('/api/sales?limit=50').then(r=>r.json()),
       fetch('/api/applications?limit=200').then(r=>r.json()),
       fetch('/api/properties?limit=300').then(r=>r.json()),
+      fetch('/api/email-opportunities?hours=24').then(r=>r.json()),
     ]);
-    allLeads=lr;allDeals=dr;allApps=ar;allProps=pr;
+    allLeads=lr;allDeals=dr;allApps=ar;allProps=pr;allOpportunities=or||[];
   }catch(e){}
   renderAll();
 }

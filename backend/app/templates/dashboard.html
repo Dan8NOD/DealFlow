@@ -193,6 +193,7 @@ header.bar a.pulse { animation: pulse 2s infinite; }
   <button class="tab" data-tab="cmas">CMAs</button>
   <button class="tab" data-tab="showings">Showings</button>
   <button class="tab" data-tab="maintenance">Maintenance</button>
+  <button class="tab" data-tab="bounce">🔄 Bounce</button>
 </div>
 
 <!-- TOOLBAR -->
@@ -244,6 +245,7 @@ const STATUS_O={
   cmas:['pending','sent','resolved'],
   showings:['scheduled','confirmed','completed','cancelled','no_show'],
   maintenance:['submitted','acknowledged','in_progress','resolved','closed'],
+  bounce:[],
 };
 const COLS={
   apps:[
@@ -289,11 +291,19 @@ const COLS={
     {k:'status',l:'Status',e:1,t:'status',w:95},{k:'category',l:'Cat',w:80},
     {k:'created_at',l:'Opened',w:90},
   ],
+  bounce:[
+    {k:'lead_name',l:'Lead',w:140},{k:'lead_phone',l:'Phone',w:115},
+    {k:'lead_email',l:'Email',w:180},{k:'property_address',l:'Target Property',w:190},
+    {k:'property_status',l:'Status',t:'status',w:95},
+    {k:'property_bedrooms',l:'BR',w:35},{k:'property_bathrooms',l:'BA',w:35},
+    {k:'property_rent',l:'Rent',w:65},{k:'received_at',l:'Inquired',w:90},
+  ],
 };
 // URL mapping
 const URLS={apps:'/api/applications?limit=300',sales:'/api/sales?limit=300',leads:'/api/leads?limit=300',
   props:'/api/properties?limit=300',cmas:'/api/cmas?limit=300',
-  showings:'/api/showings?limit=200',maintenance:'/api/maintenance?limit=100'};
+  showings:'/api/showings?limit=200',maintenance:'/api/maintenance?limit=100',
+  bounce:'/api/bounce/leads-to-bounce?limit=200'};
 
 // ── LOAD ──
 async function loadTab(tab, silent) {
@@ -304,7 +314,9 @@ async function loadTab(tab, silent) {
 
   try {
     const r = await fetch(URLS[tab], {credentials:'include'});
-    allRows[tab] = await r.json();
+    const data = await r.json();
+    // Bounce endpoint returns {count, leads} wrapped
+    allRows[tab] = tab === 'bounce' ? (data.leads || []) : data;
   } catch(e) { allRows[tab] = []; }
 
   const opts = STATUS_O[tab] || [];
@@ -419,6 +431,7 @@ function renderGrid() {
       if (c.k === 'list_price' && v) d = '$' + Number(v).toLocaleString();
       if (c.k === 'monthly_income' && v) d = '$' + Number(v).toLocaleString();
       if (c.k === 'rent' && v) d = '$' + Number(v).toLocaleString();
+      if (c.k === 'property_rent' && v) d = '$' + Number(v).toLocaleString();
 
       // Status badge
       if (c.t === 'status') {
@@ -556,7 +569,7 @@ async function openPanel(event, type, id) {
   document.getElementById('spInput').style.display = 'flex';
 
   const row = allRows[type].find(r => r.id === id);
-  let title = row ? (row.applicant || row.name || row.address || row.property || row.prospect_name || row.subject || type) : type;
+  let title = row ? (row.applicant || row.lead_name || row.name || row.address || row.property_address || row.property || row.prospect_name || row.subject || type) : type;
   document.getElementById('spTitle').textContent = '💬 ' + title;
 
   let html = '';
@@ -571,9 +584,13 @@ async function openPanel(event, type, id) {
       return `<div class="sp-row"><div><span class="label">${l}</span><br><span class="value">${display}</span></div></div>`;
     };
 
-    if (type === 'leads')
-      html += showField('Phone', row.phone) + showField('Email', row.email) + showField('Property', row.property) +
-        showField('Source', row.source) + showField('Status', row.status) +
+    if (type === 'leads' || type === 'bounce') {
+      // Bounce tab uses lead_name/lead_email/lead_phone, leads tab uses name/email/phone
+      const isBounce = type === 'bounce';
+      html += showField('Phone', row.lead_phone || row.phone) + 
+              showField('Email', row.lead_email || row.email) + 
+              showField('Property', row.property_address || row.property) +
+        showField('Source', row.source) + showField('Status', row.property_status || row.status) +
         showField('Income', row.monthly_income) +
         (row.upsell_eligible ? '<div class="sp-row"><div><span class="label">Upsell</span><br><span class="value" style="color:#b7791f;">🏠 Purchase Qualified</span></div></div>' : '') +
         (row.interested_in_buying ? '<div class="sp-row"><div><span class="label">Interest</span><br><span class="value">🏡 Buying</span></div></div>' : '');
@@ -657,6 +674,33 @@ async function openPanel(event, type, id) {
               </div>`;
             });
             if (leads.length >= 50) html += '<div style="font-size:10px;color:#a0aec0;text-align:center;padding:4px;">Showing 50 of more</div>';
+            html += '</div>';
+          }
+        } catch(e) {}
+      }
+    }
+
+    // Bounce suggestions — show when target property is rented
+    if (type === 'props' || type === 'leads') {
+      const propId = type === 'leads' ? row.property_id : id;
+      if (propId) {
+        try {
+          const br = await fetch(`/api/bounce/suggestions?property_id=${propId}`, {credentials:'include'});
+          const bounce = await br.json();
+          if (bounce.suggestions && bounce.suggestions.length > 0) {
+            html += `<div class="sp-section"><h4>🔄 Bounce to Available (${bounce.suggestions.length})</h4>`;
+            html += `<div style="font-size:11px;color:#b7791f;margin-bottom:6px;">${bounce.reason}</div>`;
+            bounce.suggestions.forEach(s => {
+              const reasons = (s.reasons||[]).join(', ');
+              html += `<div class="sp-file" title="${reasons}" style="border-left:3px solid #276749;padding-left:8px;">
+                <span class="file-icon">🏠</span>
+                <span class="file-name">${s.address}${s.unit?' #'+s.unit:''}</span>
+                <span class="file-badge" style="background:#d1fae5;color:#065f46;">${s.score}%</span>
+              </div>
+              <div style="font-size:10px;color:#718096;margin:-2px 0 4px 28px;">
+                ${s.bedrooms||'?'}BR / ${s.bathrooms||'?'}BA · $${s.rent?Number(s.rent).toLocaleString():'?'} · ${reasons}
+              </div>`;
+            });
             html += '</div>';
           }
         } catch(e) {}

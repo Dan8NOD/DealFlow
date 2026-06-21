@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.db import engine, Base
-from app.routers import auth, dashboard, microsoft, showings, tenant, files, obsidian
+from app.routers import auth, dashboard, microsoft, showings, tenant, files, obsidian, bounce
 
 settings = get_settings()
 app = FastAPI(
@@ -95,6 +95,7 @@ app.include_router(showings.router)
 app.include_router(tenant.router)
 app.include_router(files.router)
 app.include_router(obsidian.router)
+app.include_router(bounce.router)
 
 
 @app.get("/health")

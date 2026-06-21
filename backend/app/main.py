@@ -32,7 +32,13 @@ def on_startup():
 def _fix_lowercase_enums(engine):
     """Fix: SQLite accepted lowercase enum values, PostgreSQL doesn't. Uppercase them."""
     from sqlalchemy import text, inspect
+    from app.models import PropertyFile
     insp = inspect(engine)
+    
+    # Ensure property_files table exists
+    if 'property_files' not in insp.get_table_names():
+        PropertyFile.__table__.create(bind=engine, checkfirst=True)
+    
     if 'applications' not in insp.get_table_names():
         return
     # Fix applications table
@@ -53,6 +59,7 @@ def _fix_lowercase_enums(engine):
 def _ensure_columns(engine):
     """Add any missing columns that were added after initial table creation."""
     from sqlalchemy import text, inspect
+    from app.models import PropertyFile
     insp = inspect(engine)
     # Leads table
     lead_cols = {c['name'] for c in insp.get_columns('leads')}

@@ -644,6 +644,33 @@ async def patch_property(
     return {"ok": True, "id": prop_id}
 
 
+@router.post("/api/properties")
+async def create_property(
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    body = await request.json()
+    p = Property(
+        org_id=user.org_id,
+        address=body.get("address", ""),
+        unit=body.get("unit", ""),
+        city=body.get("city", ""),
+        state=body.get("state", ""),
+        zip_code=body.get("zip_code", ""),
+        status=body.get("status", "AVAILABLE"),
+        rent=body.get("rent"),
+        bedrooms=body.get("bedrooms"),
+        bathrooms=body.get("bathrooms"),
+        tenant_name=body.get("tenant_name", ""),
+        notes=body.get("notes", ""),
+    )
+    db.add(p)
+    db.commit()
+    db.refresh(p)
+    return {"ok": True, "id": p.id}
+
+
 @router.patch("/api/cmas/{cma_id}")
 async def patch_cma(
     cma_id: int,

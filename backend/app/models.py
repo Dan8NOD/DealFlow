@@ -101,6 +101,19 @@ class Property(Base):
     tenant_name = Column(String(200))
     available_date = Column(DateTime)
     notes = Column(Text)
+    # ── Obsidian-enriched fields ──
+    pet_restrictions = Column(Text, comment="from Obsidian LEASING notes")
+    utilities_included = Column(Text, comment="heat, water, etc. included in rent")
+    utilities_paid_by_tenant = Column(Text, comment="electric, gas, etc. paid by tenant")
+    parking = Column(Text, comment="parking details and rent if applicable")
+    storage = Column(Text, comment="storage details")
+    laundry = Column(Text, comment="laundry facilities")
+    asset_manager = Column(String(200))
+    lockbox_code = Column(String(100))
+    listing_description = Column(Text, comment="marketing description")
+    mls_id = Column(String(50))
+    cma_link = Column(Text, comment="CloudCMA URL")
+    showing_instructions = Column(Text, comment="e.g. use ShowingTime, lockbox location")
     created_at = Column(DateTime, server_default=func.now())
     organization = relationship("Organization", back_populates="properties")
     leads = relationship("Lead", back_populates="property", cascade="all, delete")
@@ -126,6 +139,12 @@ class Lead(Base):
     interested_in_buying = Column(Boolean, default=False)
     upsell_eligible = Column(Boolean, default=False)  # auto-flagged: income > threshold
     notes = Column(Text)  # agent notes
+    # ── Spreadsheet / call-tracking fields ──
+    move_in_date = Column(String(30), comment="desired move-in date from lead")
+    last_called = Column(DateTime, comment="last call attempt timestamp")
+    call_outcome = Column(String(100), comment="e.g. Left Voicemail, No Answer, Qualified")
+    call_notes = Column(Text, comment="notes from phone outreach")
+    bounce_to = Column(Text, comment="suggested alternative properties to bounce lead to")
     created_at = Column(DateTime, server_default=func.now())
     property = relationship("Property", back_populates="leads")
 

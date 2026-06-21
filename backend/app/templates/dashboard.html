@@ -1,102 +1,222 @@
 {% extends "base.html" %}
-{% block title %}Dashboard — {{ org.name }}{% endblock %}
+{% block title %}Renter Portal — {{ org.name }}{% endblock %}
 {% block extra_css %}
-header.bar { background: linear-gradient(135deg, #1f4e78 0%, #2c5f8a 100%);
-  color: white; padding: 10px 18px; display: flex; justify-content: space-between; align-items: center; }
-header.bar h1 { font-size: 16px; font-weight: 700; }
-header.bar a { color: white; text-decoration: none; margin-left: 10px; opacity: 0.9;
-  font-size: 11px; background: rgba(255,255,255,0.15); padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer; }
-.tabs { display: flex; gap: 0; border-bottom: 2px solid #e2e8f0; overflow-x: auto; }
-.tab { padding: 8px 14px; background: transparent; border: none; cursor: pointer;
-  font-size: 12px; font-weight: 600; color: #4a5568; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; }
-.tab.active { color: #1f4e78; border-bottom-color: #1f4e78; }
-.tab .count { font-size: 10px; color: #888; font-weight: 400; margin-left: 3px; }
-.toolbar { display: flex; gap: 8px; padding: 8px 0; align-items: center; flex-wrap: wrap; }
-.toolbar input { padding: 5px 10px; border: 1px solid #cbd5e0; border-radius: 5px; font-size: 12px; width: 200px; }
-.toolbar select { padding: 5px 10px; border: 1px solid #cbd5e0; border-radius: 5px; font-size: 12px; }
-.grid-wrap { overflow-x: auto; background: white; border-radius: 6px; border: 1px solid #dde1e6; }
-.grid { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; min-width: 800px; }
-.grid th { background: #f0f2f5; padding: 6px 7px; text-align: left; font-size: 10px;
-  font-weight: 600; color: #555; border-bottom: 1px solid #dde1e6; cursor: pointer;
-  user-select: none; white-space: nowrap; }
-.grid th:hover { background: #e3e6ea; }
-.grid td { padding: 4px 7px; border-bottom: 1px solid #f0f2f5; cursor: cell;
+:root { --navy: #1a365d; --blue: #2b6cb0; --green: #276749; --red: #c53030; --amber: #b7791f; --purple: #6b46c1; --gray: #718096; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: #f0f2f5; color: #1a202c; }
+
+/* ── HEADER ── */
+header.bar { background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%); color: white; padding: 10px 20px; display: flex;
+  justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+header.bar h1 { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+header.bar .bar-right { display: flex; align-items: center; gap: 8px; }
+header.bar a { color: white; text-decoration: none; font-size: 11px; background: rgba(255,255,255,0.12);
+  padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; white-space: nowrap; }
+header.bar a:hover { background: rgba(255,255,255,0.22); }
+header.bar a.pulse { animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(255,255,255,0); } }
+
+/* ── STAT CARDS ── */
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; padding: 16px 20px; }
+.stat-card { background: white; border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; border-left: 4px solid transparent; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.stat-card .stat-num { font-size: 28px; font-weight: 800; line-height: 1; }
+.stat-card .stat-label { font-size: 11px; color: #718096; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-card.active { border-left-color: #2b6cb0; }
+.stat-card.apps { border-left-color: #276749; }
+.stat-card.sales { border-left-color: #6b46c1; }
+.stat-card.cmas { border-left-color: #b7791f; }
+.stat-card.showings { border-left-color: #e53e3e; }
+.stat-card.files { border-left-color: #00a3c4; }
+.stat-card .stat-num.blue { color: #2b6cb0; }
+.stat-card .stat-num.green { color: #276749; }
+.stat-card .stat-num.purple { color: #6b46c1; }
+.stat-card .stat-num.amber { color: #b7791f; }
+.stat-card .stat-num.red { color: #c53030; }
+.stat-card .stat-num.teal { color: #00a3c4; }
+
+/* ── PIPELINE FUNNEL ── */
+.funnel-row { display: flex; gap: 6px; padding: 0 20px 16px; align-items: stretch; }
+.funnel-stage { flex: 1; background: white; border-radius: 8px; padding: 12px; text-align: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06); position: relative; }
+.funnel-stage .fs-num { font-size: 22px; font-weight: 800; }
+.funnel-stage .fs-label { font-size: 10px; color: #718096; text-transform: uppercase; }
+.funnel-arrow { display: flex; align-items: center; color: #cbd5e0; font-size: 20px; }
+
+/* ── TABS ── */
+.tabs { display: flex; gap: 0; border-bottom: 2px solid #e2e8f0; overflow-x: auto; padding: 0 20px; background: white; }
+.tab { padding: 10px 16px; background: transparent; border: none; cursor: pointer; font-size: 13px;
+  font-weight: 600; color: #4a5568; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap;
+  transition: color 0.15s; }
+.tab.active { color: #1a365d; border-bottom-color: #1a365d; }
+.tab .count { font-size: 10px; color: #888; font-weight: 400; margin-left: 4px; background: #edf2f7; padding: 1px 6px; border-radius: 10px; }
+.tab .count.hot { background: #fed7d7; color: #c53030; }
+
+/* ── TOOLBAR ── */
+.toolbar { display: flex; gap: 8px; padding: 10px 20px; align-items: center; flex-wrap: wrap; background: white; border-bottom: 1px solid #edf2f7; }
+.toolbar input { padding: 6px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 12px; width: 220px; }
+.toolbar select { padding: 6px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 12px; }
+.btn-sm { padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; border: none; cursor: pointer; }
+.btn-sm.blue { background: #2b6cb0; color: white; }
+.btn-sm.green { background: #276749; color: white; }
+.btn-sm.amber { background: #b7791f; color: white; }
+.btn-sm:hover { opacity: 0.88; }
+
+/* ── GRID ── */
+.grid-wrap { overflow-x: auto; margin: 0 20px; background: white; border-radius: 8px; border: 1px solid #dde1e6; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.grid { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; min-width: 900px; }
+.grid th { background: #f7fafc; padding: 8px 8px; text-align: left; font-size: 10px;
+  font-weight: 700; color: #4a5568; border-bottom: 1px solid #dde1e6; cursor: pointer; user-select: none; white-space: nowrap; }
+.grid th:hover { background: #edf2f7; }
+.grid td { padding: 5px 8px; border-bottom: 1px solid #f0f2f5; cursor: cell;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.grid tr:hover td { background: #e8f0fe; }
-.grid tr.selected td { background: #c2d9ff; }
-.cell-editor { width: calc(100% + 2px); padding: 3px 5px; border: 2px solid #1f4e78;
+.grid tr:hover td { background: #ebf4ff; }
+.grid tr.selected td { background: #c2d9ff !important; }
+.grid td.has-obsidian { position: relative; }
+.grid td.has-obsidian::after { content: "📓"; font-size: 9px; margin-left: 3px; opacity: 0.6; }
+
+.cell-editor { width: calc(100% + 2px); padding: 3px 5px; border: 2px solid #2b6cb0;
   border-radius: 3px; font-size: 12px; font-family: inherit; background: white; outline: none; margin: -3px -5px; }
-.cell-select { width: 100%; padding: 2px 4px; border: 2px solid #1f4e78; border-radius: 3px;
+.cell-select { width: 100%; padding: 2px 4px; border: 2px solid #2b6cb0; border-radius: 3px;
   font-size: 12px; font-family: inherit; background: white; margin: -3px -5px; }
-.badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+.badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; }
 .badge.warn { background: #fef3c7; color: #78350f; }
 .badge.ok { background: #d1fae5; color: #065f46; }
 .badge.blue { background: #dbeafe; color: #1e40af; }
 .badge.gray { background: #e5e7eb; color: #374151; }
 .badge.red { background: #fee2e2; color: #991b1b; }
 .badge.purple { background: #ede9fe; color: #5b21b6; }
-.badge.gold { background: #fef9c3; color: #854d0e; font-weight: 700; }
-.upsell { animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
-.comment-panel { position: fixed; right: 0; top: 0; width: 340px; height: 100vh;
-  background: white; box-shadow: -4px 0 20px rgba(0,0,0,0.12); z-index: 200;
-  display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.2s; }
-.comment-panel.open { transform: translateX(0); }
-.cp-header { padding: 14px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
-.cp-header h3 { font-size: 14px; margin: 0; }
-.cp-close { background: none; border: none; font-size: 18px; cursor: pointer; color: #4a5568; }
-.cp-body { flex: 1; overflow-y: auto; padding: 14px; }
-.cp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #edf2f7; font-size: 12px; }
-.cp-row .cp-label { color: #718096; font-size: 10px; }
-.cp-row .cp-val { font-weight: 600; }
-.cp-comment { background: #f7fafc; border-radius: 6px; padding: 8px 10px; margin-bottom: 6px; font-size: 12px; }
-.cp-comment .cp-meta { font-size: 10px; color: #718096; margin-top: 3px; }
-.cp-input { border-top: 1px solid #e2e8f0; padding: 10px 14px; display: flex; gap: 6px; }
-.cp-input textarea { flex: 1; padding: 6px; border: 1px solid #cbd5e0; border-radius: 5px;
-  font-size: 12px; font-family: inherit; resize: none; height: 50px; }
-.cp-input button { background: #1f4e78; color: white; border: none; border-radius: 5px;
-  padding: 6px 14px; cursor: pointer; font-size: 12px; font-weight: 600; }
+.badge.gold { background: #fef9c3; color: #854d0e; font-weight: 700; animation: pulse 2s infinite; }
+.badge.teal { background: #ccfbf1; color: #0d9488; }
+
+/* ── SIDE PANEL (expanded) ── */
+.side-panel { position: fixed; right: 0; top: 0; width: 420px; height: 100vh;
+  background: white; box-shadow: -4px 0 24px rgba(0,0,0,0.15); z-index: 200;
+  display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.25s ease; }
+.side-panel.open { transform: translateX(0); }
+.sp-header { padding: 14px 16px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+.sp-header h3 { font-size: 15px; margin: 0; }
+.sp-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #4a5568; padding: 4px 8px; border-radius: 4px; }
+.sp-close:hover { background: #edf2f7; }
+.sp-body { flex: 1; overflow-y: auto; padding: 14px 16px; }
+.sp-section { margin-bottom: 16px; }
+.sp-section h4 { font-size: 12px; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+  border-bottom: 1px solid #edf2f7; padding-bottom: 6px; }
+.sp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-bottom: 8px; font-size: 12px; }
+.sp-row .label { color: #718096; font-size: 10px; }
+.sp-row .value { font-weight: 600; }
+.sp-file { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; margin-bottom: 4px;
+  font-size: 12px; cursor: pointer; }
+.sp-file:hover { background: #f7fafc; }
+.sp-file .file-icon { font-size: 16px; }
+.sp-file .file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-file .file-badge { font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #edf2f7; color: #4a5568; }
+.sp-input { border-top: 1px solid #e2e8f0; padding: 10px 16px; display: flex; gap: 6px; }
+.sp-input textarea { flex: 1; padding: 8px; border: 1px solid #cbd5e0; border-radius: 6px;
+  font-size: 12px; font-family: inherit; resize: none; height: 54px; }
+.sp-input button { background: #1a365d; color: white; border: none; border-radius: 6px;
+  padding: 6px 16px; cursor: pointer; font-size: 12px; font-weight: 600; }
+.sp-input button:hover { background: #2b6cb0; }
+
 .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.25); z-index: 199; }
+  background: rgba(0,0,0,0.3); z-index: 199; }
 .overlay.open { display: block; }
 .saved-flash { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-  background: #065f46; color: white; padding: 6px 16px; border-radius: 6px; font-size: 12px;
-  z-index: 300; opacity: 0; transition: opacity 0.15s; pointer-events: none; }
+  background: #276749; color: white; padding: 8px 20px; border-radius: 8px; font-size: 13px;
+  z-index: 300; opacity: 0; transition: opacity 0.15s; pointer-events: none; font-weight: 600; }
 .saved-flash.show { opacity: 1; }
+
+/* ── SHOWING QUICK-ADD ── */
+.quick-add { padding: 10px 16px; background: #f7fafc; border-radius: 8px; margin-bottom: 12px; }
+.quick-add input, .quick-add select { padding: 5px 8px; border: 1px solid #cbd5e0; border-radius: 5px; font-size: 11px; width: 100%; margin-bottom: 4px; }
+.quick-add .qa-row { display: flex; gap: 6px; }
+.quick-add .qa-row input { flex: 1; }
 {% endblock %}
+
 {% block body %}
 <header class="bar">
-  <h1>Renter Portal</h1>
-  <div style="display:flex;align-items:center;gap:6px;">
+  <h1>🏠 Renter Portal</h1>
+  <div class="bar-right">
+    <a href="#" onclick="syncObsidian();return false" class="pulse" title="Sync Obsidian">📓 Sync Vault</a>
     <a href="/auth/microsoft/start">🔗 Connect 365</a>
     <a href="/api/sync">↻ Sync</a>
-    <span style="font-size:12px;opacity:0.9;">{{ user.email }}</span>
+    <span style="font-size:12px;opacity:0.9;padding:0 6px;">{{ user.email }}</span>
     <a href="/auth/logout" onclick="event.preventDefault();fetch('/auth/logout',{method:'POST',credentials:'include'}).then(()=>location.href='/')">Logout</a>
   </div>
 </header>
 
+<!-- STAT CARDS -->
+<div class="stats-row" id="statsRow">
+  <div class="stat-card apps" onclick="switchTab('apps')">
+    <div class="stat-num green" id="statPipeline">-</div>
+    <div class="stat-label">Apps in Pipeline</div>
+  </div>
+  <div class="stat-card active" onclick="switchTab('leads')">
+    <div class="stat-num blue" id="statLeads">-</div>
+    <div class="stat-label">Active Leads</div>
+  </div>
+  <div class="stat-card sales" onclick="switchTab('sales')">
+    <div class="stat-num purple" id="statSales">-</div>
+    <div class="stat-label">Active Sales</div>
+  </div>
+  <div class="stat-card cmas" onclick="switchTab('cmas')">
+    <div class="stat-num amber" id="statCmas">-</div>
+    <div class="stat-label">Pending CMAs</div>
+  </div>
+  <div class="stat-card showings" onclick="switchTab('showings')">
+    <div class="stat-num red" id="statShowings">-</div>
+    <div class="stat-label">Upcoming Showings</div>
+  </div>
+  <div class="stat-card files">
+    <div class="stat-num teal" id="statFiles">-</div>
+    <div class="stat-label">Linked Files</div>
+  </div>
+</div>
+
+<!-- PIPELINE FUNNEL -->
+<div class="funnel-row" id="funnelRow" style="display:none;">
+  <div class="funnel-stage"><div class="fs-num" id="funNew">-</div><div class="fs-label">New</div></div>
+  <div class="funnel-arrow">→</div>
+  <div class="funnel-stage"><div class="fs-num" id="funContacted">-</div><div class="fs-label">Contacted</div></div>
+  <div class="funnel-arrow">→</div>
+  <div class="funnel-stage"><div class="fs-num" id="funQualified">-</div><div class="fs-label">Qualified</div></div>
+</div>
+
+<!-- TABS -->
 <div class="tabs" id="tabBar">
   <button class="tab active" data-tab="apps">Applications</button>
   <button class="tab" data-tab="sales">Sales</button>
   <button class="tab" data-tab="leads">Leads<span class="count" id="upsellCount"></span></button>
   <button class="tab" data-tab="props">Properties</button>
   <button class="tab" data-tab="cmas">CMAs</button>
+  <button class="tab" data-tab="showings">Showings</button>
+  <button class="tab" data-tab="maintenance">Maintenance</button>
 </div>
 
+<!-- TOOLBAR -->
 <div class="toolbar">
-  <input type="text" id="searchInput" placeholder="Search...">
-  <select id="statusFilter"><option value="">All</option></select>
-  <span id="rowCount" style="font-size:11px;color:#666;"></span>
+  <input type="text" id="searchInput" placeholder="Search..." oninput="renderGrid()">
+  <select id="statusFilter" onchange="renderGrid()"><option value="">All</option></select>
+  <span id="rowCount" style="font-size:11px;color:#666;margin-right:auto;"></span>
+  <button class="btn-sm blue" onclick="quickAddRecord()" id="btnQuickAdd" style="display:none;">+ New</button>
+  <button class="btn-sm green" onclick="refreshAll()">↻ Refresh All</button>
 </div>
 
+<!-- GRID -->
 <div class="grid-wrap"><table class="grid" id="grid"></table></div>
 
+<!-- SIDE PANEL -->
 <div class="overlay" id="overlay"></div>
-<div class="comment-panel" id="commentPanel">
-  <div class="cp-header"><h3 id="cpTitle">Details</h3><button class="cp-close" onclick="closeComments()">×</button></div>
-  <div class="cp-body" id="cpBody"><p style="color:#a0aec0;text-align:center;margin-top:40px;">Select a row</p></div>
-  <div class="cp-input" id="cpInput" style="display:none;">
-    <textarea id="cpText" placeholder="Add comment..."></textarea>
+<div class="side-panel" id="sidePanel">
+  <div class="sp-header">
+    <h3 id="spTitle">Details</h3>
+    <button class="sp-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="sp-body" id="spBody"></div>
+  <div class="sp-input" id="spInput" style="display:none;">
+    <textarea id="spText" placeholder="Add comment..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addComment();}"></textarea>
     <button onclick="addComment()">Post</button>
   </div>
 </div>
@@ -105,12 +225,16 @@ header.bar a { color: white; text-decoration: none; margin-left: 10px; opacity: 
 
 <script>
 let currentTab='apps',allRows={},selectedId=null,selectedType=null,editingCell=null,sortCol=null,sortDir=1;
+let obsidianNotes=[], propertyFiles={};
 
 const STATUS_C={
   application_received:'blue',offer_sent:'warn',welcome_sent:'warn',approved:'ok',lease_signed:'ok',moved_in:'ok',denied:'red',
   NEW:'blue',CONTACTED:'warn',QUALIFIED:'ok',CLOSED:'gray',LOST:'red',
-  ACTIVE_LISTING:'blue',UNDER_CONTRACT:'ok',CONTRACT_SIGNED:'ok',IN_ESCROW:'warn',OFFER_RECEIVED:'warn',CLOSED:'gray',CMA_REQUESTED:'purple',LISTING_PREP:'warn',NEW_LISTING_ALERT:'blue',
+  ACTIVE_LISTING:'blue',UNDER_CONTRACT:'ok',CONTRACT_SIGNED:'ok',IN_ESCROW:'warn',OFFER_RECEIVED:'warn',CLOSED:'gray',
+  CMA_REQUESTED:'purple',LISTING_PREP:'warn',NEW_LISTING_ALERT:'blue',
   AVAILABLE:'ok',RENTED:'blue',OCCUPIED:'warn',OFF_MARKET:'gray',FOR_SALE:'purple',PENDING:'warn',
+  scheduled:'blue',confirmed:'ok',completed:'green',cancelled:'gray',no_show:'red',SHOWING:'blue',
+  submitted:'blue',acknowledged:'warn',in_progress:'warn',resolved:'ok',closed:'gray',
 };
 const STATUS_O={
   apps:['application_received','offer_sent','welcome_sent','approved','lease_signed','moved_in','denied'],
@@ -118,194 +242,519 @@ const STATUS_O={
   leads:['NEW','CONTACTED','QUALIFIED','CLOSED','LOST'],
   props:['AVAILABLE','RENTED','OCCUPIED','OFF_MARKET','FOR_SALE','PENDING'],
   cmas:['pending','sent','resolved'],
+  showings:['scheduled','confirmed','completed','cancelled','no_show'],
+  maintenance:['submitted','acknowledged','in_progress','resolved','closed'],
 };
 const COLS={
   apps:[
-    {k:'applicant',l:'Applicant',e:1,w:130},{k:'property',l:'Property',w:170},
-    {k:'status',l:'Status',e:1,t:'status',w:125},{k:'handler',l:'Handler',e:1,w:125},
-    {k:'monthly_income',l:'Income',e:1,w:75},{k:'credit_score',l:'Credit',e:1,w:60},
-    {k:'pets',l:'Pets',w:60},{k:'move_in_date',l:'Move-in',w:80},
-    {k:'days_in_pipeline',l:'Days',w:45},{k:'last_update',l:'Updated',w:85},
+    {k:'applicant',l:'Applicant',e:1,w:140},{k:'property',l:'Property',w:180},
+    {k:'status',l:'Status',e:1,t:'status',w:130},{k:'handler',l:'Handler',e:1,w:130},
+    {k:'monthly_income',l:'Income',e:1,w:80},{k:'credit_score',l:'Credit',e:1,w:65},
+    {k:'pets',l:'Pets',w:65},{k:'move_in_date',l:'Move-in',w:85},
+    {k:'days_in_pipeline',l:'Days',w:48},{k:'last_update',l:'Updated',w:90},
   ],
   sales:[
-    {k:'address',l:'Property',w:190},{k:'status',l:'Status',e:1,t:'status',w:130},
-    {k:'tc',l:'Coordinator',e:1,w:130},{k:'list_price',l:'Price',e:1,w:80},
-    {k:'days_idle',l:'Idle',w:45},{k:'event_count',l:'#',w:35},{k:'last_update',l:'Updated',w:85},
+    {k:'address',l:'Property',w:200},{k:'status',l:'Status',e:1,t:'status',w:135},
+    {k:'tc',l:'Coordinator',e:1,w:135},{k:'list_price',l:'Price',e:1,w:85},
+    {k:'days_idle',l:'Idle',w:48},{k:'event_count',l:'#',w:38},{k:'last_update',l:'Updated',w:90},
   ],
   leads:[
-    {k:'name',l:'Name',e:1,w:130},{k:'phone',l:'Phone',e:1,w:115},
-    {k:'email',l:'Email',w:170},{k:'property',l:'Property',w:160},
-    {k:'source',l:'Source',w:85},{k:'status',l:'Status',e:1,t:'status',w:95},
-    {k:'monthly_income',l:'Income/mo',e:1,w:85},{k:'days_old',l:'Age',w:45},
-    {k:'received_at',l:'Received',w:85},
+    {k:'name',l:'Name',e:1,w:140},{k:'phone',l:'Phone',e:1,w:120},
+    {k:'email',l:'Email',w:180},{k:'property',l:'Property',w:170},
+    {k:'source',l:'Source',w:90},{k:'status',l:'Status',e:1,t:'status',w:100},
+    {k:'monthly_income',l:'Income',e:1,w:90},{k:'days_old',l:'Age',w:48},
+    {k:'received_at',l:'Received',w:90},
   ],
   props:[
-    {k:'address',l:'Address',w:190},{k:'unit',l:'Unit',w:45},
-    {k:'status',l:'Status',e:1,t:'status',w:105},{k:'tenant',l:'Tenant',e:1,w:130},
-    {k:'rent',l:'Rent',e:1,w:65},{k:'bedrooms',l:'BR',e:1,w:35},
-    {k:'bathrooms',l:'BA',e:1,w:35},{k:'notes',l:'Notes',e:1,w:180},
+    {k:'address',l:'Address',w:200},{k:'unit',l:'Unit',w:48},
+    {k:'status',l:'Status',e:1,t:'status',w:110},{k:'tenant',l:'Tenant',e:1,w:140},
+    {k:'rent',l:'Rent',e:1,w:70},{k:'bedrooms',l:'BR',e:1,w:38},
+    {k:'bathrooms',l:'BA',e:1,w:38},{k:'has_obsidian',l:'📓',w:38},
+    {k:'notes',l:'Notes',e:1,w:190},
   ],
   cmas:[
-    {k:'property',l:'Property',w:190},{k:'unit',l:'Unit',w:45},
-    {k:'kind',l:'Type',w:55},{k:'status',l:'Status',e:1,t:'status',w:85},
-    {k:'requests',l:'Reqs',w:45},{k:'last_request',l:'Last',w:90},{k:'first_request',l:'First',w:90},
+    {k:'property',l:'Property',w:200},{k:'unit',l:'Unit',w:48},
+    {k:'kind',l:'Type',w:58},{k:'status',l:'Status',e:1,t:'status',w:90},
+    {k:'requests',l:'Reqs',w:48},{k:'last_request',l:'Last',w:95},{k:'first_request',l:'First',w:95},
+  ],
+  showings:[
+    {k:'property_address',l:'Property',w:200},{k:'prospect_name',l:'Prospect',e:1,w:140},
+    {k:'prospect_phone',l:'Phone',w:120},{k:'scheduled_at',l:'When',e:1,w:160},
+    {k:'status',l:'Status',e:1,t:'status',w:95},{k:'method',l:'Type',e:1,w:90},
+    {k:'agent',l:'Agent',e:1,w:120},
+  ],
+  maintenance:[
+    {k:'property_address',l:'Property',w:200},{k:'subject',l:'Issue',w:180},
+    {k:'tenant_name',l:'Tenant',w:130},{k:'urgency',l:'Urgency',e:1,t:'status',w:85},
+    {k:'status',l:'Status',e:1,t:'status',w:95},{k:'category',l:'Cat',w:80},
+    {k:'created_at',l:'Opened',w:90},
   ],
 };
+// URL mapping
+const URLS={apps:'/api/applications?limit=300',sales:'/api/sales?limit=300',leads:'/api/leads?limit=300',
+  props:'/api/properties?limit=300',cmas:'/api/cmas?limit=300',
+  showings:'/api/showings?limit=200',maintenance:'/api/maintenance?limit=100'};
 
-async function loadTab(tab){
-  currentTab=tab;selectedId=null;sortCol=null;
-  const urls={apps:'/api/applications?limit=300',sales:'/api/sales?limit=300',leads:'/api/leads?limit=300',props:'/api/properties?limit=300',cmas:'/api/cmas?limit=300'};
-  const r=await fetch(urls[tab],{credentials:'include'});allRows[tab]=await r.json();
-  document.getElementById('statusFilter').innerHTML='<option value="">All</option>'+(STATUS_O[tab]||[]).map(o=>`<option value="${o}">${o.replace(/_/g,' ')}</option>`).join('');
-  if(tab==='leads')updateUpsellCount(allRows[tab]);
+// ── LOAD ──
+async function loadTab(tab, silent) {
+  if (!silent) { currentTab = tab; selectedId = null; sortCol = null; }
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const tb = document.querySelector(`.tab[data-tab="${tab}"]`);
+  if (tb) tb.classList.add('active');
+
+  try {
+    const r = await fetch(URLS[tab], {credentials:'include'});
+    allRows[tab] = await r.json();
+  } catch(e) { allRows[tab] = []; }
+
+  const opts = STATUS_O[tab] || [];
+  document.getElementById('statusFilter').innerHTML = '<option value="">All</option>' +
+    opts.map(o => `<option value="${o}">${o.replace(/_/g,' ')}</option>`).join('');
+
+  if (tab === 'leads') updateUpsellCount(allRows[tab]);
+  // Show/hide quick add button
+  document.getElementById('btnQuickAdd').style.display =
+    ['showings','maintenance'].includes(tab) ? 'inline-block' : 'none';
+
+  // Enrich properties with obsidian status
+  if (tab === 'props') enrichProps();
+  renderGrid();
+  if (!silent) updateStats(tab);
+}
+
+function enrichProps() {
+  (allRows.props || []).forEach(p => {
+    const note = obsidianNotes.find(n => n.property_id === p.id);
+    p.has_obsidian = note ? note.kind || '✓' : '';
+    p.obsidian_status = note ? note.kind : '';
+  });
+}
+
+// ── STATS ──
+async function updateStats(activeTab) {
+  try {
+    // Dashboard stats
+    const dr = await fetch('/api/dashboard.json', {credentials:'include'});
+    const ds = await dr.json();
+    document.getElementById('statLeads').textContent = ds.stats.active_leads || 0;
+    document.getElementById('statPipeline').textContent = ds.stats.in_pipeline || 0;
+    document.getElementById('statSales').textContent = ds.stats.active_sales || 0;
+    document.getElementById('statCmas').textContent = ds.stats.pending_cmas || 0;
+
+    // Showing stats
+    try {
+      const sr = await fetch('/api/showings/stats', {credentials:'include'});
+      const ss = await sr.json();
+      document.getElementById('statShowings').textContent = ss.upcoming || 0;
+    } catch(e) {}
+
+    // File stats
+    try {
+      const fr = await fetch('/api/files/stats', {credentials:'include'});
+      const fs = await fr.json();
+      document.getElementById('statFiles').textContent = fs.total || 0;
+    } catch(e) {}
+  } catch(e) {}
+}
+
+async function refreshAll() {
+  // Refresh current tab data
+  await loadTab(currentTab, true);
+  await updateStats();
+  flash('✓ Refreshed');
+}
+
+// ── OBSIDIAN SYNC ──
+async function syncObsidian() {
+  flash('Scanning Obsidian vaults...');
+  try {
+    const r = await fetch('/api/obsidian/sync', {method:'POST',credentials:'include'});
+    const data = await r.json();
+    flash(`✓ Synced ${data.scanned} Obsidian notes — ${data.stats.matched} matched, ${data.stats.new_files} new files`);
+    // Reload obsidian notes for enrichment
+    await loadObsidianNotes();
+    if (currentTab === 'props') enrichProps();
+    renderGrid();
+  } catch(e) { flash('✗ Sync failed'); }
+}
+
+async function loadObsidianNotes() {
+  try {
+    const r = await fetch('/api/files/all?source=obsidian&limit=500', {credentials:'include'});
+    obsidianNotes = await r.json();
+  } catch(e) { obsidianNotes = []; }
+}
+
+// ── GRID ──
+function renderGrid() {
+  const tab = currentTab;
+  const rows = allRows[tab] || [], cols = COLS[tab];
+  const s = document.getElementById('searchInput').value.toLowerCase();
+  const sf = document.getElementById('statusFilter').value;
+  let f = rows;
+  if (sf) f = f.filter(r => (r.status || '').toLowerCase() === sf.toLowerCase());
+  if (s) f = f.filter(r => cols.some(c => String(r[c.k] || '').toLowerCase().includes(s)));
+  if (sortCol) f.sort((a, b) => {
+    let va = a[sortCol] || '', vb = b[sortCol] || '';
+    if (['rent','list_price','monthly_income','days_in_pipeline','days_old','days_idle'].includes(sortCol))
+      return ((Number(va) || 0) - (Number(vb) || 0)) * sortDir;
+    return (va < vb ? -1 : va > vb ? 1 : 0) * sortDir;
+  });
+  document.getElementById('rowCount').textContent = `${f.length} records`;
+
+  let h = '<thead><tr>';
+  cols.forEach(c => h += `<th data-col="${c.k}" style="width:${c.w||100}px" onclick="sortBy('${c.k}')">${c.l}${sortCol===c.k?(sortDir===1?' ▴':' ▾'):''}</th>`);
+  h += '<th style="width:30px"></th></tr></thead><tbody>';
+
+  f.forEach(r => {
+    h += `<tr data-id="${r.id}" data-type="${tab}" class="${r.id===selectedId?'selected':''}" onclick="selectRow(event,'${tab}',${r.id})">`;
+    cols.forEach(c => {
+      let v = r[c.k], d = v != null ? String(v) : '';
+
+      // Date truncation
+      if (['last_update','first_request','received_at','last_request','first_seen','scheduled_at','created_at'].includes(c.k))
+        d = d ? d.slice(0,16).replace('T',' ') : '';
+
+      // Currency formatting
+      if (c.k === 'list_price' && v) d = '$' + Number(v).toLocaleString();
+      if (c.k === 'monthly_income' && v) d = '$' + Number(v).toLocaleString();
+      if (c.k === 'rent' && v) d = '$' + Number(v).toLocaleString();
+
+      // Status badge
+      if (c.t === 'status') {
+        let extra = '';
+        if (tab === 'leads' && r.upsell_eligible && c.k === 'status')
+          extra = ' <span class="badge gold">🏠 UPSELL</span>';
+        d = `<span class="badge ${STATUS_C[v]||''}">${(d||'').replace(/_/g,' ')}</span>${extra}`;
+      }
+
+      // Obsidian indicator
+      let tdClass = '';
+      if (tab === 'props' && c.k === 'has_obsidian' && r.obsidian_status)
+        d = `<span title="Obsidian: ${r.obsidian_status}">📓</span>`;
+      if (tab === 'props' && c.k === 'address' && r.has_obsidian)
+        tdClass = 'has-obsidian';
+
+      // Upsell badges
+      if (tab === 'leads' && c.k === 'name' && r.upsell_eligible)
+        d = `<span class="badge gold" title="Income qualifies for purchase/upgrade">💰</span> ${d}`;
+      if (tab === 'leads' && c.k === 'name' && r.interested_in_buying)
+        d = `🏡 ${d}`;
+
+      h += `<td data-col="${c.k}" data-editable="${c.e||0}" data-type="${c.t||'text'}" class="${tdClass}" title="${String(d).replace(/<[^>]*>/g,'')}">${d||''}</td>`;
+    });
+    h += `<td style="text-align:center"><span style="color:#a0aec0;cursor:pointer;font-size:14px" title="Details" onclick="event.stopPropagation();openPanel(event,'${tab}',${r.id})">💬</span></td></tr>`;
+  });
+  h += '</tbody>';
+  document.getElementById('grid').innerHTML = h;
+}
+
+function sortBy(col) {
+  if (sortCol === col) sortDir *= -1;
+  else { sortCol = col; sortDir = 1; }
   renderGrid();
 }
-function updateUpsellCount(rows){
-  const c=rows.filter(r=>r.upsell_eligible).length;
-  document.getElementById('upsellCount').textContent=c?` 🏠${c}`:'';
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const tb = document.querySelector(`.tab[data-tab="${tab}"]`);
+  if (tb) tb.classList.add('active');
+  sortCol = null;
+  loadTab(tab);
 }
-function renderGrid(){
-  const rows=allRows[currentTab]||[],cols=COLS[currentTab];
-  const s=document.getElementById('searchInput').value.toLowerCase();
-  const sf=document.getElementById('statusFilter').value;
-  let f=rows;
-  if(sf)f=f.filter(r=>(r.status||'').toLowerCase()===sf.toLowerCase());
-  if(s)f=f.filter(r=>cols.some(c=>String(r[c.k]||'').toLowerCase().includes(s)));
-  if(sortCol)f.sort((a,b)=>{let va=a[sortCol]||'',vb=b[sortCol]||'';return(va<vb?-1:va>vb?1:0)*sortDir;});
-  document.getElementById('rowCount').textContent=`${f.length} records`;
-  let h='<thead><tr>';
-  cols.forEach(c=>h+=`<th data-col="${c.k}" style="width:${c.w||100}px" onclick="sortBy('${c.k}')">${c.l}${sortCol===c.k?(sortDir===1?' ▴':' ▾'):''}</th>`);
-  h+='<th style="width:26px"></th></tr></thead><tbody>';
-  f.forEach(r=>{
-    h+=`<tr data-id="${r.id}" data-type="${currentTab}" class="${r.id===selectedId?'selected':''}" onclick="selectRow(event,'${currentTab}',${r.id})">`;
-    cols.forEach(c=>{
-      let v=r[c.k];let d=v!=null?String(v):'';
-      if(['last_update','first_request','received_at','last_request','first_seen'].includes(c.k))d=d?d.slice(0,10):'';
-      if(c.k==='list_price'&&v)d='$'+Number(v).toLocaleString();
-      if(c.k==='monthly_income'&&v)d='$'+Number(v).toLocaleString();
-      if(c.k==='rent'&&v)d='$'+Number(v).toLocaleString();
-      if(c.t==='status'){
-        let extra='';
-        if(currentTab==='leads'&&r.upsell_eligible&&c.k==='status')extra=' <span class="badge gold upsell">🏠 UPSELL</span>';
-        d=`<span class="badge ${STATUS_C[v]||''}">${(d||'').replace(/_/g,' ')}</span>${extra}`;
-      }
-      // Show upsell badge on name column too
-      if(currentTab==='leads'&&c.k==='name'&&r.upsell_eligible)d=`<span class="badge gold upsell" title="Income qualifies for purchase/upgrade">💰</span> ${d}`;
-      if(currentTab==='leads'&&c.k==='name'&&r.interested_in_buying)d=`🏡 ${d}`;
-      h+=`<td data-col="${c.k}" data-editable="${c.e||0}" data-type="${c.t||'text'}" title="${d.replace(/<[^>]*>/g,'')}">${d||''}</td>`;
+
+// ── EDITING ──
+function selectRow(event, type, id) {
+  selectedId = id; selectedType = type;
+  document.querySelectorAll('tr.selected').forEach(r => r.classList.remove('selected'));
+  const tr = document.querySelector(`tr[data-id="${id}"]`);
+  if (tr) tr.classList.add('selected');
+  const td = event.target.closest('td');
+  if (td && td.dataset.editable === '1') startEdit(td);
+}
+function startEdit(td) {
+  if (editingCell) cancelEdit(false);
+  const val = cleanVal(td), col = td.dataset.col, type = td.dataset.type;
+  if (type === 'status') {
+    const opts = STATUS_O[currentTab] || [];
+    const sel = document.createElement('select'); sel.className = 'cell-select';
+    opts.forEach(o => sel.innerHTML += `<option value="${o}" ${o===val?'selected':''}>${o.replace(/_/g,' ')}</option>`);
+    td.textContent = ''; td.appendChild(sel); sel.focus();
+    sel.onblur = () => saveEdit(td, col, sel.value);
+    sel.onkeydown = e => {
+      if (e.key === 'Enter') saveEdit(td, col, sel.value);
+      if (e.key === 'Escape') cancelEdit(true);
+      e.stopPropagation();
+    };
+  } else {
+    const inp = document.createElement('input'); inp.className = 'cell-editor'; inp.value = val;
+    td.textContent = ''; td.appendChild(inp); inp.focus(); inp.select();
+    inp.onblur = () => saveEdit(td, col, inp.value);
+    inp.onkeydown = e => {
+      if (e.key === 'Enter') saveEdit(td, col, inp.value);
+      if (e.key === 'Escape') cancelEdit(true);
+      if (e.key === 'Tab') { e.preventDefault(); saveEdit(td, col, inp.value);
+        setTimeout(() => moveToNextCell(td, e.shiftKey ? -1 : 1), 50); }
+      e.stopPropagation();
+    };
+  }
+  editingCell = td;
+}
+function cleanVal(td) {
+  const b = td.querySelector('.badge');
+  if (b) return b.textContent.trim().replace(/ /g, '_').toLowerCase();
+  let v = td.textContent.trim();
+  if (v.startsWith('$')) v = v.slice(1).replace(/,/g, '');
+  return v;
+}
+function moveToNextCell(td, dir) {
+  const tr = td.parentElement, cells = [...tr.querySelectorAll('td[data-editable="1"]')];
+  const idx = cells.indexOf(td), next = cells[idx + dir];
+  if (next) { selectRow({target: next}, tr.dataset.type, parseInt(tr.dataset.id)); startEdit(next); }
+}
+
+async function saveEdit(td, col, val) {
+  if (!selectedId) { cancelEdit(true); return; }
+  const type = selectedType, id = selectedId;
+  const apiMap = {apps:'applications', sales:'sales', leads:'leads', props:'properties', cmas:'cmas', showings:'showings', maintenance:'maintenance'};
+  const fMap = {tc:'transaction_coordinator', tenant:'tenant_name', address:'property_address', prospect_name:'prospect_name', method:'method'};
+  const field = fMap[col] || col;
+  const body = {};
+  if (col === 'status') body[field] = val.toLowerCase();
+  else if (['rent','list_price','monthly_income'].includes(col)) body[field] = parseFloat(val.replace(/[$,]/g, '')) || null;
+  else if (['bedrooms','bathrooms','credit_score'].includes(col)) body[field] = parseFloat(val) || null;
+  else body[field] = val;
+
+  try {
+    const r = await fetch(`/api/${apiMap[type]}/${id}`, {
+      method: 'PATCH', credentials: 'include',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
     });
-    h+=`<td style="text-align:center"><span style="color:#a0aec0;cursor:pointer;font-size:14px" onclick="event.stopPropagation();openComments(event,'${currentTab}',${r.id})">💬</span></td></tr>`;
-  });
-  h+='</tbody>';document.getElementById('grid').innerHTML=h;
+    if (r.ok) {
+      const row = allRows[type].find(r => r.id === id);
+      if (row) row[col] = val;
+      cancelEdit(true);
+      renderGrid();
+      flash();
+    }
+  } catch(e) { cancelEdit(true); }
 }
-function sortBy(col){if(sortCol===col)sortDir*=-1;else{sortCol=col;sortDir=1;}renderGrid();}
-// ═══════ Editing ═══════
-function selectRow(event,type,id){
-  selectedId=id;selectedType=type;
-  document.querySelectorAll('tr.selected').forEach(r=>r.classList.remove('selected'));
-  const tr=document.querySelector(`tr[data-id="${id}"]`);if(tr)tr.classList.add('selected');
-  const td=event.target.closest('td');if(td&&td.dataset.editable==='1')startEdit(td);
+function cancelEdit(keepSel) { editingCell = null; if (!keepSel) { selectedId = null; selectedType = null; } renderGrid(); }
+function flash(msg) {
+  const e = document.getElementById('savedFlash');
+  e.textContent = msg || '✓ Saved';
+  e.classList.add('show');
+  setTimeout(() => e.classList.remove('show'), 1500);
 }
-function startEdit(td){
-  if(editingCell)cancelEdit(false);
-  const val=cleanVal(td),col=td.dataset.col,type=td.dataset.type;
-  if(type==='status'){
-    const opts=STATUS_O[currentTab]||[];
-    const sel=document.createElement('select');sel.className='cell-select';
-    opts.forEach(o=>sel.innerHTML+=`<option value="${o}" ${o===val?'selected':''}>${o.replace(/_/g,' ')}</option>`);
-    td.textContent='';td.appendChild(sel);sel.focus();
-    sel.onblur=()=>saveEdit(td,col,sel.value);
-    sel.onkeydown=e=>{if(e.key==='Enter')saveEdit(td,col,sel.value);if(e.key==='Escape')cancelEdit(true);e.stopPropagation();};
-  }else{
-    const inp=document.createElement('input');inp.className='cell-editor';inp.value=val;
-    td.textContent='';td.appendChild(inp);inp.focus();inp.select();
-    inp.onblur=()=>saveEdit(td,col,inp.value);
-    inp.onkeydown=e=>{if(e.key==='Enter')saveEdit(td,col,inp.value);if(e.key==='Escape')cancelEdit(true);
-      if(e.key==='Tab'){e.preventDefault();saveEdit(td,col,inp.value);setTimeout(()=>moveToNextCell(td,e.shiftKey?-1:1),50);}e.stopPropagation();};
-  }
-  editingCell=td;
-}
-function cleanVal(td){const b=td.querySelector('.badge');if(b)return b.textContent.trim().replace(/ /g,'_').toLowerCase();let v=td.textContent.trim();if(v.startsWith('$'))v=v.slice(1).replace(/,/g,'');return v;}
-function moveToNextCell(td,dir){const tr=td.parentElement,cells=[...tr.querySelectorAll('td[data-editable="1"]')];const idx=cells.indexOf(td);const next=cells[idx+dir];if(next){selectRow({target:next},tr.dataset.type,parseInt(tr.dataset.id));startEdit(next);}}
 
-async function saveEdit(td,col,val){
-  if(!selectedId){cancelEdit(true);return;}
-  const type=selectedType,id=selectedId;
-  const apiMap={apps:'applications',sales:'sales',leads:'leads',props:'properties',cmas:'cmas'};
-  const fMap={tc:'transaction_coordinator',tenant:'tenant_name',address:'property_address'};
-  const field=fMap[col]||col;
-  const body={};
-  if(col==='status')body[field]=type==='apps'?val.toLowerCase():val;
-  else if(['rent','list_price','monthly_income'].includes(col))body[field]=parseFloat(val.replace(/[$,]/g,''))||null;
-  else if(['bedrooms','bathrooms','credit_score'].includes(col))body[field]=parseFloat(val)||null;
-  else body[field]=val;
-  try{
-    const r=await fetch(`/api/${apiMap[type]}/${id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(r.ok){const row=allRows[type].find(r=>r.id===id);if(row)row[col]=val;cancelEdit(true);renderGrid();flash();}
-  }catch(e){cancelEdit(true);}
-}
-function cancelEdit(keepSel){editingCell=null;if(!keepSel){selectedId=null;selectedType=null;}renderGrid();}
-function flash(){const e=document.getElementById('savedFlash');e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1200);}
-
-// ═══════ Comments with rich data ═══════
-async function openComments(event,type,id){
-  event.stopPropagation();selectedType=type;selectedId=id;
-  document.getElementById('commentPanel').classList.add('open');
+// ── SIDE PANEL ──
+async function openPanel(event, type, id) {
+  event.stopPropagation();
+  selectedType = type; selectedId = id;
+  document.getElementById('sidePanel').classList.add('open');
   document.getElementById('overlay').classList.add('open');
-  document.getElementById('cpInput').style.display='flex';
-  const row=allRows[type].find(r=>r.id===id);
-  let title=row?(row.applicant||row.name||row.address||row.property||type):type;
-  document.getElementById('cpTitle').textContent='💬 '+title;
-  
-  // Build rich data panel
-  let html='';
-  if(row){
-    const fields=[];
-    if(type==='leads')fields.push(...[
-      ['Phone',row.phone],['Email',row.email],['Property',row.property],
-      ['Source',row.source],['Status',row.status],['Income/mo',row.monthly_income?'$'+Number(row.monthly_income).toLocaleString():''],
-      ['Upsell',row.upsell_eligible?'🏠 Yes - qualified for purchase/upgrade':''],['Buying',row.interested_in_buying?'🏡 Interested':'']
-    ]);
-    if(type==='apps')fields.push(...[
-      ['Property',row.property],['Status',row.status],['Handler',row.handler],
-      ['Income/mo',row.monthly_income?'$'+Number(row.monthly_income).toLocaleString():''],
-      ['Credit',row.credit_score],['Pets',row.pets],['Move-in',row.move_in_date]
-    ]);
-    html+='<div style="margin-bottom:12px;">';
-    fields.filter(f=>f[1]).forEach(([l,v])=>{html+=`<div class="cp-row"><div><span class="cp-label">${l}</span><br><span class="cp-val">${v||'—'}</span></div></div>`;});
-    html+='</div><div style="font-size:10px;color:#a0aec0;margin-bottom:8px;">Comments:</div>';
-  }
-  document.getElementById('cpBody').innerHTML=html;
-  await loadComments(type,id);
-}
-async function loadComments(type,id){
-  try{
-    const r=await fetch(`/api/comments/${type==='props'?'property':type}/${id}`,{credentials:'include'});
-    const c=await r.json();
-    const body=document.getElementById('cpBody');
-    body.innerHTML+=c.length?c.map(c=>`<div class="cp-comment"><div>${c.content}</div><div class="cp-meta">${c.user_name||'?'} · ${(c.created_at||'').slice(0,10)}</div></div>`).join(''):'<p style="color:#a0aec0;text-align:center;margin-top:10px;">No comments yet</p>';
-  }catch(e){}
-}
-async function addComment(){
-  const t=document.getElementById('cpText').value.trim();if(!t||!selectedId)return;
-  try{
-    const r=await fetch('/api/comments',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({record_type:selectedType==='props'?'property':selectedType,record_id:selectedId,content:t})});
-    if(r.ok){document.getElementById('cpText').value='';
-      // Reload comments
-      const body=document.getElementById('cpBody');
-      const parts=body.innerHTML.split('<div style="font-size:10px');
-      body.innerHTML=parts[0]+'<div style="font-size:10px'+parts.slice(1).join('<div style="font-size:10px');
-      await loadComments(selectedType,selectedId);}
-  }catch(e){}
-}
-function closeComments(){document.getElementById('commentPanel').classList.remove('open');document.getElementById('overlay').classList.remove('open');}
+  document.getElementById('spInput').style.display = 'flex';
 
-// ═══════ Navigation ═══════
-document.getElementById('tabBar').onclick=e=>{if(!e.target.classList.contains('tab'))return;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));e.target.classList.add('active');sortCol=null;loadTab(e.target.dataset.tab);};
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(editingCell)cancelEdit(true);else closeComments();}
-  if(e.key==='Enter'&&!editingCell&&selectedId&&document.activeElement===document.body)openComments({stopPropagation:()=>{}},selectedType,selectedId);});
-document.getElementById('searchInput').oninput=()=>renderGrid();
-document.getElementById('statusFilter').onchange=()=>renderGrid();
-loadTab('apps');
+  const row = allRows[type].find(r => r.id === id);
+  let title = row ? (row.applicant || row.name || row.address || row.property || row.prospect_name || row.subject || type) : type;
+  document.getElementById('spTitle').textContent = '💬 ' + title;
+
+  let html = '';
+  if (row) {
+    html += '<div class="sp-section"><h4>Details</h4>';
+    const showField = (l, v) => {
+      if (v === null || v === undefined || v === '') return '';
+      let display = v;
+      if (l === 'Income' && v) display = '$' + Number(v).toLocaleString();
+      if (l === 'Rent' && v) display = '$' + Number(v).toLocaleString();
+      if (l === 'Price' && v) display = '$' + Number(v).toLocaleString();
+      return `<div class="sp-row"><div><span class="label">${l}</span><br><span class="value">${display}</span></div></div>`;
+    };
+
+    if (type === 'leads')
+      html += showField('Phone', row.phone) + showField('Email', row.email) + showField('Property', row.property) +
+        showField('Source', row.source) + showField('Status', row.status) +
+        showField('Income', row.monthly_income) +
+        (row.upsell_eligible ? '<div class="sp-row"><div><span class="label">Upsell</span><br><span class="value" style="color:#b7791f;">🏠 Purchase Qualified</span></div></div>' : '') +
+        (row.interested_in_buying ? '<div class="sp-row"><div><span class="label">Interest</span><br><span class="value">🏡 Buying</span></div></div>' : '');
+    if (type === 'apps')
+      html += showField('Property', row.property) + showField('Status', row.status) + showField('Handler', row.handler) +
+        showField('Income', row.monthly_income) + showField('Credit', row.credit_score) +
+        showField('Pets', row.pets) + showField('Move-in', row.move_in_date);
+    if (type === 'sales')
+      html += showField('Property', row.address) + showField('Status', row.status) + showField('Coordinator', row.tc) +
+        showField('Price', row.list_price) + showField('Days Idle', row.days_idle);
+    if (type === 'props')
+      html += showField('Address', row.address) + showField('Unit', row.unit) + showField('Status', row.status) +
+        showField('Tenant', row.tenant) + showField('Rent', row.rent) +
+        showField('BR/BA', (row.bedrooms||'') + '/' + (row.bathrooms||''));
+    if (type === 'showings')
+      html += showField('Property', row.property_address) + showField('Prospect', row.prospect_name) +
+        showField('Phone', row.prospect_phone) + showField('When', row.scheduled_at) +
+        showField('Status', row.status) + showField('Type', row.method) + showField('Agent', row.agent);
+    if (type === 'maintenance')
+      html += showField('Property', row.property_address) + showField('Issue', row.subject) +
+        showField('Tenant', row.tenant_name) + showField('Urgency', row.urgency) +
+        showField('Status', row.status) + showField('Category', row.category);
+
+    html += '</div>';
+
+    // Obsidian notes for this property (props tab)
+    if (type === 'props') {
+      const notes = obsidianNotes.filter(n => n.property_id === id);
+      if (notes.length > 0) {
+        html += '<div class="sp-section"><h4>📓 Obsidian Notes</h4>';
+        notes.forEach(n => {
+          html += `<div class="sp-file" title="${n.path||''}">
+            <span class="file-icon">📓</span>
+            <span class="file-name">${n.name||''}</span>
+            <span class="file-badge">${n.kind||'note'}</span>
+          </div>`;
+        });
+        html += '</div>';
+      }
+    }
+
+    // Showings for this property
+    if (type === 'props' || type === 'apps') {
+      try {
+        const propId = type === 'apps' ? row.property_id : id;
+        if (propId) {
+          const sr = await fetch(`/api/showings?property_id=${propId}&limit=10`, {credentials:'include'});
+          const showings = await sr.json();
+          if (showings.length > 0) {
+            html += '<div class="sp-section"><h4>📅 Showings</h4>';
+            showings.forEach(s => {
+              html += `<div class="sp-file">
+                <span class="file-icon">📅</span>
+                <span class="file-name">${s.prospect_name||'?'} — ${(s.scheduled_at||'').slice(0,16).replace('T',' ')}</span>
+                <span class="file-badge">${s.status}</span>
+              </div>`;
+            });
+            html += '</div>';
+          }
+        }
+      } catch(e) {}
+    }
+
+    // Quick add showing form
+    if (type === 'props') {
+      html += `<div class="sp-section"><h4>+ Schedule Showing</h4>
+        <div class="quick-add">
+          <input type="text" id="qaName" placeholder="Prospect name">
+          <div class="qa-row">
+            <input type="text" id="qaPhone" placeholder="Phone">
+            <input type="text" id="qaEmail" placeholder="Email">
+          </div>
+          <input type="datetime-local" id="qaWhen">
+          <select id="qaMethod"><option value="in_person">In Person</option><option value="virtual">Virtual</option><option value="open_house">Open House</option></select>
+          <button class="btn-sm blue" style="margin-top:4px;width:100%;" onclick="quickAddShowing(${id})">Schedule Showing</button>
+        </div></div>`;
+    }
+
+    html += '<div style="font-size:10px;color:#a0aec0;margin:8px 0;">Comments:</div><div id="spComments"></div>';
+  } else {
+    html += '<p style="color:#a0aec0;text-align:center;margin-top:30px;">No data</p>';
+  }
+
+  document.getElementById('spBody').innerHTML = html;
+  await loadComments(type, id);
+}
+
+async function loadComments(type, id) {
+  try {
+    const r = await fetch(`/api/comments/${type==='props'?'property':type}/${id}`, {credentials:'include'});
+    const comments = await r.json();
+    const container = document.getElementById('spComments');
+    if (container) {
+      container.innerHTML = comments.length
+        ? comments.map(c => `<div class="sp-file"><div style="flex:1"><div>${c.content}</div><div class="label">${c.user_name||'?'} · ${(c.created_at||'').slice(0,10)}</div></div></div>`).join('')
+        : '<p style="color:#a0aec0;text-align:center;">No comments yet</p>';
+    }
+  } catch(e) {}
+}
+
+async function addComment() {
+  const t = document.getElementById('spText').value.trim();
+  if (!t || !selectedId) return;
+  try {
+    const typeMap = {props:'property'};
+    const r = await fetch('/api/comments', {
+      method: 'POST', credentials: 'include',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({record_type: typeMap[selectedType] || selectedType, record_id: selectedId, content: t})
+    });
+    if (r.ok) {
+      document.getElementById('spText').value = '';
+      await loadComments(selectedType, selectedId);
+      flash('Comment posted');
+    }
+  } catch(e) {}
+}
+
+async function quickAddShowing(propId) {
+  const name = document.getElementById('qaName').value.trim();
+  const phone = document.getElementById('qaPhone').value.trim();
+  const email = document.getElementById('qaEmail').value.trim();
+  const when = document.getElementById('qaWhen').value;
+  const method = document.getElementById('qaMethod').value;
+  if (!name || !when) { flash('✗ Name + date required'); return; }
+  try {
+    const r = await fetch('/api/showings', {
+      method: 'POST', credentials: 'include',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        property_id: propId, prospect_name: name,
+        prospect_phone: phone, prospect_email: email,
+        scheduled_at: when + ':00', method: method,
+        status: 'scheduled'
+      })
+    });
+    if (r.ok) {
+      flash('✓ Showing scheduled');
+      document.getElementById('qaName').value = '';
+      document.getElementById('qaWhen').value = '';
+      // Refresh showings tab data
+      if (currentTab === 'showings') loadTab('showings', true);
+    }
+  } catch(e) { flash('✗ Failed'); }
+}
+
+async function quickAddRecord() {
+  if (currentTab === 'showings') {
+    // Just focus the search to prompt search
+    flash('Use the property side panel to schedule showings');
+  } else if (currentTab === 'maintenance') {
+    flash('Tenants submit maintenance via the tenant portal');
+  }
+}
+
+function closePanel() {
+  document.getElementById('sidePanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// ── NAVIGATION ──
+document.getElementById('tabBar').onclick = e => {
+  if (!e.target.classList.contains('tab')) return;
+  sortCol = null;
+  loadTab(e.target.dataset.tab);
+};
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (editingCell) cancelEdit(true);
+    else if (document.getElementById('sidePanel').classList.contains('open')) closePanel();
+  }
+  if (e.key === 'Enter' && !editingCell && selectedId && document.activeElement === document.body) {
+    openPanel({stopPropagation: () => {}}, selectedType, selectedId);
+  }
+});
+
+// ── INIT ──
+(async function init() {
+  await loadObsidianNotes();
+  await loadTab('apps');
+  await updateStats();
+})();
 </script>
 {% endblock %}

@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Showing Sheet</title>
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --card: #1a1a1a;
+    --border: #2a2a2a;
+    --text: #e0e0e0;
+    --muted: #888;
+    --accent: #5b8def;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --lockbox-highlight: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 0 0 80px 0;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Header */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .header h1 span.count {
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .header-controls {
+    display: flex;
+    gap: 8px;
+  }
+  .header-controls button {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .header-controls button.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* Filters */
+  .filters {
+    padding: 10px 16px;
+    display: none;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    background: #111;
+  }
+  .filters.show { display: flex; }
+  .filters select, .filters input {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    flex: 1;
+    min-width: 100px;
+  }
+  .filters input::placeholder { color: #555; }
+
+  /* Search bar */
+  .search-bar {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .search-bar input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 15px;
+    outline: none;
+  }
+  .search-bar input:focus {
+    border-color: var(--accent);
+  }
+
+  /* Property Cards */
+  .list { padding: 10px 12px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .card:active {
+    border-color: var(--accent);
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .card-address {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
+    flex: 1;
+  }
+  .card-address .unit {
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .card-address .city {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+    display: block;
+  }
+  .card-status {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .status-AVAILABLE, .status-Available {
+    background: rgba(52, 211, 153, 0.15);
+    color: var(--green);
+  }
+  .status-RENTED, .status-Rented, .status-OCCUPIED {
+    background: rgba(248, 113, 113, 0.15);
+    color: var(--red);
+  }
+  .status-OFF_MARKET, .status-FOR_SALE {
+    background: rgba(251, 191, 36, 0.15);
+    color: var(--yellow);
+  }
+
+  /* Lockbox — high visibility */
+  .lockbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+    padding: 8px 12px;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 10px;
+    font-size: 15px;
+  }
+  .lockbox-row .label {
+    font-size: 12px;
+    color: var(--lockbox-highlight);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .lockbox-row .code {
+    font-family: 'SF Mono', 'Menlo', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--lockbox-highlight);
+    letter-spacing: 2px;
+  }
+
+  /* Key details */
+  .details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 6px 0;
+  }
+  .detail-badge {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .detail-badge.rent {
+    font-weight: 700;
+    color: var(--green);
+    background: rgba(52, 211, 153, 0.1);
+    border-color: rgba(52, 211, 153, 0.2);
+    font-size: 14px;
+  }
+  .detail-badge.no-pets {
+    color: var(--red);
+    border-color: rgba(248, 113, 113, 0.3);
+  }
+  .detail-badge.pets-allowed {
+    color: var(--green);
+    border-color: rgba(52, 211, 153, 0.3);
+  }
+  .detail-badge.lead-count {
+    background: rgba(91, 141, 239, 0.1);
+    color: var(--accent);
+    border-color: rgba(91, 141, 239, 0.2);
+  }
+
+  /* Meta row */
+  .meta {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+  }
+  .meta span { display: flex; align-items: center; gap: 4px; }
+
+  /* Extra info (collapsible) */
+  .expand-toggle {
+    font-size: 12px;
+    color: var(--accent);
+    cursor: pointer;
+    margin-top: 6px;
+    padding: 4px 0;
+    display: inline-block;
+    border: none;
+    background: none;
+    font-family: inherit;
+  }
+  .expand-toggle:hover { opacity: 0.8; }
+  .extra-info {
+    display: none;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+  .extra-info.show { display: block; }
+  .extra-info strong { color: var(--text); }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+  }
+  .empty .icon { font-size: 40px; margin-bottom: 12px; }
+
+  /* Show controls */
+  .status-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 10px 12px 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .status-tabs button {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    white-space: nowrap;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .status-tabs button.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .status-tabs button.count-badge {
+    position: relative;
+  }
+  .status-tabs button .count {
+    font-size: 10px;
+    opacity: 0.6;
+    margin-left: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Showing Sheet <span class="count" id="total-count"></span></h1>
+  <div class="header-controls">
+    <button id="filter-btn" onclick="toggleFilters()">Filter</button>
+  </div>
+</div>
+
+<div class="status-tabs" id="status-tabs"></div>
+
+<div class="search-bar">
+  <input type="search" id="search" placeholder="Search address, unit, MLS..." oninput="renderCards()">
+</div>
+
+<div class="filters" id="filters">
+  <select id="filter-bedrooms" onchange="renderCards()">
+    <option value="">Any bedrooms</option>
+    <option value="1">1+</option>
+    <option value="2">2+</option>
+    <option value="3">3+</option>
+  </select>
+  <select id="filter-rent" onchange="renderCards()">
+    <option value="">Any rent</option>
+    <option value="1000">Under $1,000</option>
+    <option value="1500">Under $1,500</option>
+    <option value="2000">Under $2,000</option>
+  </select>
+  <select id="filter-lockbox" onchange="renderCards()">
+    <option value="">Any access</option>
+    <option value="yes">Has lockbox code</option>
+  </select>
+</div>
+
+<div class="list" id="property-list">
+  <div class="empty">
+    <div class="icon">🏗️</div>
+    Loading properties...
+  </div>
+</div>
+
+<script>
+let properties = [];
+let filtered = [];
+
+function toggleFilters() {
+  document.getElementById('filters').classList.toggle('show');
+}
+
+async function loadData() {
+  try {
+    const res = await fetch('/api/properties/showing-sheet');
+    properties = await res.json();
+    renderTabs();
+    renderCards();
+  } catch(e) {
+    document.getElementById('property-list').innerHTML = `
+      <div class="empty"><div class="icon">⚠️</div>Couldn't load properties.<br>${e.message}</div>`;
+  }
+}
+
+function renderTabs() {
+  const tabs = document.getElementById('status-tabs');
+  const counts = {};
+  properties.forEach(p => {
+    const s = p.status || 'Unknown';
+    counts[s] = (counts[s] || 0) + 1;
+  });
+  const statusOrder = ['AVAILABLE', 'Available', 'RENTED', 'Rented', 'OCCUPIED', 'FOR_SALE', 'OFF_MARKET'];
+  let html = `<button class="active" onclick="setStatusFilter('')">All <span class="count">${properties.length}</span></button>`;
+  statusOrder.forEach(s => {
+    if (counts[s]) {
+      html += `<button onclick="setStatusFilter('${s}')">${s} <span class="count">${counts[s]}</span></button>`;
+    }
+  });
+  tabs.innerHTML = html;
+}
+
+function setStatusFilter(status) {
+  document.querySelectorAll('#status-tabs button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('status-tabs').dataset.status = status;
+  renderCards();
+}
+
+function renderCards() {
+  const search = document.getElementById('search').value.toLowerCase();
+  const statusFilter = document.getElementById('status-tabs').dataset.status || '';
+  const minBeds = parseInt(document.getElementById('filter-bedrooms').value) || 0;
+  const maxRent = parseFloat(document.getElementById('filter-rent').value) || 0;
+  const onlyLockbox = document.getElementById('filter-lockbox').value === 'yes';
+
+  filtered = properties.filter(p => {
+    if (statusFilter && p.status !== statusFilter) return false;
+    if (search) {
+      const addr = (p.address + ' ' + p.unit + ' ' + (p.mls_id||'')).toLowerCase();
+      if (!addr.includes(search)) return false;
+    }
+    if (minBeds && (p.bedrooms || 0) < minBeds) return false;
+    if (maxRent && (p.rent || 99999) > maxRent) return false;
+    if (onlyLockbox && !p.lockbox_code) return false;
+    return true;
+  });
+
+  document.getElementById('total-count').textContent = filtered.length + ' / ' + properties.length;
+
+  if (filtered.length === 0) {
+    document.getElementById('property-list').innerHTML = `
+      <div class="empty"><div class="icon">🔍</div>No properties match your filters</div>`;
+    return;
+  }
+
+  let html = '';
+  filtered.forEach(p => {
+    const statusClass = 'status-' + (p.status || '').replace(/\s+/g, '_');
+    const petsLabel = getPetsLabel(p.pet_restrictions);
+    const petsClass = petsLabel.includes('No') ? 'no-pets' : petsLabel.includes('Allowed') ? 'pets-allowed' : '';
+
+    html += `<div class="card" onclick="toggleExpand(this)">`;
+
+    // Header
+    html += `<div class="card-header">
+      <div class="card-address">
+        ${escapeHtml(p.address)}${p.unit ? ` <span class="unit">#${escapeHtml(p.unit)}</span>` : ''}
+        <span class="city">${p.city || ''}${p.city ? ', IL' : ''}</span>
+      </div>
+      <div class="card-status ${statusClass}">${p.status}</div>
+    </div>`;
+
+    // Lockbox (high visibility!)
+    if (p.lockbox_code) {
+      html += `<div class="lockbox-row">
+        <span class="label">🔑 Lockbox</span>
+        <span class="code">${escapeHtml(p.lockbox_code)}</span>
+        ${p.showing_instructions ? `<span style="font-size:12px;color:#888;margin-left:auto">${escapeHtml(p.showing_instructions)}</span>` : ''}
+      </div>`;
+    }
+
+    // Details badges
+    html += `<div class="details">`;
+    html += `<span class="detail-badge rent">$${p.rent?.toLocaleString() || '?'}</span>`;
+    html += `<span class="detail-badge">${p.bedrooms || '?'}bd / ${p.bathrooms || '?'}ba</span>`;
+    if (petsLabel) html += `<span class="detail-badge ${petsClass}">${petsLabel}</span>`;
+    if (p.parking && p.parking !== 'None' && p.parking !== 'NA') {
+      const shortParking = p.parking.length > 20 ? p.parking.substring(0,20)+'…' : p.parking;
+      html += `<span class="detail-badge">🅿 ${escapeHtml(shortParking)}</span>`;
+    }
+    if (p.lead_count > 0) {
+      html += `<span class="detail-badge lead-count">📋 ${p.lead_count} leads</span>`;
+    }
+    if (p.active_apps > 0) {
+      html += `<span class="detail-badge lead-count">📄 ${p.active_apps} apps</span>`;
+    }
+    html += `</div>`;
+
+    // Meta
+    html += `<div class="meta">`;
+    if (p.available_date) html += `<span>📅 ${p.available_date.substring(0,10)}</span>`;
+    if (p.tenant_name) html += `<span>👤 ${escapeHtml(p.tenant_name)}</span>`;
+    if (p.asset_manager) html += `<span>🏢 ${escapeHtml(p.asset_manager)}</span>`;
+    if (p.mls_id) html += `<span>MLS#${escapeHtml(p.mls_id.substring(0,15))}</span>`;
+    html += `</div>`;
+
+    // Expand toggle
+    if (p.listing_description || p.utilities_included || p.utilities_paid_by_tenant || p.cma_link) {
+      html += `<button class="expand-toggle" onclick="event.stopPropagation();this.nextElementSibling.classList.toggle('show');this.textContent=this.nextElementSibling.classList.contains('show')?'▲ Less':'▼ More'">▼ More</button>`;
+      html += `<div class="extra-info">`;
+      if (p.listing_description) html += `<p>${escapeHtml(p.listing_description)}</p>`;
+      if (p.utilities_included) html += `<p><strong>Utilities included:</strong> ${escapeHtml(p.utilities_included)}</p>`;
+      if (p.utilities_paid_by_tenant) html += `<p><strong>Tenant pays:</strong> ${escapeHtml(p.utilities_paid_by_tenant)}</p>`;
+      if (p.cma_link) html += `<p><strong>CMA:</strong> <a href="${escapeHtml(p.cma_link)}" target="_blank" style="color:var(--accent)">View CMA</a></p>`;
+      html += `</div>`;
+    }
+
+    html += `</div>`;
+  });
+
+  document.getElementById('property-list').innerHTML = html;
+}
+
+function getPetsLabel(pets) {
+  if (!pets) return '';
+  const p = pets.toLowerCase();
+  if (p.includes('not permitted') || p.includes('no pet') || p.includes('no pet') || p.includes('na**')) return 'No pets';
+  if (p.includes('one pet') || p.includes('allowed') || p.includes('$250') || p.includes('fee')) return 'Pets allowed';
+  return pets.substring(0, 20);
+}
+
+function toggleExpand(card) {
+  const extra = card.querySelector('.extra-info');
+  const btn = card.querySelector('.expand-toggle');
+  if (extra && btn) {
+    extra.classList.toggle('show');
+    btn.textContent = extra.classList.contains('show') ? '▲ Less' : '▼ More';
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+loadData();
+</script>
+
+</body>
+</html>

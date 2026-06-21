@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.db import engine, Base
-from app.routers import auth, dashboard, microsoft
+from app.routers import auth, dashboard, microsoft, showings, tenant, files, obsidian
 
 settings = get_settings()
 app = FastAPI(
@@ -36,7 +36,10 @@ def _ensure_columns(engine):
     lead_cols = {c['name'] for c in insp.get_columns('leads')}
     for col, typ in [('monthly_income','FLOAT'),('income_source','VARCHAR(50)'),
                       ('interested_in_buying','BOOLEAN DEFAULT FALSE'),
-                      ('upsell_eligible','BOOLEAN DEFAULT FALSE'),('notes','TEXT')]:
+                      ('upsell_eligible','BOOLEAN DEFAULT FALSE'),('notes','TEXT'),
+                      # New call-tracking fields
+                      ('move_in_date','VARCHAR(30)'),('last_called','DATETIME'),
+                      ('call_outcome','VARCHAR(100)'),('call_notes','TEXT'),('bounce_to','TEXT')]:
         if col not in lead_cols:
             with engine.connect() as conn:
                 conn.execute(text(f"ALTER TABLE leads ADD COLUMN {col} {typ}"))
@@ -49,11 +52,27 @@ def _ensure_columns(engine):
             with engine.connect() as conn:
                 conn.execute(text(f"ALTER TABLE applications ADD COLUMN {col} {typ}"))
                 conn.commit()
+    # Properties table — new Obsidian-enriched fields
+    prop_cols = {c['name'] for c in insp.get_columns('properties')}
+    for col, typ in [('pet_restrictions','TEXT'),('utilities_included','TEXT'),
+                      ('utilities_paid_by_tenant','TEXT'),('parking','TEXT'),
+                      ('storage','TEXT'),('laundry','TEXT'),
+                      ('asset_manager','VARCHAR(200)'),('lockbox_code','VARCHAR(100)'),
+                      ('listing_description','TEXT'),('mls_id','VARCHAR(50)'),
+                      ('cma_link','TEXT'),('showing_instructions','TEXT')]:
+        if col not in prop_cols:
+            with engine.connect() as conn:
+                conn.execute(text(f"ALTER TABLE properties ADD COLUMN \"{col}\" {typ}"))
+                conn.commit()
 
 
 app.include_router(auth.router)
 app.include_router(dashboard.router)
 app.include_router(microsoft.router)
+app.include_router(showings.router)
+app.include_router(tenant.router)
+app.include_router(files.router)
+app.include_router(obsidian.router)
 
 
 @app.get("/health")

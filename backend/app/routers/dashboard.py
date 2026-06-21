@@ -273,6 +273,12 @@ async def api_leads(
             "upsell_eligible": bool(l.upsell_eligible),
             "interested_in_buying": bool(l.interested_in_buying),
             "notes": l.notes,
+            # New call-tracking fields
+            "move_in_date": l.move_in_date,
+            "last_called": l.last_called.isoformat() if l.last_called is not None else None,
+            "call_outcome": l.call_outcome,
+            "call_notes": l.call_notes,
+            "bounce_to": l.bounce_to,
         }
         for l in leads
     ]
@@ -285,11 +291,27 @@ async def api_properties(
     status: str = Query(None),
     limit: int = Query(200, ge=1, le=500),
     offset: int = Query(0, ge=0),
+    sort: str = Query("address", regex="^(address|rent|bedrooms|status|available_date)$"),
+    enriched: bool = Query(False, description="Only return properties with Obsidian enrichment"),
 ):
     q = db.query(Property).filter(Property.org_id == user.org_id)
     if status:
         q = q.filter(Property.status == status)
-    props = q.order_by(Property.address).offset(offset).limit(limit).all()
+    if enriched:
+        q = q.filter(
+            (Property.pet_restrictions.isnot(None)) |
+            (Property.mls_id.isnot(None)) |
+            (Property.lockbox_code.isnot(None))
+        )
+    sort_map = {
+        "address": Property.address,
+        "rent": Property.rent,
+        "bedrooms": Property.bedrooms,
+        "status": Property.status,
+        "available_date": Property.available_date,
+    }
+    q = q.order_by(sort_map.get(sort, Property.address))
+    props = q.offset(offset).limit(limit).all()
     return [
         {
             "id": p.id, "address": p.address, "unit": p.unit,
@@ -298,12 +320,114 @@ async def api_properties(
             "square_feet": p.square_feet,
             "tenant": p.tenant_name, "notes": p.notes,
             "city": p.city, "state": p.state, "zip_code": p.zip_code,
+            # New fields from Obsidian enrichment
+            "pet_restrictions": p.pet_restrictions,
+            "utilities_included": p.utilities_included,
+            "utilities_paid_by_tenant": p.utilities_paid_by_tenant,
+            "parking": p.parking,
+            "storage": p.storage,
+            "laundry": p.laundry,
+            "asset_manager": p.asset_manager,
+            "lockbox_code": p.lockbox_code,
+            "listing_description": p.listing_description,
+            "mls_id": p.mls_id,
+            "cma_link": p.cma_link,
+            "showing_instructions": p.showing_instructions,
         }
         for p in props
     ]
 
 
-@router.get("/api/applications/{app_id}/events")
+@router.get("/api/properties/showing-sheet")
+async def showing_sheet(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    status: str = Query(None, description="Filter: AVAILABLE, RENTED, etc."),
+    has_lockbox: bool = Query(False, description="Only properties with lockbox codes"),
+    min_bedrooms: int = Query(None, ge=0),
+    max_rent: float = Query(None, ge=0),
+    sort: str = Query("status_priority", regex="^(status_priority|rent|bedrooms|address)$"),
+):
+    """
+    Compact showing-sheet endpoint — returns only the fields you need
+    when showing apartments on your phone. Sorted by status priority
+    (AVAILABLE first, OCCUPIED last) then by address.
+    """
+    q = db.query(Property).filter(Property.org_id == user.org_id)
+    if status:
+        q = q.filter(Property.status == status)
+    if has_lockbox:
+        q = q.filter(Property.lockbox_code.isnot(None))
+    if min_bedrooms:
+        q = q.filter(Property.bedrooms >= min_bedrooms)
+    if max_rent:
+        q = q.filter(Property.rent <= max_rent)
+
+    props = q.all()
+
+    # Status priority for sorting
+    status_order = {
+        "AVAILABLE": 0, "Available": 0, "FOR_SALE": 1,
+        "OCCUPIED": 2, "RENTED": 2, "Rented": 2,
+        "OFF_MARKET": 3, "PENDING": 3,
+    }
+
+    def sort_key(p):
+        s = status_order.get(p.status, 99)
+        return (s, p.address or "", p.unit or "")
+
+    props.sort(key=sort_key)
+
+    return [
+        {
+            "id": p.id,
+            "address": p.address,
+            "unit": p.unit,
+            "city": p.city,
+            "bedrooms": p.bedrooms,
+            "bathrooms": p.bathrooms,
+            "rent": p.rent,
+            "status": p.status.value if p.status else "",
+            # Showing-critical fields
+            "lockbox_code": p.lockbox_code,
+            "showing_instructions": p.showing_instructions,
+            "pet_restrictions": p.pet_restrictions,
+            "parking": p.parking,
+            "utilities_paid_by_tenant": p.utilities_paid_by_tenant,
+            "utilities_included": p.utilities_included,
+            "tenant_name": p.tenant_name,
+            "available_date": p.available_date.isoformat() if p.available_date is not None else None,
+            # Quick reference
+            "mls_id": p.mls_id,
+            "asset_manager": p.asset_manager,
+            "cma_link": p.cma_link,
+            "listing_description": (str(p.listing_description)[:200] + "...") if str(p.listing_description or "").strip() and len(str(p.listing_description or "")) > 200 else str(p.listing_description or "")[:500] if str(p.listing_description or "").strip() else None,
+            # Lead activity summary
+            "lead_count": db.query(Lead).filter(
+                Lead.property_id == p.id,
+                Lead.org_id == user.org_id
+            ).count(),
+            "active_apps": db.query(Application).filter(
+                Application.property_id == p.id,
+                Application.org_id == user.org_id,
+                Application.status.in_(["APPLICATION_RECEIVED", "OFFER_SENT", "APPROVED"])
+            ).count(),
+        }
+        for p in props
+    ]
+
+
+@router.get("/showing", response_class=HTMLResponse)
+async def showing_page(
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Mobile-optimized showing sheet — view on phone while at apartments."""
+    return templates.TemplateResponse("showing.html", {
+        "request": request,
+        "user": user,
+    })
 async def api_application_events(
     app_id: int,
     user: User = Depends(get_current_user),
@@ -363,7 +487,9 @@ async def patch_lead(
     lead = db.query(Lead).filter(Lead.id == lead_id, Lead.org_id == user.org_id).first()
     if not lead:
         return JSONResponse({"error": "not found"}, status_code=404)
-    for field in ("status", "name", "email", "phone", "monthly_income", "income_source", "interested_in_buying", "notes"):
+    for field in ("status", "name", "email", "phone", "monthly_income", "income_source",
+                   "interested_in_buying", "notes", "move_in_date", "call_outcome",
+                   "call_notes", "bounce_to"):
         if field in body:
             setattr(lead, field, body[field])
     # Auto-calculate upsell eligibility: income > $5k/mo → flag
@@ -405,7 +531,10 @@ async def patch_property(
     prop = db.query(Property).filter(Property.id == prop_id, Property.org_id == user.org_id).first()
     if not prop:
         return JSONResponse({"error": "not found"}, status_code=404)
-    for field in ("status", "tenant_name", "rent", "notes", "bedrooms", "bathrooms"):
+    for field in ("status", "tenant_name", "rent", "notes", "bedrooms", "bathrooms",
+                   "pet_restrictions", "utilities_included", "utilities_paid_by_tenant",
+                   "parking", "storage", "laundry", "asset_manager", "lockbox_code",
+                   "listing_description", "mls_id", "cma_link", "showing_instructions"):
         if field in body:
             setattr(prop, field, body[field])
     db.commit()

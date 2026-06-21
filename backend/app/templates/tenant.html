@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tenant Portal — {{ property.address }}</title>
+<style>
+:root { --navy: #1a365d; --blue: #2b6cb0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  background: #f0f2f5; color: #1a202c; min-height: 100vh; }
+header { background: linear-gradient(135deg, #1a365d, #2b6cb0); color: white; padding: 20px;
+  text-align: center; }
+header h1 { font-size: 22px; font-weight: 800; }
+header p { font-size: 14px; opacity: 0.9; margin-top: 4px; }
+main { max-width: 640px; margin: 0 auto; padding: 24px 16px; }
+.card { background: white; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.card h2 { font-size: 16px; margin-bottom: 12px; color: #1a365d; display: flex; align-items: center; gap: 8px; }
+.card h2 .icon { font-size: 20px; }
+form { display: flex; flex-direction: column; gap: 12px; }
+label { font-size: 12px; font-weight: 600; color: #4a5568; }
+input, select, textarea { padding: 10px 14px; border: 1px solid #cbd5e0; border-radius: 8px;
+  font-size: 14px; font-family: inherit; }
+textarea { resize: vertical; min-height: 80px; }
+select { background: white; }
+.btn { padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; border: none; cursor: pointer; }
+.btn.primary { background: #2b6cb0; color: white; }
+.btn.primary:hover { background: #1a365d; }
+.btn.danger { background: #c53030; color: white; }
+.btn.danger:hover { background: #9b2c2c; }
+.urgent-row { display: flex; gap: 8px; align-items: center; }
+.urgent-row .btn { flex: 1; }
+.success-message { background: #d1fae5; color: #065f46; padding: 12px 16px; border-radius: 8px;
+  font-size: 14px; font-weight: 600; margin-bottom: 16px; display: none; }
+.success-message.show { display: block; }
+.info-row { display: flex; justify-content: space-between; padding: 8px 0;
+  border-bottom: 1px solid #edf2f7; font-size: 13px; }
+.info-row:last-child { border-bottom: none; }
+.info-row .label { color: #718096; }
+.info-row .value { font-weight: 600; }
+.contact { text-align: center; margin-top: 24px; font-size: 13px; color: #718096; }
+.contact a { color: #2b6cb0; font-weight: 600; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🏠 Tenant Portal</h1>
+  <p>{{ property.address }}{% if property.unit %} #{{ property.unit }}{% endif %}{% if property.city %}, {{ property.city }}{% endif %}</p>
+</header>
+
+<main>
+  <div class="success-message" id="successMsg">✓ Request submitted! We'll follow up soon.</div>
+
+  <!-- Property Info -->
+  <div class="card">
+    <h2><span class="icon">📋</span> Property Info</h2>
+    <div class="info-row"><span class="label">Address</span><span class="value">{{ property.address }}{% if property.unit %} #{{ property.unit }}{% endif %}</span></div>
+    <div class="info-row"><span class="label">Tenant</span><span class="value">{{ property.tenant_name or '—' }}</span></div>
+  </div>
+
+  <!-- Maintenance Request -->
+  <div class="card">
+    <h2><span class="icon">🔧</span> Maintenance Request</h2>
+    <form id="maintenanceForm" onsubmit="submitMaintenance(event)">
+      <div>
+        <label>Your Name</label>
+        <input type="text" id="tenantName" required placeholder="Full name">
+      </div>
+      <div>
+        <label>Email</label>
+        <input type="email" id="tenantEmail" placeholder="your@email.com">
+      </div>
+      <div>
+        <label>Phone</label>
+        <input type="tel" id="tenantPhone" placeholder="(312) 555-0123">
+      </div>
+      <div>
+        <label>What needs attention?</label>
+        <input type="text" id="subject" required placeholder="e.g., Leaky faucet in kitchen">
+      </div>
+      <div>
+        <label>Description</label>
+        <textarea id="description" placeholder="Please describe the issue in detail..."></textarea>
+      </div>
+      <div>
+        <label>Category</label>
+        <select id="category">
+          <option value="plumbing">Plumbing</option>
+          <option value="electrical">Electrical</option>
+          <option value="hvac">Heating / Cooling</option>
+          <option value="appliance">Appliance</option>
+          <option value="structural">Structural</option>
+          <option value="pest">Pest</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div>
+        <label>How urgent?</label>
+        <div class="urgent-row">
+          <select id="urgency" style="flex:1;">
+            <option value="low">Low — whenever convenient</option>
+            <option value="normal" selected>Normal — within a few days</option>
+            <option value="urgent">Urgent — as soon as possible</option>
+            <option value="emergency">Emergency — immediate attention needed</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn primary">Submit Request</button>
+    </form>
+  </div>
+
+  <!-- Rent Payment -->
+  <div class="card">
+    <h2><span class="icon">💳</span> Pay Rent</h2>
+    <p style="font-size:13px;color:#4a5568;margin-bottom:12px;">
+      Rent payments are processed through our payment portal. Your property manager will provide your payment link.
+    </p>
+    <p style="font-size:12px;color:#718096;">Contact your property manager for rent payment instructions.</p>
+  </div>
+
+  <div class="contact">
+    Questions? Contact your property manager.<br>
+    <a href="tel:+17739995445">(773) 999-5445</a>
+  </div>
+</main>
+
+<script>
+async function submitMaintenance(e) {
+  e.preventDefault();
+  const body = {
+    property_id: {{ property.id }},
+    tenant_name: document.getElementById('tenantName').value,
+    tenant_email: document.getElementById('tenantEmail').value,
+    tenant_phone: document.getElementById('tenantPhone').value,
+    subject: document.getElementById('subject').value,
+    description: document.getElementById('description').value,
+    category: document.getElementById('category').value,
+    urgency: document.getElementById('urgency').value,
+  };
+  try {
+    const r = await fetch('/api/maintenance', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    });
+    if (r.ok) {
+      document.getElementById('successMsg').classList.add('show');
+      document.getElementById('successMsg').scrollIntoView();
+      document.getElementById('maintenanceForm').reset();
+      setTimeout(() => document.getElementById('successMsg').classList.remove('show'), 5000);
+    }
+  } catch(err) {
+    alert('Failed to submit. Please try again.');
+  }
+}
+</script>
+</body>
+</html>

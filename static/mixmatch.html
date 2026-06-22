@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NOD Mix & Match</title>
+<style>
+:root{--ink:#15313d;--muted:#65777c;--paper:#0d1f28;--card:#112530;--line:#1a3844;--brand:#14b8a6;--brand-bright:#2dd4bf;--warm:#fbbf24;--shadow:0 12px 35px rgba(0,0,0,.4)}*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:#e2e8f0;font:16px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;min-height:100vh;overflow:hidden}
+/* ponytail: fullscreen single-page, no routing needed */
+header{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid var(--line)}
+.brand{font-size:18px;font-weight:800;letter-spacing:-.03em;display:flex;align-items:center;gap:10px}
+.mark{width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:var(--brand);color:var(--ink);font-size:13px;font-weight:900}
+.timer{font-size:48px;font-weight:900;letter-spacing:-.03em;color:var(--brand-bright);font-variant-numeric:tabular-nums}
+main{display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 100px);padding:24px}
+.stage{position:relative;width:100%;max-width:560px;height:320px;display:flex;align-items:center;justify-content:center}
+.card{position:absolute;width:100%;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:40px 32px;text-align:center;box-shadow:var(--shadow);transition:transform .5s cubic-bezier(.4,0,.2,1),opacity .4s}
+.card.active{transform:translateY(0) scale(1);opacity:1;z-index:2}
+.card.incoming{transform:translateY(120%) scale(.85);opacity:0;z-index:1}
+.card.outgoing{transform:translateY(-120%) scale(.85);opacity:0;z-index:0}
+.tool-name{font-size:clamp(28px,5vw,44px);font-weight:900;letter-spacing:-.04em;color:var(--brand-bright);margin-bottom:12px}
+.tool-desc{font-size:18px;color:#94a3b8;max-width:42ch;margin:0 auto 16px}
+.tool-tip{font-size:13px;color:var(--muted);font-style:italic}
+.bar{display:flex;gap:8px;margin-top:24px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--line);transition:background .3s}
+.dot.done{background:var(--brand)}
+.dot.current{background:var(--brand-bright);box-shadow:0 0 8px var(--brand-bright)}
+.count{font-size:13px;color:var(--muted);margin-top:8px}
+.combo{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:72px;font-weight:900;color:var(--warm);opacity:0;pointer-events:none;text-shadow:0 0 30px rgba(251,191,36,.5);animation:pop .8s ease-out forwards}
+@keyframes pop{0%{opacity:1;transform:translate(-50%,-50%) scale(.3)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+.done-screen{display:none;flex-direction:column;align-items:center;gap:16px}
+.done-screen h1{font-size:36px;font-weight:900;color:var(--brand-bright)}
+.done-screen p{color:var(--muted)}
+.done-screen ul{list-style:none;text-align:left;max-height:200px;overflow-y:auto;width:100%;max-width:400px;padding:0 16px}
+.done-screen li{padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
+.btn{background:var(--brand);color:var(--ink);border:none;border-radius:10px;padding:12px 28px;font:inherit;font-weight:700;cursor:pointer;margin-top:12px}
+.btn:hover{background:var(--brand-bright)}
+.tool-count{font-size:13px;color:var(--muted);margin-top:4px}
+</style>
+</head>
+<body>
+<header><div class="brand"><span class="mark">NOD</span> Mix & Match</div><div class="timer" id="timer">10:00</div></header>
+<main>
+  <div id="stage" class="stage">
+    <div class="card" id="card"><div class="tool-name" id="tname"></div><div class="tool-desc" id="tdesc"></div><div class="tool-tip" id="ttip"></div></div>
+  </div>
+  <div class="bar" id="bar"></div>
+  <div class="count" id="count"></div>
+  <div id="done" class="done-screen">
+    <h1>Round Complete</h1>
+    <p>You practiced with these tools:</p>
+    <ul id="history"></ul>
+    <button class="btn" onclick="location.reload()">Run Another Round</button>
+  </div>
+</main>
+<div class="combo" id="combo"></div>
+<script>
+const TOOLS=[
+  {n:"Mirror",d:"Repeat the last 1-3 words of their core concept.",tip:"Keep it simple."},
+  {n:"Label",d:'"It seems like..." / "It sounds like..." — name the emotion.',tip:"Stay tentative."},
+  {n:"Clean Language",d:"What kind of X is that X? Is there anything else?",tip:"Use their words."},
+  {n:"Summary",d:"Label + paraphrase. Aim for \"that's right.\"",tip:"Not \"you're right.\""},
+  {n:"Calibrated Q",d:"What / How questions. \"How does this fit?\"",tip:"Invite, don't demand."},
+  {n:"Loss Aversion",d:"Make inaction cost visible. Losses hit 2× harder.",tip:"Factual, never threatening."},
+  {n:"Dynamic Silence",d:"3+ seconds of silence after speaking.",tip:"They usually break first."},
+  {n:"Paraphrase",d:"Restate meaning in your own words.",tip:"End as a question."},
+  {n:"Miss Label",d:"Label slightly wrong so they correct you.",tip:"Curiosity only."},
+  {n:"No-Oriented Q",d:'"Would it be a bad idea to…?" — make "no" safe.',tip:"Safety first."},
+  {n:"Accusation Audit",d:'"It probably seems like…" — call it out first.',tip:"Disarm before they arm."},
+];
+
+let pool=[],used=[],endTime,interval,totalTools,slotIdx=0;
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function buildPool(){
+  pool=[];
+  TOOLS.forEach(t=>{for(let i=0;i<(t.n==='Dynamic Silence'?3:1);i++)pool.push(t)});
+  shuffle(pool);
+  totalTools=pool.length;
+}
+
+function fmt(s){return`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
+
+function showCombo(text){
+  const el=document.getElementById('combo');
+  el.textContent=text;el.style.animation='none';
+  void el.offsetWidth;el.style.animation='pop .8s ease-out forwards';
+}
+
+function nextTool(){
+  if(!pool.length)buildPool();
+  if(!pool.length)return;
+  const card=document.getElementById('card');
+  const was=card.className;
+
+  // outgoing animation
+  if(was.includes('active')){
+    card.className='card outgoing';
+    setTimeout(()=>{
+      const t=pool.pop();used.push(t);
+      document.getElementById('tname').textContent=t.n;
+      document.getElementById('tdesc').textContent=t.d;
+      document.getElementById('ttip').textContent=t.tip;
+      card.className='card active';
+      updateBar();
+    },400);
+  }else{
+    const t=pool.pop();used.push(t);
+    document.getElementById('tname').textContent=t.n;
+    document.getElementById('tdesc').textContent=t.d;
+    document.getElementById('ttip').textContent=t.tip;
+    card.className='card incoming';
+    requestAnimationFrame(()=>{card.className='card active'});
+    updateBar();
+  }
+}
+
+function updateBar(){
+  const bar=document.getElementById('bar');
+  bar.innerHTML='';
+  for(let i=0;i<totalTools;i++){
+    const d=document.createElement('span');d.className='dot';
+    if(i<used.length)d.className='dot done';
+    if(i===used.length)d.className='dot current';
+    bar.appendChild(d);
+  }
+  document.getElementById('count').textContent=`${used.length} / ${totalTools}`;
+
+  // combo detection — if same tool appears twice in a row
+  if(used.length>=2&&used[used.length-1].n===used[used.length-2].n)showCombo('DOUBLE!');
+  if(used.length>=3&&used[used.length-1].n===used[used.length-2].n&&used[used.length-2].n===used[used.length-3].n)showCombo('TRIPLE!');
+  // ponytail: combo check on full name match, good enough for 12 tools
+}
+
+function tick(){
+  const left=Math.max(0,endTime-Date.now());
+  document.getElementById('timer').textContent=fmt(left/1000);
+  if(left<=0)finish();
+}
+
+function finish(){
+  clearInterval(interval);
+  document.getElementById('stage').style.display='none';
+  document.getElementById('bar').style.display='none';
+  document.getElementById('count').style.display='none';
+  const done=document.getElementById('done');
+  done.style.display='flex';
+  const hist=document.getElementById('history');
+  hist.innerHTML=used.map((t,i)=>`<li><strong>${i+1}.</strong> ${t.n} — ${t.d}</li>`).join('');
+}
+
+// start
+buildPool();
+endTime=Date.now()+10*60000;
+document.getElementById('timer').textContent='10:00';
+updateBar();
+nextTool();
+interval=setInterval(tick,500);
+
+// rotate every 10 seconds
+setInterval(()=>{
+  const left=endTime-Date.now();
+  if(left<=0)return;
+  nextTool();
+},10000);
+</script>
+</body>
+</html>

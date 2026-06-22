@@ -352,10 +352,10 @@ const SALES_KANBAN_COLS=[
   {key:'CLOSED',label:'Closed',color:'var(--gray)',statuses:['CLOSED'],dropStatus:'CLOSED'},
 ];
 function renderKanban(){
-  const modeToggle='<div style="padding:0 12px 8px;display:flex;gap:8px;align-items:center">'+
-    '<button class="btn-sm '+(kanbanMode==="leads"?"blue":"gray")+'" onclick="kanbanMode=\\'leads\\';renderKanban()">📧 Lead Funnel</button>'+
-    '<button class="btn-sm '+(kanbanMode==="sales"?"blue":"gray")+'" onclick="kanbanMode=\\'sales\\';renderKanban()">💰 Sales Funnel</button>'+
-    '</div>';
+  const modeToggle=`<div style="padding:0 12px 8px;display:flex;gap:8px;align-items:center">`+
+    `<button class="btn-sm ${kanbanMode==="leads"?"blue":"gray"}" onclick="kanbanMode='leads';renderKanban()">📧 Lead Funnel</button>`+
+    `<button class="btn-sm ${kanbanMode==="sales"?"blue":"gray"}" onclick="kanbanMode='sales';renderKanban()">💰 Sales Funnel</button>`+
+    `</div>`;
   if(kanbanMode==='sales'){renderSalesKanban(modeToggle);return}
   const buckets={};KANBAN_COLS.forEach(c=>buckets[c.key]=[]);
   const staleThreshold=21;

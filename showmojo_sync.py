@@ -138,32 +138,10 @@ class NoRedirectHandler(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
 
-def sync_to_google_calendar(leads, dry_run=False):
-    """Create Google Calendar events for showings."""
-    if dry_run:
-        print(f"  [DRY-RUN] Would create {len(leads)} calendar events")
-        return
-    try:
-        gapi = ["python3", os.path.expanduser("~/.hermes/skills/productivity/google-workspace/scripts/google_api.py")]
-        for lead in leads:
-            if not lead.get("showing_time"):
-                continue
-            dt = datetime.fromisoformat(lead["showing_time"])
-            # Create event
-            result = subprocess.run(
-                gapi + ["calendar", "create",
-                    "--summary", f"🏠 Showing: {lead['name']} — {lead['property_address']}",
-                    "--start", dt.strftime("%Y-%m-%dT%H:%M:%S-05:00"),
-                    "--end", (dt.replace(minute=dt.minute+30) if dt.minute < 30 else dt.replace(hour=dt.hour+1, minute=0)).strftime("%Y-%m-%dT%H:%M:%S-05:00"),
-                ],
-                capture_output=True, text=True, timeout=30
-            )
-            if result.returncode == 0:
-                print(f"  📅 Calendar: {lead['name']} — {lead['property_address']}")
-            else:
-                print(f"  ⚠️ Calendar failed: {lead['name']}")
-    except Exception as e:
-        print(f"  Calendar sync error: {e}")
+# ponytail: No Google Calendar API needed — ShowMojo iCal feed is subscribed
+# directly in Apple Calendar + Google Calendar. No token dependency, no auth.
+# To add: Settings → Calendar → Accounts → Add → Other → Subscribe to URL:
+#   https://showmojo.com/accounts/91c8965bd30a99d3de66e5a1f2cf4721/calendar.ics
 
 def main():
     dry_run = "--dry-run" in sys.argv
@@ -213,14 +191,9 @@ def main():
     else:
         print(f"\n4. {'No new leads to import' if not new_leads else '[DRY-RUN] skipped import'}")
 
-    # 5. Google Calendar sync
-    print(f"\n5. Syncing showings to Google Calendar...")
+    # 5. Calendar — no API needed, iCal feed is subscribed directly
     upcoming = [l for l in leads if l.get("showing_time") and datetime.fromisoformat(l["showing_time"]) > datetime.now(timezone.utc)]
-    print(f"   {len(upcoming)} upcoming showings")
-    if upcoming and not dry_run:
-        sync_to_google_calendar(upcoming, dry_run)
-    elif upcoming and dry_run:
-        sync_to_google_calendar(upcoming, dry_run=True)
+    print(f"\n5. Calendar: {len(upcoming)} upcoming showings (subscribed via iCal — no API needed)")
 
     print(f"\n✓ Sync complete — {datetime.now().strftime('%H:%M:%S')}")
 

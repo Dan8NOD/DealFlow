@@ -184,16 +184,27 @@ async function loginSilent(){
 
 async function loadAll(){
   try{
-    const[lr,dr,ar,pr,or]=await Promise.all([
-      fetch('/api/leads?limit=500').then(r=>r.json()),
-      fetch('/api/sales?limit=50').then(r=>r.json()),
-      fetch('/api/applications?limit=200').then(r=>r.json()),
-      fetch('/api/properties?limit=300').then(r=>r.json()),
-      fetch('/api/email-opportunities?hours=24').then(r=>r.json()),
+    const resps=await Promise.all([
+      fetch('/api/leads?limit=500'),
+      fetch('/api/sales?limit=50'),
+      fetch('/api/applications?limit=200'),
+      fetch('/api/properties?limit=300'),
+      fetch('/api/email-opportunities?hours=24'),
     ]);
-    allLeads=lr;allDeals=dr;allApps=ar;allProps=pr;allOpportunities=or||[];
+    // ponytail: if any API returns 401 the session is dead — redirect to login
+    for(const r of resps){
+      if(r.status===401){location.href='/login';return}
+      if(!r.ok)throw new Error('API '+r.status);
+    }
+    const[lr,dr,ar,pr,or]=await Promise.all(resps.map(r=>r.json()));
+    // ponytail: guard against non-array responses
+    allLeads=Array.isArray(lr)?lr:[];
+    allDeals=Array.isArray(dr)?dr:[];
+    allApps=Array.isArray(ar)?ar:[];
+    allProps=Array.isArray(pr)?pr:[];
+    allOpportunities=Array.isArray(or)?or:[];
     allDeals.forEach(d=>d.next_action=NEXT_TIPS[d.status]||'');
-  }catch(e){}
+  }catch(e){console.error('loadAll:',e)}
   renderAll();
 }
 

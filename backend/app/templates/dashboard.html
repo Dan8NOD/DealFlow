@@ -13,7 +13,7 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
 .lhf-strip{padding:12px 12px 0;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .lhf-card{flex:0 0 auto;background:var(--card);border-radius:var(--r);padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.06);min-width:160px;max-width:200px;cursor:pointer;border-left:4px solid var(--green);transition:transform .1s}
 .lhf-card:active{transform:scale(.97)}
-.lhf-card.hot{border-left-color:var(--red)}.lhf-card.deal{border-left-color:var(--purple)}.lhf-card.bounce{border-left-color:var(--amber)}
+.lhf-card.hot{border-left-color:var(--red)}.lhf-card.deal{border-left-color:var(--purple)}.lhf-card.bounce{border-left-color:var(--amber)}.lhf-card.income{border-left-color:var(--green)}.lhf-card.traffic{border-left-color:var(--blue)}.lhf-card.email{border-left-color:var(--navy)}
 .lhf-card .lhf-icon{font-size:20px}.lhf-card .lhf-title{font-size:13px;font-weight:700;margin:4px 0 2px}.lhf-card .lhf-sub{font-size:11px;color:var(--gray)}
 @media(min-width:768px){.lhf-strip{flex-wrap:wrap;overflow-x:visible}.lhf-card{flex:1;min-width:0;max-width:none}}
 
@@ -199,20 +199,51 @@ function renderLHF(){
   // 1. Hot leads — NEW leads with phone numbers, last 48h
   const hot=allLeads.filter(l=>l.status==='NEW'&&l.phone&&l.days_old<3).slice(0,4);
   hot.forEach(l=>cards.push({icon:'🔥',title:l.name||'Lead',sub:(l.property||'')+' · '+(l.source||''),type:'lead',id:l.id,cls:'hot'}));
-  // 2. Deals near closing — under contract, recent activity
+
+  // 2. Good income / credit leads — income >= 3x rent or high absolute income
+  const incomeLeads=allLeads.filter(l=>{
+    if(!l.monthly_income)return false;
+    const prop=l.property_id?allProps.find(p=>p.id===l.property_id):null;
+    if(prop&&prop.rent&&l.monthly_income>=prop.rent*3)return true;
+    return l.monthly_income>=4000;
+  }).slice(0,3);
+  incomeLeads.forEach(l=>{
+    const income='$'+Number(l.monthly_income).toLocaleString()+'/mo';
+    cards.push({icon:'💵',title:l.name||'Qualified lead',sub:income+' · '+(l.property||''),type:'lead',id:l.id,cls:'income'});
+  });
+
+  // 3. High-traffic properties — lots of leads/applications
+  const traffic=allProps.map(p=>{
+    const leads=allLeads.filter(l=>l.property_id===p.id).length;
+    const apps=allApps.filter(a=>a.property_id===p.id).length;
+    return {...p,traffic:leads+apps};
+  }).filter(p=>p.traffic>=3).sort((a,b)=>b.traffic-a.traffic).slice(0,3);
+  traffic.forEach(p=>{
+    cards.push({icon:'🚦',title:(p.address||'').split(',')[0],sub:p.traffic+' inquiries · '+p.status,type:'props',id:p.id,cls:'traffic'});
+  });
+
+  // 4. Deals near closing — under contract, recent activity
   const nearClose=allDeals.filter(d=>['UNDER_CONTRACT','CONTRACT_SIGNED','OFFER_RECEIVED'].includes(d.status)&&d.days_idle<7).slice(0,3);
   nearClose.forEach(d=>cards.push({icon:'💰',title:d.address.split(',')[0],sub:'Near close · '+(d.status||'').replace(/_/g,' '),type:'deal',id:d.id,cls:'deal'}));
-  // 3. Bounce candidates — leads on rented units
+
+  // 5. Bounce candidates — leads on rented units
   allLeads.filter(l=>l.property_id).forEach(l=>{
     const p=allProps.find(p=>p.id===l.property_id);
-    if(p&&['RENTED','OCCUPIED'].includes(p.status)&&cards.length<8){
+    if(p&&['RENTED','OCCUPIED'].includes(p.status)&&cards.length<10){
       cards.push({icon:'🔄',title:l.name||'Lead',sub:'Bounce from '+(p.address||'').substring(0,25),type:'lead',id:l.id,cls:'bounce'});
     }
   });
-  // 4. Stale deals needing attention
+
+  // 6. Business potential from Apple Mail
+  allOpportunities.slice(0,3).forEach(o=>{
+    const name=o.sender_name||o.sender_email||'Email';
+    cards.push({icon:'✉️',title:name,sub:o.subject.substring(0,35)+(o.subject.length>35?'...':''),type:'email',id:o.id,cls:'email'});
+  });
+
+  // 7. Stale deals needing attention
   const stale=allDeals.filter(d=>d.days_idle>20&&!['CLOSED'].includes(d.status)).slice(0,2);
   stale.forEach(d=>cards.push({icon:'⚠️',title:d.address.split(',')[0],sub:'Stale · '+(d.days_idle||0)+'d idle',type:'deal',id:d.id,cls:'hot'}));
-  
+
   document.getElementById('lhfStrip').innerHTML=cards.map(c=>
     `<div class="lhf-card ${c.cls}" onclick="openPanel('${c.type}',${c.id})">
       <div class="lhf-icon">${c.icon}</div>
@@ -333,12 +364,13 @@ function renderTabView(tab){
 }
 
 // ── PANEL ──
-function openPanel(type,id){
+async function openPanel(type,id){
   let data;
   if(type==='lead')data=allLeads.find(x=>x.id===id);
   else if(type==='deal')data=allDeals.find(x=>x.id===id);
   else if(type==='app')data=allApps.find(x=>x.id===id);
   else if(type==='props')data=allProps.find(x=>x.id===id);
+  else if(type==='email')data=allOpportunities.find(x=>x.id===id);
   if(!data)return;
 
   selectedType=type;selectedId=id;
@@ -359,6 +391,10 @@ function openPanel(type,id){
   }else if(type==='app'){
     title=data.applicant||'Applicant';
     body=r('Property',data.property)+r('Status',data.status)+r('Handler',data.handler)+r('Income',data.monthly_income?'$'+Number(data.monthly_income).toLocaleString():'');
+  }else if(type==='email'){
+    title=data.sender_name||data.sender_email||'Email';
+    body=r('Subject',data.subject)+r('From',data.sender_email)+r('Received',data.received_at?new Date(data.received_at).toLocaleString():'')+r('Property',data.property_address)+r('Kind',data.matched_kind)+r('Preview',data.body_preview);
+    body+=`<div class="p-actions">${data.sender_email?`<a href="mailto:${data.sender_email}?subject=Re:${encodeURIComponent(data.subject)}" class="pa-email">✉️ Reply</a>`:''}</div>`;
   }else{
     title=data.address||'Property';
     // Fetch rich detail from new endpoint

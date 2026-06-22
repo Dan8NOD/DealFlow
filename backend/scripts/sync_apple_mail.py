@@ -37,12 +37,19 @@ from app.integrations.sync_engine import (
 
 
 def parsed_from_msg(msg: dict) -> dict:
+    received = msg.get("received_at")
+    if isinstance(received, str):
+        try:
+            from datetime import datetime as _dt
+            received = _dt.fromisoformat(received.replace("Z", "+00:00"))
+        except Exception:
+            received = None
     return {
         "external_id": msg["external_id"],
         "subject": msg["subject"],
         "sender_email": msg["sender_email"],
         "sender_name": msg["sender_name"],
-        "received_at": msg["received_at"].isoformat() if msg["received_at"] else None,
+        "received_at": received,
         "body_preview": msg["body_preview"],
     }
 

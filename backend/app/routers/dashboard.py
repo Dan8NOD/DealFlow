@@ -1025,6 +1025,9 @@ async def email_opportunities(
         EmailMessage.org_id == user.org_id,
         EmailMessage.received_at >= since,
     ).order_by(desc(EmailMessage.received_at)).limit(100).all()
+    # Bulk load properties referenced
+    prop_ids = {m.matched_property_id for m in msgs if m.matched_property_id}
+    props = {p.id: p for p in db.query(Property).filter(Property.id.in_(prop_ids)).all()} if prop_ids else {}
     return [
         {
             "id": m.id,
@@ -1033,7 +1036,7 @@ async def email_opportunities(
             "sender_name": m.sender_name,
             "received_at": m.received_at.isoformat() if m.received_at else None,
             "matched_kind": m.matched_kind,
-            "property_address": m.property.address if m.property else None,
+            "property_address": props[m.matched_property_id].address if m.matched_property_id in props else None,
             "body_preview": m.body_preview,
         }
         for m in msgs

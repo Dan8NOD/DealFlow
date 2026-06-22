@@ -164,6 +164,14 @@ async def save_mixmatch_note(data: dict = Body(...)):
     return {"ok": True}
 
 
+@app.get("/api/mixmatch-notes")
+async def get_mixmatch_notes():
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        rows = conn.execute(text("SELECT id, note_text, tool_name, created_at FROM mixmatch_notes ORDER BY id DESC LIMIT 50")).fetchall()
+    return [{"id": r[0], "note_text": r[1], "tool_name": r[2], "created_at": str(r[3])} for r in rows]
+
+
 # Serve static frontend (built SPA) in production
 try:
     app.mount("/", StaticFiles(directory="static", html=True), name="static")

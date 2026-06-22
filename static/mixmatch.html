@@ -1,138 +1,224 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
 <title>NOD Mix & Match</title>
 <style>
-:root{--ink:#15313d;--muted:#65777c;--paper:#0d1f28;--card:#112530;--line:#1a3844;--brand:#14b8a6;--brand-bright:#2dd4bf;--warm:#fbbf24;--shadow:0 12px 35px rgba(0,0,0,.4)}*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--paper);color:#e2e8f0;font:16px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;min-height:100vh;overflow:hidden}
-/* ponytail: fullscreen single-page, no routing needed */
-header{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid var(--line)}
-.brand{font-size:18px;font-weight:800;letter-spacing:-.03em;display:flex;align-items:center;gap:10px}
-.mark{width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:var(--brand);color:var(--ink);font-size:13px;font-weight:900}
-.timer{font-size:48px;font-weight:900;letter-spacing:-.03em;color:var(--brand-bright);font-variant-numeric:tabular-nums}
-main{display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 100px);padding:24px}
-.stage{position:relative;width:100%;max-width:560px;height:320px;display:flex;align-items:center;justify-content:center}
-.card{position:absolute;width:100%;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:40px 32px;text-align:center;box-shadow:var(--shadow);transition:transform .5s cubic-bezier(.4,0,.2,1),opacity .4s}
-.card.active{transform:translateY(0) scale(1);opacity:1;z-index:2}
-.card.incoming{transform:translateY(120%) scale(.85);opacity:0;z-index:1}
-.card.outgoing{transform:translateY(-120%) scale(.85);opacity:0;z-index:0}
-.tool-name{font-size:clamp(28px,5vw,44px);font-weight:900;letter-spacing:-.04em;color:var(--brand-bright);margin-bottom:12px}
-.tool-desc{font-size:18px;color:#94a3b8;max-width:42ch;margin:0 auto 16px}
-.tool-tip{font-size:13px;color:var(--muted);font-style:italic}
-.bar{display:flex;gap:8px;margin-top:24px}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--line);transition:background .3s}
-.dot.done{background:var(--brand)}
-.dot.current{background:var(--brand-bright);box-shadow:0 0 8px var(--brand-bright)}
-.count{font-size:13px;color:var(--muted);margin-top:8px}
-.combo{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:72px;font-weight:900;color:var(--warm);opacity:0;pointer-events:none;text-shadow:0 0 30px rgba(251,191,36,.5);animation:pop .8s ease-out forwards}
-@keyframes pop{0%{opacity:1;transform:translate(-50%,-50%) scale(.3)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
-.done-screen{display:none;flex-direction:column;align-items:center;gap:16px}
-.done-screen h1{font-size:36px;font-weight:900;color:var(--brand-bright)}
-.done-screen p{color:var(--muted)}
-.done-screen ul{list-style:none;text-align:left;max-height:200px;overflow-y:auto;width:100%;max-width:400px;padding:0 16px}
-.done-screen li{padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
-.btn{background:var(--brand);color:var(--ink);border:none;border-radius:10px;padding:12px 28px;font:inherit;font-weight:700;cursor:pointer;margin-top:12px}
-.btn:hover{background:var(--brand-bright)}
-.tool-count{font-size:13px;color:var(--muted);margin-top:4px}
+:root{--felt:#0a5c36;--felt-dark:#074528;--felt-edge:#06371f;--card-bg:#fffef7;--card-red:#c0392b;--card-black:#1a1a2e;--gold:#d4a843;--gold-light:#f0d78c;--ink:#15313d;--muted:#8a9ba5}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(ellipse at center,var(--felt) 0%,var(--felt-dark) 60%,var(--felt-edge) 100%);min-height:100vh;min-height:100dvh;overflow-x:hidden;font:16px/1.4 Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;color:#e8e8e8;-webkit-tap-highlight-color:transparent}
+header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(0,0,0,.25);border-bottom:1px solid rgba(255,255,255,.08)}
+.brand{font-size:16px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.mark{width:30px;height:30px;display:grid;place-items:center;border-radius:8px;background:var(--gold);color:#1a1a2e;font-size:11px;font-weight:900}
+.timer{font-size:42px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--gold-light);text-shadow:0 0 20px rgba(212,168,67,.3)}
+.controls{display:flex;gap:8px}
+.pill{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#ccc;border-radius:20px;padding:6px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s}
+.pill:hover{background:rgba(255,255,255,.18)}
+.pill.active{background:var(--gold);color:#1a1a2e;border-color:var(--gold)}
+main{display:flex;flex-direction:column;align-items:center;padding:16px;gap:20px}
+/* poker table area */
+.table{width:100%;max-width:420px;perspective:800px;perspective-origin:50% 20%}
+/* deck stack behind the active card */
+.deck{display:flex;justify-content:center;position:relative;height:20px;margin-bottom:-10px;z-index:0}
+.deck-card{width:40px;height:6px;background:var(--card-bg);border-radius:3px;border:1px solid rgba(0,0,0,.2);position:absolute;margin-left:0}
+/* active card */
+.card-stage{position:relative;height:260px;display:flex;align-items:flex-end;justify-content:center}
+.card{position:absolute;width:100%;max-width:380px;min-height:200px;background:var(--card-bg);border-radius:16px;padding:28px 24px;box-shadow:0 20px 50px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.3);border:2px solid var(--gold);color:var(--ink);text-align:center;transition:transform .55s cubic-bezier(.22,.61,.36,1),opacity .4s;cursor:pointer;transform-origin:bottom center}
+.card .suit{position:absolute;top:12px;left:14px;font-size:22px;line-height:1}
+.card .suit.tr{left:auto;right:14px;top:auto;bottom:12px;transform:rotate(180deg)}
+.card .rank{position:absolute;top:8px;left:36px;font-size:13px;font-weight:900}
+.card .rank.br{left:auto;right:36px;top:auto;bottom:8px;transform:rotate(180deg)}
+.card .use-hint{position:absolute;bottom:8px;right:50%;transform:translateX(50%);font-size:11px;color:#999;font-style:italic}
+.card.active{transform:translateY(0) rotateX(0deg);opacity:1;z-index:2;animation:deal .55s cubic-bezier(.22,.61,.36,1) forwards}
+.card.leaving{transform:translateY(-120%) rotateX(25deg);opacity:0;z-index:0}
+.card.flipped{transform:rotateY(180deg)}
+.card.expanded{min-height:340px}
+.tool-name{font-size:26px;font-weight:900;letter-spacing:-.03em;margin-bottom:8px;color:var(--card-black)}
+.tool-desc{font-size:15px;color:#555;line-height:1.5;max-width:36ch;margin:0 auto}
+.tool-detail{display:none;margin-top:14px;padding-top:14px;border-top:1px solid #e0d8c8;font-size:14px;color:#666;text-align:left;line-height:1.6}
+.card.expanded .tool-detail{display:block}
+.tool-detail strong{color:var(--card-red)}
+@keyframes deal{0%{transform:translateY(160%) rotateX(-60deg);opacity:.2}60%{transform:translateY(-15px) rotateX(5deg);opacity:1}80%{transform:translateY(4px) rotateX(-2deg)}100%{transform:translateY(0) rotateX(0deg);opacity:1}}
+/* progress dots */
+.bar{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:380px}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .3s}
+.dot.done{background:var(--gold)}
+.dot.current{background:var(--gold-light);box-shadow:0 0 6px var(--gold-light)}
+.count{font-size:12px;color:rgba(255,255,255,.4)}
+/* notes panel */
+.notes-panel{display:none;width:100%;max-width:380px;flex-direction:column;gap:8px;animation:slideUp .3s ease}
+.notes-panel.open{display:flex}
+@keyframes slideUp{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+.notes-panel textarea{width:100%;height:100px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.15);border-radius:12px;color:#e8e8e8;padding:12px;font:inherit;font-size:14px;resize:none}
+.notes-panel textarea::placeholder{color:rgba(255,255,255,.3)}
+.note-btn{background:var(--gold);color:#1a1a2e;border:none;border-radius:10px;padding:10px 20px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+.note-saved{font-size:12px;color:var(--gold-light);text-align:center;display:none}
+/* combo pop */
+.combo{position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);font-size:56px;font-weight:900;color:var(--gold-light);opacity:0;pointer-events:none;text-shadow:0 0 30px rgba(240,215,140,.6);animation:pop .7s ease-out forwards;z-index:10}
+@keyframes pop{0%{opacity:1;transform:translate(-50%,-50%) scale(.2)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.4)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+/* done screen */
+.done{display:none;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.done h1{font-size:28px;font-weight:900;color:var(--gold-light)}
+.done p{color:rgba(255,255,255,.5);font-size:14px}
+.done ul{list-style:none;text-align:left;max-height:180px;overflow-y:auto;width:100%;max-width:380px;background:rgba(0,0,0,.2);border-radius:12px;padding:12px}
+.done li{padding:4px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px}
+.btn{background:var(--gold);color:#1a1a2e;border:none;border-radius:10px;padding:12px 28px;font:inherit;font-weight:700;cursor:pointer;font-size:15px}
+/* expanded card overlay on mobile — tap to see full detail */
+@media(max-width:400px){.card{padding:20px 16px;min-height:160px}.tool-name{font-size:22px}.card.expanded{min-height:300px}}
 </style>
 </head>
 <body>
-<header><div class="brand"><span class="mark">NOD</span> Mix & Match</div><div class="timer" id="timer">10:00</div></header>
+<header>
+  <div class="brand"><span class="mark">NOD</span> Mix & Match</div>
+  <div class="timer" id="timer">10:00</div>
+  <div class="controls">
+    <button class="pill" id="pauseBtn" onclick="togglePause()" aria-label="Pause">⏯ Pause</button>
+    <button class="pill" id="notesBtn" onclick="toggleNotes()" aria-label="Notes">📝 Notes</button>
+  </div>
+</header>
 <main>
-  <div id="stage" class="stage">
-    <div class="card" id="card"><div class="tool-name" id="tname"></div><div class="tool-desc" id="tdesc"></div><div class="tool-tip" id="ttip"></div></div>
+  <div class="table">
+    <div class="deck" id="deck"></div>
+    <div class="card-stage">
+      <div class="card" id="card" onclick="toggleCard()">
+        <span class="suit" id="suit1">♦</span><span class="rank" id="rank1">K</span>
+        <span class="suit tr" id="suit2">♦</span><span class="rank br" id="rank2">K</span>
+        <div class="tool-name" id="tname"></div>
+        <div class="tool-desc" id="tdesc"></div>
+        <div class="tool-detail" id="tdetail"></div>
+      </div>
+    </div>
   </div>
   <div class="bar" id="bar"></div>
   <div class="count" id="count"></div>
-  <div id="done" class="done-screen">
-    <h1>Round Complete</h1>
-    <p>You practiced with these tools:</p>
+  <div class="notes-panel" id="notesPanel">
+    <textarea id="noteText" placeholder="Jot something down about this tool…"></textarea>
+    <button class="note-btn" onclick="saveNote()">Save Note</button>
+    <span class="note-saved" id="noteSaved">✓ Saved</span>
+  </div>
+  <div class="done" id="done">
+    <h1>🃏 Round Complete</h1>
+    <p>Tools practiced:</p>
     <ul id="history"></ul>
-    <button class="btn" onclick="location.reload()">Run Another Round</button>
+    <button class="btn" onclick="location.reload()">Deal Another Round</button>
   </div>
 </main>
 <div class="combo" id="combo"></div>
+
 <script>
+const SUITS=['♦','♥','♠','♣'],RANKS=['A','K','Q','J','10','9','8','7','6','5','4','3','2'];
+
 const TOOLS=[
-  {n:"Mirror",d:"Repeat the last 1-3 words of their core concept.",tip:"Keep it simple."},
-  {n:"Label",d:'"It seems like..." / "It sounds like..." — name the emotion.',tip:"Stay tentative."},
-  {n:"Clean Language",d:"What kind of X is that X? Is there anything else?",tip:"Use their words."},
-  {n:"Summary",d:"Label + paraphrase. Aim for \"that's right.\"",tip:"Not \"you're right.\""},
-  {n:"Calibrated Q",d:"What / How questions. \"How does this fit?\"",tip:"Invite, don't demand."},
-  {n:"Loss Aversion",d:"Make inaction cost visible. Losses hit 2× harder.",tip:"Factual, never threatening."},
-  {n:"Dynamic Silence",d:"3+ seconds of silence after speaking.",tip:"They usually break first."},
-  {n:"Paraphrase",d:"Restate meaning in your own words.",tip:"End as a question."},
-  {n:"Miss Label",d:"Label slightly wrong so they correct you.",tip:"Curiosity only."},
-  {n:"No-Oriented Q",d:'"Would it be a bad idea to…?" — make "no" safe.',tip:"Safety first."},
-  {n:"Accusation Audit",d:'"It probably seems like…" — call it out first.',tip:"Disarm before they arm."},
+  {n:"Mirror",d:"Repeat the last 1-3 words of their core concept.",det:"<strong>How:</strong> Pick the last 1-3 words they said and repeat them back with an upward inflection — like a question. Don't add anything.<br><br><strong>Why:</strong> Makes them elaborate. People fill silence with deeper truths.<br><br><strong>Watch for:</strong> Don't mirror filler words — pick the core idea."},
+  {n:"Label",d:'"It seems like…" — name the emotion or dynamic.',det:"<strong>How:</strong> Start with \"It seems like…\" or \"It sounds like…\" and name what you think they're feeling.<br><br><strong>Why:</strong> Labeling diffuses negative emotions and amplifies positive ones. Neuroscience: naming an emotion reduces its intensity.<br><br><strong>Pitfall:</strong> Don't state it as fact — keep it tentative."},
+  {n:"Clean Language",d:"What kind of X is that X? Is there anything else about that X?",det:"<strong>How:</strong> Use their exact words. \"What kind of [their word] is that?\" or \"Is there anything else about [their word]?\"<br><br><strong>Why:</strong> They explore their own thinking without your influence.<br><br><strong>Advanced:</strong> \"And when [X], what happens just before?\" \"And where is [X]?\""},
+  {n:"Summary",d:"Label + paraphrase. Aim for \"that's right\" — not \"you're right.\"",det:"<strong>How:</strong> Combine a label with a paraphrase: \"So it seems like you're frustrated because the timeline keeps slipping. And what you really need is a firm commitment by Friday.\"<br><br><strong>Why:</strong> When they say \"that's right,\" they feel heard. \"You're right\" = they're just agreeing with you."},
+  {n:"Calibrated Q",d:'What / How questions. "How does this fit into the bigger picture?"',det:"<strong>How:</strong> Use \"What\" and \"How\" — never \"Why\" (sounds accusatory).<br><br><strong>Examples:</strong> \"What's the biggest challenge here?\" \"How does this fit into your plans?\" \"What makes you ask?\"<br><br><strong>Why:</strong> Shifts them from resisting to problem-solving with you."},
+  {n:"Loss Aversion",d:"Make the cost of inaction visible. Losses hit 2× harder than gains.",det:"<strong>How:</strong> Gently point out what they stand to lose by waiting. \"Every month this sits on the market, that's $3,500 you're not getting back.\"<br><br><strong>Why:</strong> Prospect theory: people fear loss more than they value equivalent gains.<br><br><strong>Caution:</strong> Keep it factual — never threatening or manipulative."},
+  {n:"Dynamic Silence",d:"3+ seconds of silence after speaking. Let them break it.",det:"<strong>How:</strong> After you speak, count to 3 silently. Don't fill the gap.<br><br><strong>Why:</strong> Most people break silence within 7 seconds. The first person to speak concedes leverage. Silence creates space for them to reveal more.<br><br><strong>Practice:</strong> 3 seconds feels like an eternity. Use a watch until it's natural."},
+  {n:"Paraphrase",d:"Restate meaning in your own words — end as a question for confirmation.",det:"<strong>How:</strong> \"So what I'm hearing is [their point in your words]. Did I get that right?\"<br><br><strong>Why:</strong> Shows you're listening actively. Gives them a chance to correct you — corrections are gold."},
+  {n:"Miss Label",d:"Label something slightly wrong so they correct you. Use with curiosity.",det:"<strong>How:</strong> \"It seems like you're mostly worried about the price?\" (when you suspect it's really about timing).<br><br><strong>Why:</strong> People are more motivated to correct a wrong statement than to volunteer the truth unprompted.<br><br><strong>Danger:</strong> Only with genuine curiosity — never to manipulate."},
+  {n:"No-Oriented Q",d:'"Would it be a bad idea to…?" — make "no" feel safe.',det:"<strong>How:</strong> Frame questions so \"no\" is a comfortable answer: \"Would it be ridiculous to ask for a lower price?\" \"Have you given up on finding something by summer?\"<br><br><strong>Why:</strong> \"No\" feels safe. \"Yes\" feels binding. When they say \"no,\" they stay in control."},
+  {n:"Accusation Audit",d:'"It probably seems like I'm just trying to close this deal…" — call it out first.',det:"<strong>How:</strong> List every negative thing they could be thinking about you BEFORE they say it. \"You probably think I'm just trying to push this through for the commission.\"<br><br><strong>Why:</strong> Disarms their suspicion. They can't accuse you of what you've already named.<br><br><strong>Pro tip:</strong> Go further than feels comfortable — that's where the real fear is."},
 ];
 
-let pool=[],used=[],endTime,interval,totalTools,slotIdx=0;
+let pool=[],used=[],endTime,interval,paused=false,cardExpanded=false,currentTool=null;
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
 function buildPool(){
-  pool=[];
-  TOOLS.forEach(t=>{for(let i=0;i<(t.n==='Dynamic Silence'?3:1);i++)pool.push(t)});
+  pool=[];TOOLS.forEach(t=>{for(let i=0;i<(t.n==='Dynamic Silence'?3:1);i++)pool.push(t)});
   shuffle(pool);
-  totalTools=pool.length;
 }
 
 function fmt(s){return`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
 
-function showCombo(text){
-  const el=document.getElementById('combo');
-  el.textContent=text;el.style.animation='none';
-  void el.offsetWidth;el.style.animation='pop .8s ease-out forwards';
+function randomSuit(){const s=SUITS[Math.floor(Math.random()*4)],r=RANKS[Math.floor(Math.random()*RANKS.length)];return{s,r,color:s==='♥'||s==='♦'?'var(--card-red)':'var(--card-black)'}}
+
+function showCombo(t){const e=document.getElementById('combo');e.textContent=t;e.style.animation='none';void e.offsetWidth;e.style.animation='pop .7s ease-out forwards'}
+
+function toggleCard(){
+  if(paused)return;
+  const c=document.getElementById('card');
+  cardExpanded=!cardExpanded;
+  c.classList.toggle('expanded',cardExpanded);
 }
 
-function nextTool(){
+function showTool(t){
+  currentTool=t;
+  const c=document.getElementById('card'),suit=randomSuit();
+  document.getElementById('suit1').textContent=suit.s;document.getElementById('suit1').style.color=suit.color;
+  document.getElementById('suit2').textContent=suit.s;document.getElementById('suit2').style.color=suit.color;
+  document.getElementById('rank1').textContent=suit.r;document.getElementById('rank1').style.color=suit.color;
+  document.getElementById('rank2').textContent=suit.r;document.getElementById('rank2').style.color=suit.color;
+  document.getElementById('tname').textContent=t.n;
+  document.getElementById('tdesc').textContent=t.d;
+  document.getElementById('tdetail').innerHTML=t.det;
+  cardExpanded=false;c.classList.remove('expanded');
+  
+  // clear notes panel for new tool
+  document.getElementById('noteText').value='';
+  document.getElementById('noteSaved').style.display='none';
+}
+
+function nextTool(animate=true){
   if(!pool.length)buildPool();
   if(!pool.length)return;
-  const card=document.getElementById('card');
-  const was=card.className;
-
-  // outgoing animation
-  if(was.includes('active')){
-    card.className='card outgoing';
-    setTimeout(()=>{
-      const t=pool.pop();used.push(t);
-      document.getElementById('tname').textContent=t.n;
-      document.getElementById('tdesc').textContent=t.d;
-      document.getElementById('ttip').textContent=t.tip;
-      card.className='card active';
-      updateBar();
-    },400);
-  }else{
-    const t=pool.pop();used.push(t);
-    document.getElementById('tname').textContent=t.n;
-    document.getElementById('tdesc').textContent=t.d;
-    document.getElementById('ttip').textContent=t.tip;
-    card.className='card incoming';
-    requestAnimationFrame(()=>{card.className='card active'});
-    updateBar();
-  }
+  const t=pool.pop();used.push(t);
+  
+  if(animate){
+    const c=document.getElementById('card');
+    c.classList.add('leaving');
+    setTimeout(()=>{c.classList.remove('leaving');showTool(t);void c.offsetWidth;c.classList.add('active')},400);
+  }else{showTool(t);document.getElementById('card').classList.add('active')}
+  updateBar();
+  // combo detection
+  if(used.length>=2&&used[used.length-1].n===used[used.length-2].n)showCombo('DOUBLE!');
+  if(used.length>=3&&used[used.length-1].n===used[used.length-2].n&&used[used.length-2].n===used[used.length-3].n)showCombo('TRIPLE!');
 }
 
 function updateBar(){
-  const bar=document.getElementById('bar');
+  const bar=document.getElementById('bar'),total=pool.length+used.length;
   bar.innerHTML='';
-  for(let i=0;i<totalTools;i++){
+  for(let i=0;i<total;i++){
     const d=document.createElement('span');d.className='dot';
-    if(i<used.length)d.className='dot done';
-    if(i===used.length)d.className='dot current';
+    if(i<used.length)d.classList.add('done');
+    if(i===used.length)d.classList.add('current');
     bar.appendChild(d);
   }
-  document.getElementById('count').textContent=`${used.length} / ${totalTools}`;
+  document.getElementById('count').textContent=`${used.length} / ${total}`;
+  // deck stack
+  document.getElementById('deck').innerHTML=Array.from({length:Math.min(pool.length,8)},(_,i)=>
+    `<span class="deck-card" style="margin-left:${i*5}px;opacity:${.9-i*.1}"></span>`).join('');
+}
 
-  // combo detection — if same tool appears twice in a row
-  if(used.length>=2&&used[used.length-1].n===used[used.length-2].n)showCombo('DOUBLE!');
-  if(used.length>=3&&used[used.length-1].n===used[used.length-2].n&&used[used.length-2].n===used[used.length-3].n)showCombo('TRIPLE!');
-  // ponytail: combo check on full name match, good enough for 12 tools
+function togglePause(){
+  paused=!paused;
+  document.getElementById('pauseBtn').classList.toggle('active',paused);
+  document.getElementById('pauseBtn').textContent=paused?'▶ Resume':'⏯ Pause';
+}
+
+function toggleNotes(){
+  const p=document.getElementById('notesPanel');
+  p.classList.toggle('open');
+  if(p.classList.contains('open'))document.getElementById('noteText').focus();
+}
+
+async function saveNote(){
+  const note=document.getElementById('noteText').value.trim();
+  if(!note)return;
+  try{
+    await fetch('/api/mixmatch-notes',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({note_text:note,tool_name:currentTool?currentTool.n:''})
+    });
+    document.getElementById('noteSaved').style.display='block';
+    setTimeout(()=>document.getElementById('noteSaved').style.display='none',2000);
+  }catch(e){}
 }
 
 function tick(){
+  if(paused)return;
   const left=Math.max(0,endTime-Date.now());
   document.getElementById('timer').textContent=fmt(left/1000);
   if(left<=0)finish();
@@ -140,29 +226,28 @@ function tick(){
 
 function finish(){
   clearInterval(interval);
-  document.getElementById('stage').style.display='none';
+  document.querySelector('.table').style.display='none';
   document.getElementById('bar').style.display='none';
   document.getElementById('count').style.display='none';
-  const done=document.getElementById('done');
-  done.style.display='flex';
-  const hist=document.getElementById('history');
-  hist.innerHTML=used.map((t,i)=>`<li><strong>${i+1}.</strong> ${t.n} — ${t.d}</li>`).join('');
+  document.getElementById('notesPanel').style.display='none';
+  document.getElementById('done').style.display='flex';
+  document.getElementById('history').innerHTML=used.map((t,i)=>`<li><strong>${i+1}.</strong> ${t.n}</li>`).join('');
 }
 
 // start
 buildPool();
 endTime=Date.now()+10*60000;
-document.getElementById('timer').textContent='10:00';
-updateBar();
-nextTool();
+nextTool(false);
 interval=setInterval(tick,500);
+setInterval(()=>{if(!paused&&endTime-Date.now()>0)nextTool()},10000);
 
-// rotate every 10 seconds
-setInterval(()=>{
-  const left=endTime-Date.now();
-  if(left<=0)return;
-  nextTool();
-},10000);
+// keyboard shortcuts
+document.addEventListener('keydown',e=>{
+  if(e.key===' '||e.code==='Space'){e.preventDefault();togglePause()}
+  if(e.key==='n'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();toggleNotes()}
+  if(e.key==='Enter'&&e.ctrlKey){e.preventDefault();saveNote()}
+  if(e.key==='ArrowRight'&&!paused){e.preventDefault();nextTool()}
+});
 </script>
 </body>
 </html>

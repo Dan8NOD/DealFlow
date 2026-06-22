@@ -1,5 +1,5 @@
 """FastAPI entry point."""
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
@@ -114,6 +114,19 @@ def _ensure_columns(engine):
                 conn.execute(text(f"ALTER TABLE properties ADD COLUMN \"{col}\" {typ}"))
                 conn.commit()
 
+    # ponytail: mixmatch_notes — raw SQL CREATE, no ORM model
+    if 'mixmatch_notes' not in insp.get_table_names():
+        with engine.connect() as conn:
+            conn.execute(text("""
+                CREATE TABLE mixmatch_notes (
+                    id SERIAL PRIMARY KEY,
+                    note_text TEXT NOT NULL,
+                    tool_name VARCHAR(200),
+                    created_at TIMESTAMP DEFAULT NOW()
+                )
+            """))
+            conn.commit()
+
 
 app.include_router(auth.router)
 app.include_router(dashboard.router)
@@ -137,6 +150,18 @@ async def mixmatch():
     path = os.path.join(os.path.dirname(__file__), "..", "..", "static", "mixmatch.html")
     with open(path) as f:
         return HTMLResponse(f.read())
+
+
+@app.post("/api/mixmatch-notes")
+async def save_mixmatch_note(data: dict = Body(...)):
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        conn.execute(
+            text("INSERT INTO mixmatch_notes (note_text, tool_name) VALUES (:note, :tool)"),
+            {"note": data.get("note_text", ""), "tool": data.get("tool_name", "")}
+        )
+        conn.commit()
+    return {"ok": True}
 
 
 # Serve static frontend (built SPA) in production

@@ -1,338 +1,337 @@
-1|{% extends "base.html" %}
-2|{% block title %}Renter — {{ org.name }}{% endblock %}
-3|{% block extra_css %}
-4|:root{--navy:#1a365d;--blue:#2b6cb0;--green:#276749;--red:#c53030;--amber:#b7791f;--purple:#6b46c1;--gray:#718096;--bg:#f5f5f5;--card:#fff;--r:10px}
-5|*{margin:0;padding:0;box-sizing:border-box}
-6|body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:#1a202c;font-size:15px;padding-bottom:60px}
-7|
-8|header.bar{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;padding:12px 16px;position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.12)}
-9|header.bar h1{font-size:18px;font-weight:800}
-10|header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,255,255,.12);padding:6px 10px;border-radius:6px;border:none;cursor:pointer;font-weight:600}
-11|
-12|/* ── LOW HANGING FRUIT ── */
-13|.lhf-strip{padding:12px 12px 0;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-14|.lhf-card{flex:0 0 auto;background:var(--card);border-radius:var(--r);padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.06);min-width:160px;max-width:200px;cursor:pointer;border-left:4px solid var(--green);transition:transform .1s}
-15|.lhf-card:active{transform:scale(.97)}
-16|.lhf-card.hot{border-left-color:var(--red)}.lhf-card.deal{border-left-color:var(--purple)}.lhf-card.bounce{border-left-color:var(--amber)}.lhf-card.income{border-left-color:var(--green)}.lhf-card.traffic{border-left-color:var(--blue)}.lhf-card.email{border-left-color:var(--navy)}
-17|.lhf-card .lhf-icon{font-size:20px}.lhf-card .lhf-title{font-size:13px;font-weight:700;margin:4px 0 2px}.lhf-card .lhf-sub{font-size:11px;color:var(--gray)}
-18|@media(min-width:768px){.lhf-strip{flex-wrap:wrap;overflow-x:visible}.lhf-card{flex:1;min-width:0;max-width:none}}
-19|
-20|/* ── STATS ── */
-21|.stats{display:flex;gap:8px;padding:12px;overflow-x:auto}
-22|.stat-card{flex:1;min-width:70px;background:var(--card);border-radius:var(--r);padding:12px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06);cursor:pointer;border-top:3px solid transparent}
-23|.stat-card .sn{font-size:22px;font-weight:800}.stat-card .sl{font-size:10px;color:var(--gray);text-transform:uppercase;margin-top:2px}
-24|@media(min-width:768px){.stats{max-width:1200px;margin:0 auto}.stat-card .sn{font-size:28px}}
-25|
-26|/* ── TABS ── */
-27|.tabs{display:flex;background:var(--card);border-bottom:1px solid #e2e8f0;position:sticky;top:48px;z-index:99;overflow-x:auto}
-28|.tab{flex:1;text-align:center;padding:10px 8px;font-size:12px;font-weight:700;color:var(--gray);border:none;background:none;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;min-width:60px}
-29|.tab.active{color:var(--navy);border-bottom-color:var(--navy)}
-30|.tab .count{font-size:10px;background:#edf2f7;padding:1px 6px;border-radius:10px;margin-left:3px}.tab .count.hot{background:#fee2e2;color:#991b1b}
-31|
-32|/* ── TOOLBAR ── */
-33|.toolbar{display:flex;gap:8px;padding:8px 12px;align-items:center;background:var(--card);border-bottom:1px solid #edf2f7;flex-wrap:wrap}
-34|.toolbar input{padding:8px 12px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;flex:1;min-width:120px}
-35|.toolbar select{padding:8px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px}
-36|.btn-sm{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer;white-space:nowrap}
-37|.btn-sm.blue{background:var(--blue);color:#fff}.btn-sm.green{background:var(--green);color:#fff}
-38|
-39|/* ── KANBAN ── */
-40|.kanban{display:flex;gap:10px;padding:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-41|.kanban-col{flex:0 0 85vw;max-width:360px;background:#edf2f7;border-radius:var(--r);padding:10px}
-42|@media(min-width:768px){.kanban-col{flex:0 0 30%;max-width:none}}
-43|.kanban-col h2{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin-bottom:10px;display:flex;justify-content:space-between}
-44|.kanban-col h2 .col-count{background:var(--gray);color:#fff;border-radius:10px;padding:1px 8px;font-size:11px}
-45|.kcard{background:var(--card);border-radius:8px;padding:12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.06);cursor:pointer;border-left:4px solid var(--blue)}
-46|.kcard:active{transform:scale(.98)}.kcard.urgent{border-left-color:var(--red)}.kcard.todo{border-left-color:var(--gray)}.kcard.done{border-left-color:var(--green)}
-47|.kcard .kc-title{font-size:14px;font-weight:700}.kcard .kc-sub{font-size:12px;color:var(--gray)}.kcard .kc-meta{display:flex;gap:6px;margin-top:4px;font-size:11px;flex-wrap:wrap}
-48|.kcard .kc-btn{flex:1;padding:5px 8px;border:none;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;margin-top:6px}
-49|.kc-btn.move{background:#edf2f7;color:var(--navy)}
-50|
-51|/* ── GRID (desktop table) ── */
-52|.grid-wrap{overflow-x:auto;margin:0 12px;background:var(--card);border-radius:var(--r);border:1px solid #dde1e6;display:none}
-53|.grid-wrap.mobile-table{display:block}@media(min-width:768px){.grid-wrap.mobile-table{display:none}}
-54|.grid{width:100%;border-collapse:collapse;font-size:12px;min-width:800px}
-55|.grid th{background:#f7fafc;padding:8px;text-align:left;font-size:10px;font-weight:700;color:#4a5568;border-bottom:1px solid #dde1e6;cursor:pointer;white-space:nowrap}
-56|.grid td{padding:5px 8px;border-bottom:1px solid #f0f2f5;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-57|.grid tr:hover td{background:#ebf4ff}.grid tr.selected td{background:#c2d9ff!important}
-58|
-59|/* ── LEAD CARDS (mobile) ── */
-60|.lead-cards{display:flex;flex-direction:column;gap:8px;padding:12px}
-61|@media(min-width:768px){.lead-cards{display:none}}
-62|.lcard{background:var(--card);border-radius:var(--r);padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;cursor:pointer}
-63|.lcard:active{background:#f0f4ff}
-64|.lcard .lc-avatar{width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0}
-65|.lcard .lc-info{flex:1;min-width:0}.lc-info .name{font-weight:700;font-size:14px}.lc-info .prop{font-size:12px;color:var(--gray);overflow:hidden;text-overflow:ellipsis}.lc-info .budget{font-size:12px;color:var(--green);font-weight:600}
-66|.lcard .lc-actions{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
-67|.lcard .lc-actions a{display:block;padding:8px 14px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;text-align:center}.lca-call{background:var(--green);color:#fff}.lca-email{background:var(--blue);color:#fff}
-68|
-69|/* ── BADGES ── */
-70|.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700}
-71|.badge.green{background:#d1fae5;color:#065f46}.badge.amber{background:#fef3c7;color:#78350f}.badge.red{background:#fee2e2;color:#991b1b}.badge.blue{background:#dbeafe;color:#1e40af}.badge.gray{background:#e5e7eb;color:#374151}.badge.purple{background:#ede9fe;color:#5b21b6}.badge.gold{background:#fef9c3;color:#854d0e;animation:pulse 2s infinite}
-72|@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
-73|
-74|/* ── SIDE PANEL ── */
-75|.panel{position:fixed;top:0;right:0;width:100%;max-width:440px;height:100vh;background:var(--card);box-shadow:-4px 0 24px rgba(0,0,0,.15);z-index:200;transform:translateX(100%);transition:transform .25s;overflow-y:auto;padding:16px}
-76|.panel.open{transform:translateX(0)}
-77|.panel h3{font-size:16px;margin-bottom:12px}
-78|.panel .p-close{position:absolute;top:8px;right:12px;background:none;border:none;font-size:22px;cursor:pointer;padding:8px}
-79|.panel .p-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #edf2f7;font-size:13px}
-80|.panel .p-label{color:var(--gray)}.panel .p-value{font-weight:600;text-align:right}
-81|.panel .p-actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
-82|.panel .p-actions a,.panel .p-actions button{flex:1;min-width:100px;padding:12px;border-radius:8px;font-weight:700;font-size:14px;text-align:center;text-decoration:none;border:none;cursor:pointer}
-83|.pa-call{background:var(--green);color:#fff}.pa-email{background:var(--blue);color:#fff}.pa-move{background:#edf2f7;color:var(--navy)}
-84|.overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.3);z-index:199}.overlay.open{display:block}
-85|
-86|/* ── TOAST ── */
-87|.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:8px 20px;border-radius:20px;font-size:13px;font-weight:700;z-index:300;opacity:0;transition:opacity .2s;pointer-events:none}.toast.show{opacity:1}
-88|
-89|/* ── CELL EDITING ── */
-90|.cell-editor{width:calc(100% + 4px);padding:3px 6px;border:2px solid var(--blue);border-radius:4px;font-size:12px;font-family:inherit;background:#fff;outline:none;margin:-3px -6px}
-91|.cell-select{width:100%;padding:3px 6px;border:2px solid var(--blue);border-radius:4px;font-size:12px;font-family:inherit;background:#fff}
-92|</style>
-93|{% endblock %}
-94|
-95|{% block body %}
-96|<header class="bar">
-97|  <h1>🏠 Renter</h1>
-98|  <div style="display:flex;gap:6px;align-items:center">
-99|    <a href="#" onclick="syncObsidian();return false">📓</a>
-100|    <a href="#" onclick="refreshAll();return false">↻</a>
-101|    <a href="/auth/logout" onclick="event.preventDefault();fetch('/auth/logout',{method:'POST'}).then(()=>location.href='/')">⏻</a>
-102|  </div>
-103|</header>
-104|
-105|<!-- LOW HANGING FRUIT -->
-106|<div class="lhf-strip" id="lhfStrip"></div>
-107|
-108|<!-- QUICK ACTIONS -->
-109|<div class="lhf-strip" style="padding-top:0" id="quickActions">
-110|  <div class="lhf-card" style="border-left-color:var(--blue);cursor:pointer" onclick="openAddLeadForm()"><div class="lhf-icon">👤</div><div class="lhf-title">Add Lead</div><div class="lhf-sub">Log new inquiry</div></div>
-111|  <div class="lhf-card" style="border-left-color:var(--green);cursor:pointer" onclick="switchTab('deals')"><div class="lhf-icon">💰</div><div class="lhf-title">New Sale</div><div class="lhf-sub">Track a sale</div></div>
-112|  <div class="lhf-card" style="border-left-color:var(--amber);cursor:pointer" onclick="switchTab('props')"><div class="lhf-icon">🏠</div><div class="lhf-title">Properties</div><div class="lhf-sub">View inventory</div></div>
-113|  <div class="lhf-card" style="border-left-color:var(--purple);cursor:pointer" onclick="switchTab('apps')"><div class="lhf-icon">📋</div><div class="lhf-title">Applications</div><div class="lhf-sub">Pipeline</div></div>
-114|</div>
-115|
-116|<!-- STATS -->
-117|<div class="stats" id="statsRow"></div>
-118|
-119|<!-- TABS -->
-120|<div class="tabs" id="tabBar">
-121|  <button class="tab active" data-tab="kanban">📋 Funnel</button>
-122|  <button class="tab" data-tab="leads">📧 Leads<span class="count" id="upsellCount"></span></button>
-123|  <button class="tab" data-tab="deals">💰 Sales</button>
-124|  <button class="tab" data-tab="apps">📋 Apps</button>
-125|  <button class="tab" data-tab="props">🏠 Props</button>
-126|</div>
-127|
-128|<!-- TOOLBAR -->
-129|<div class="toolbar" id="toolbar">
-130|  <input type="text" id="searchInput" placeholder="Search..." oninput="renderView()">
-131|  <select id="statusFilter" onchange="renderView()"><option value="">All</option></select>
-132|  <span id="rowCount" style="font-size:11px;color:var(--gray)"></span>
-133|  <button class="btn-sm green" onclick="refreshAll()">↻ Refresh</button>
-134|</div>
-135|
-136|<!-- KANBAN -->
-137|<div id="kanbanView"><div class="kanban" id="kanban"></div></div>
-138|
-139|<!-- LEAD CARDS (mobile) -->
-140|<div class="lead-cards" id="leadCards" style="display:none"></div>
-141|
-142|<!-- DESKTOP TABLE -->
-143|<div class="grid-wrap" id="gridWrap" style="display:none"><table class="grid" id="grid"></table></div>
-144|
-145|<!-- PANEL -->
-146|<div class="overlay" id="overlay"></div>
-147|<div class="panel" id="panel">
-148|  <button class="p-close" onclick="closePanel()">✕</button>
-149|  <h3 id="panelTitle"></h3>
-150|  <div id="panelBody"></div>
-151|</div>
-152|<div class="toast" id="toast"></div>
-153|
-154|<script>
-155|let token='',currentTab='kanban',selectedId=null,selectedType=null,budgetOnly=false;
-156|let allLeads=[],allDeals=[],allApps=[],allProps=[],allCmas=[],allShowings=[],allOpportunities=[];
-157|let obsidianNotes=[],sortCol=null,sortDir=1;
-158|const isMobile=window.innerWidth<768;
-159|
-160|const COLS={
-161|  leads:[{k:'name',l:'Name',e:1,w:130},{k:'phone',l:'Phone',w:115},{k:'email',l:'Email',w:170},{k:'property',l:'Property',w:160},{k:'source',l:'Source',w:80},{k:'status',l:'Status',t:'status',w:95},{k:'monthly_income',l:'Income',e:1,w:80},{k:'days_old',l:'Age',w:45},{k:'received_at',l:'Received',w:85}],
-162|  deals:[{k:'address',l:'Property',w:190},{k:'status',l:'Status',t:'status',w:130},{k:'next_action',l:'Next',w:150},{k:'tc',l:'Coordinator',e:1,w:120},{k:'list_price',l:'Price',e:1,w:70},{k:'days_idle',l:'Idle',w:45},{k:'last_update',l:'Updated',w:85}],
-163|  apps:[{k:'applicant',l:'Applicant',e:1,w:130},{k:'property',l:'Property',w:170},{k:'status',l:'Status',t:'status',w:125},{k:'handler',l:'Handler',e:1,w:120},{k:'days_in_pipeline',l:'Days',w:45},{k:'last_update',l:'Updated',w:85}],
-164|  props:[{k:'address',l:'Address',w:190},{k:'unit',l:'Unit',w:45},{k:'status',l:'Status',t:'status',w:100},{k:'tenant',l:'Tenant',e:1,w:120},{k:'rent',l:'Rent',w:65},{k:'bedrooms',l:'BR',w:35},{k:'bathrooms',l:'BA',w:35}],
-165|};
-166|const STATUS_O={leads:['NEW','CONTACTED','QUALIFIED','CLOSED','LOST'],deals:['NEW_LISTING_ALERT','CMA_REQUESTED','LISTING_PREP','ACTIVE_LISTING','IN_ESCROW','UNDER_CONTRACT','CONTRACT_SIGNED','OFFER_RECEIVED','CLOSED'],apps:['APPLICATION_RECEIVED','OFFER_SENT','WELCOME_SENT','APPROVED','LEASE_SIGNED','MOVED_IN','DENIED'],props:['AVAILABLE','RENTED','OCCUPIED','OFF_MARKET','FOR_SALE','PENDING']};
-167|const STATUS_C={application_received:'blue',offer_sent:'amber',approved:'green',lease_signed:'green',moved_in:'green',denied:'red',NEW:'blue',CONTACTED:'amber',QUALIFIED:'green',CLOSED:'gray',LOST:'red',ACTIVE_LISTING:'blue',UNDER_CONTRACT:'green',CONTRACT_SIGNED:'green',IN_ESCROW:'amber',OFFER_RECEIVED:'amber',CMA_REQUESTED:'purple',LISTING_PREP:'amber',AVAILABLE:'green',RENTED:'blue',OCCUPIED:'amber',OFF_MARKET:'gray',FOR_SALE:'purple',PENDING:'amber'};
-168|const NEXT_TIPS={
-169|  'NEW_LISTING_ALERT':'Confirm listing with owner',
-170|  'CMA_REQUESTED':'Follow up on CMA report',
-171|  'LISTING_PREP':'Schedule photos & write listing',
-172|  'ACTIVE_LISTING':'Review showings, adjust price',
-173|  'IN_ESCROW':'Coordinate title & inspections',
-174|  'UNDER_CONTRACT':'Track contingencies',
-175|  'CONTRACT_SIGNED':'Prep closing docs',
-176|  'OFFER_RECEIVED':'Review & respond to offer',
-177|  'CLOSED':'✅ Done',
-178|};
-179|
-180|async function loginSilent(){
-181|  try{const r=await fetch('/api/leads?limit=1');if(r.ok)return true}catch(e){}
-182|  return false;
-183|}
-184|
-185|async function loadAll(){
-186|  try{
-187|    const[lr,dr,ar,pr,or]=await Promise.all([
-188|      fetch('/api/leads?limit=500').then(r=>r.json()),
-189|      fetch('/api/sales?limit=50').then(r=>r.json()),
-190|      fetch('/api/applications?limit=200').then(r=>r.json()),
-191|      fetch('/api/properties?limit=300').then(r=>r.json()),
-192|      fetch('/api/email-opportunities?hours=24').then(r=>r.json()),
-193|    ]);
-194|    allLeads=lr;allDeals=dr;allApps=ar;allProps=pr;allOpportunities=or||[];
-195|    allDeals.forEach(d=>d.next_action=NEXT_TIPS[d.status]||'');
-196|  }catch(e){}
-197|  renderAll();
-198|}
-199|
-200|function renderAll(){
-201|  renderStats();
-202|  renderLHF();
-203|  if(currentTab==='kanban')renderKanban();
-204|  else renderTabView(currentTab);
-205|}
-206|
-207|// ── LOW HANGING FRUIT ──
-208|function renderLHF(){
-209|  let cards=[];
-210|  // 1. Hot leads — NEW leads with phone numbers, last 48h
-211|  const hot=allLeads.filter(l=>l.status==='NEW'&&l.phone&&l.days_old<3).slice(0,4);
-212|  hot.forEach(l=>cards.push({icon:'🔥',title:l.name||'Lead',sub:(l.property||'')+' · '+(l.source||''),type:'lead',id:l.id,cls:'hot'}));
-213|
-214|  // 2. Good income / credit leads — income >= 3x rent or high absolute income
-215|  const incomeLeads=allLeads.filter(l=>{
-216|    if(!l.monthly_income)return false;
-217|    const prop=l.property_id?allProps.find(p=>p.id===l.property_id):null;
-218|    if(prop&&prop.rent&&l.monthly_income>=prop.rent*3)return true;
-219|    return l.monthly_income>=4000;
-220|  }).slice(0,3);
-221|  incomeLeads.forEach(l=>{
-222|    const income='$'+Number(l.monthly_income).toLocaleString()+'/mo';
-223|    cards.push({icon:'💵',title:l.name||'Qualified lead',sub:income+' · '+(l.property||''),type:'lead',id:l.id,cls:'income'});
-224|  });
-225|
-226|  // 3. High-traffic properties — lots of leads/applications
-227|  const traffic=allProps.map(p=>{
-228|    const leads=allLeads.filter(l=>l.property_id===p.id).length;
-229|    const apps=allApps.filter(a=>a.property_id===p.id).length;
-230|    return {...p,traffic:leads+apps};
-231|  }).filter(p=>p.traffic>=3).sort((a,b)=>b.traffic-a.traffic).slice(0,3);
-232|  traffic.forEach(p=>{
-233|    cards.push({icon:'🚦',title:(p.address||'').split(',')[0],sub:p.traffic+' inquiries · '+p.status,type:'props',id:p.id,cls:'traffic'});
-234|  });
-235|
-236|  // 4. Deals near closing — under contract, recent activity
-237|  const nearClose=allDeals.filter(d=>['UNDER_CONTRACT','CONTRACT_SIGNED','OFFER_RECEIVED'].includes(d.status)&&d.days_idle<7).slice(0,3);
-238|  nearClose.forEach(d=>cards.push({icon:'💰',title:d.address.split(',')[0],sub:'Near close · '+(d.status||'').replace(/_/g,' '),type:'deal',id:d.id,cls:'deal'}));
-239|
-240|  // 5. Bounce candidates — leads on rented units
-241|  allLeads.filter(l=>l.property_id).forEach(l=>{
-242|    const p=allProps.find(p=>p.id===l.property_id);
-243|    if(p&&['RENTED','OCCUPIED'].includes(p.status)&&cards.length<10){
-244|      cards.push({icon:'🔄',title:l.name||'Lead',sub:'Bounce from '+(p.address||'').substring(0,25),type:'lead',id:l.id,cls:'bounce'});
-245|    }
-246|  });
-247|
-248|  // 6. Business potential from Apple Mail
-249|  allOpportunities.slice(0,3).forEach(o=>{
-250|    const name=o.sender_name||o.sender_email||'Email';
-251|    cards.push({icon:'✉️',title:name,sub:o.subject.substring(0,35)+(o.subject.length>35?'...':''),type:'email',id:o.id,cls:'email'});
-252|  });
-253|
-254|  // 7. Stale deals needing attention
-255|  const stale=allDeals.filter(d=>d.days_idle>20&&!['CLOSED'].includes(d.status)).slice(0,2);
-256|  stale.forEach(d=>cards.push({icon:'⚠️',title:d.address.split(',')[0],sub:'Stale · '+(d.days_idle||0)+'d idle',type:'deal',id:d.id,cls:'hot'}));
-257|
-258|  document.getElementById('lhfStrip').innerHTML=cards.map(c=>
-259|    `<div class="lhf-card ${c.cls}" onclick="openPanel('${c.type}',${c.id})">
-260|      <div class="lhf-icon">${c.icon}</div>
-261|      <div class="lhf-title">${c.title||'?'}</div>
-262|      <div class="lhf-sub">${c.sub}</div>
-263|    </div>`
-264|  ).join('')||'';
-265|}
-266|
-267|// ── STATS ──
-268|function renderStats(){
-269|  const hotLeads=allLeads.filter(l=>['NEW','CONTACTED'].includes(l.status)).length;
-270|  const inPipe=allApps.filter(a=>['APPLICATION_RECEIVED','OFFER_SENT','APPROVED'].includes(a.status)).length;
-271|  const activeDeals=allDeals.filter(d=>!['CLOSED'].includes(d.status)).length;
-272|  const withBudget=allLeads.filter(l=>l.monthly_income).length;
-273|  document.getElementById('statsRow').innerHTML=`
-274|    <div class="stat-card" style="border-top-color:var(--red)" onclick="switchTab('leads')"><div class="sn">${fmt(hotLeads)}</div><div class="sl">Hot Leads</div></div>
-275|    <div class="stat-card" style="border-top-color:var(--green)" onclick="switchTab('apps')"><div class="sn">${fmt(inPipe)}</div><div class="sl">Pipeline</div></div>
-276|    <div class="stat-card" style="border-top-color:var(--purple)" onclick="switchTab('deals')"><div class="sn">${fmt(activeDeals)}</div><div class="sl">Sales</div></div>
-277|    <div class="stat-card" style="border-top-color:var(--amber)" onclick="showBudgetLeads()"><div class="sn">${fmt(withBudget)}</div><div class="sl">Budget</div></div>
-278|    <div class="stat-card" style="border-top-color:var(--blue)" onclick="switchTab('leads')"><div class="sn">${fmt(allLeads.length)}</div><div class="sl">Total</div></div>
-279|  `;
-280|}
-281|
-282|// ── ADD LEAD MODAL ──
-283|function openAddLeadForm(){
-284|  selectedType=null;selectedId=null;
-285|  document.getElementById('panelTitle').textContent='➕ Add Lead';
-286|  document.getElementById('panel').classList.add('open');
-287|  document.getElementById('overlay').classList.add('open');
-288|  // ponytail: reuse the side-panel as the modal. form status defaults to NEW server-side.
-289|  document.getElementById('panelBody').innerHTML=`
-290|    <form id="addLeadForm" onsubmit="submitAddLead(event)" style="display:flex;flex-direction:column;gap:10px">
-291|      <input name="first_name" placeholder="First name" required style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
-292|      <input name="last_name" placeholder="Last name" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
-293|      <input name="phone" placeholder="Phone (e.g. 312-555-0100)" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
-294|      <input name="email" type="email" placeholder="Email" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
-295|      <input name="property_address" placeholder="Property address (or leave blank)" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
-296|      <input name="source" value="Manual" placeholder="Source" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
-297|      <input name="monthly_income" type="number" min="0" step="100" placeholder="Monthly income ($)" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
-298|      <button type="submit" class="btn-sm green" style="padding:12px;font-size:14px;margin-top:4px">Save Lead</button>
-299|    </form>`;
-300|}
-301|async function submitAddLead(e){
-302|  e.preventDefault();
-303|  const f=e.target;
-304|  const first=(f.first_name.value||'').trim();
-305|  const last=(f.last_name.value||'').trim();
-306|  const name=(first+' '+last).trim()||first;
-307|  const payload={
-308|    name,
-309|    phone:f.phone.value.trim(),
-310|    email:f.email.value.trim(),
-311|    property_address:f.property_address.value.trim(),
-312|    source:f.source.value.trim()||'Manual',
-313|    monthly_income:f.monthly_income.value||null,
-314|    status:'NEW',
-315|  };
-316|  try{
-317|    const r=await fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-318|    if(!r.ok){const j=await r.json().catch(()=>({}));toast('✗ '+(j.error||'Save failed'));return}
-319|    toast('✓ Lead added');
-320|    closePanel();
-321|    await loadAll();  // refreshes records list + Hot Leads + Total counters
-322|  }catch(err){toast('✗ '+err.message)}
-323|}
-324|
-325|// ── KANBAN (lead board) ──
-326|// ponytail: maps LeadStatus{NEW,CONTACTED,QUALIFIED,CLOSED,LOST} onto 4 columns.
-327|// IDLE/STALE = LOST status (no native IDLE). Add a dedicated status if you need it.
-328|const KANBAN_COLS=[
-329|  {key:'NEW',label:'New',color:'var(--blue)',statuses:['NEW'],dropStatus:'NEW'},
-330|  {key:'PIPELINE',label:'Pipeline',color:'var(--amber)',statuses:['CONTACTED','QUALIFIED'],dropStatus:'CONTACTED'},
-331|  {key:'UNDER_CONTRACT',label:'Under Contract',color:'var(--green)',statuses:['CLOSED'],dropStatus:'CLOSED'},
-332|  {key:'IDLE_STALE',label:'Idle / Stale',color:'var(--gray)',statuses:['LOST'],dropStatus:'LOST'},
-333|];
+{% extends "base.html" %}
+{% block title %}Renter — {{ org.name }}{% endblock %}
+{% block extra_css %}
+:root{--navy:#1a365d;--blue:#2b6cb0;--green:#276749;--red:#c53030;--amber:#b7791f;--purple:#6b46c1;--gray:#718096;--bg:#f5f5f5;--card:#fff;--r:10px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:#1a202c;font-size:15px;padding-bottom:60px}
 
-// ponytail: sales pipe funnel uses SalesStatus. Custom stages mapped to existing statuses.
+header.bar{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;padding:12px 16px;position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+header.bar h1{font-size:18px;font-weight:800}
+header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,255,255,.12);padding:6px 10px;border-radius:6px;border:none;cursor:pointer;font-weight:600}
+
+/* ── LOW HANGING FRUIT ── */
+.lhf-strip{padding:12px 12px 0;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.lhf-card{flex:0 0 auto;background:var(--card);border-radius:var(--r);padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.06);min-width:160px;max-width:200px;cursor:pointer;border-left:4px solid var(--green);transition:transform .1s}
+.lhf-card:active{transform:scale(.97)}
+.lhf-card.hot{border-left-color:var(--red)}.lhf-card.deal{border-left-color:var(--purple)}.lhf-card.bounce{border-left-color:var(--amber)}.lhf-card.income{border-left-color:var(--green)}.lhf-card.traffic{border-left-color:var(--blue)}.lhf-card.email{border-left-color:var(--navy)}
+.lhf-card .lhf-icon{font-size:20px}.lhf-card .lhf-title{font-size:13px;font-weight:700;margin:4px 0 2px}.lhf-card .lhf-sub{font-size:11px;color:var(--gray)}
+@media(min-width:768px){.lhf-strip{flex-wrap:wrap;overflow-x:visible}.lhf-card{flex:1;min-width:0;max-width:none}}
+
+/* ── STATS ── */
+.stats{display:flex;gap:8px;padding:12px;overflow-x:auto}
+.stat-card{flex:1;min-width:70px;background:var(--card);border-radius:var(--r);padding:12px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06);cursor:pointer;border-top:3px solid transparent}
+.stat-card .sn{font-size:22px;font-weight:800}.stat-card .sl{font-size:10px;color:var(--gray);text-transform:uppercase;margin-top:2px}
+@media(min-width:768px){.stats{max-width:1200px;margin:0 auto}.stat-card .sn{font-size:28px}}
+
+/* ── TABS ── */
+.tabs{display:flex;background:var(--card);border-bottom:1px solid #e2e8f0;position:sticky;top:48px;z-index:99;overflow-x:auto}
+.tab{flex:1;text-align:center;padding:10px 8px;font-size:12px;font-weight:700;color:var(--gray);border:none;background:none;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;min-width:60px}
+.tab.active{color:var(--navy);border-bottom-color:var(--navy)}
+.tab .count{font-size:10px;background:#edf2f7;padding:1px 6px;border-radius:10px;margin-left:3px}.tab .count.hot{background:#fee2e2;color:#991b1b}
+
+/* ── TOOLBAR ── */
+.toolbar{display:flex;gap:8px;padding:8px 12px;align-items:center;background:var(--card);border-bottom:1px solid #edf2f7;flex-wrap:wrap}
+.toolbar input{padding:8px 12px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;flex:1;min-width:120px}
+.toolbar select{padding:8px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px}
+.btn-sm{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer;white-space:nowrap}
+.btn-sm.blue{background:var(--blue);color:#fff}.btn-sm.green{background:var(--green);color:#fff}
+
+/* ── KANBAN ── */
+.kanban{display:flex;gap:10px;padding:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.kanban-col{flex:0 0 85vw;max-width:360px;background:#edf2f7;border-radius:var(--r);padding:10px}
+@media(min-width:768px){.kanban-col{flex:0 0 30%;max-width:none}}
+.kanban-col h2{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin-bottom:10px;display:flex;justify-content:space-between}
+.kanban-col h2 .col-count{background:var(--gray);color:#fff;border-radius:10px;padding:1px 8px;font-size:11px}
+.kcard{background:var(--card);border-radius:8px;padding:12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.06);cursor:pointer;border-left:4px solid var(--blue)}
+.kcard:active{transform:scale(.98)}.kcard.urgent{border-left-color:var(--red)}.kcard.todo{border-left-color:var(--gray)}.kcard.done{border-left-color:var(--green)}
+.kcard .kc-title{font-size:14px;font-weight:700}.kcard .kc-sub{font-size:12px;color:var(--gray)}.kcard .kc-meta{display:flex;gap:6px;margin-top:4px;font-size:11px;flex-wrap:wrap}
+.kcard .kc-btn{flex:1;padding:5px 8px;border:none;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;margin-top:6px}
+.kc-btn.move{background:#edf2f7;color:var(--navy)}
+
+/* ── GRID (desktop table) ── */
+.grid-wrap{overflow-x:auto;margin:0 12px;background:var(--card);border-radius:var(--r);border:1px solid #dde1e6;display:none}
+.grid-wrap.mobile-table{display:block}@media(min-width:768px){.grid-wrap.mobile-table{display:none}}
+.grid{width:100%;border-collapse:collapse;font-size:12px;min-width:800px}
+.grid th{background:#f7fafc;padding:8px;text-align:left;font-size:10px;font-weight:700;color:#4a5568;border-bottom:1px solid #dde1e6;cursor:pointer;white-space:nowrap}
+.grid td{padding:5px 8px;border-bottom:1px solid #f0f2f5;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grid tr:hover td{background:#ebf4ff}.grid tr.selected td{background:#c2d9ff!important}
+
+/* ── LEAD CARDS (mobile) ── */
+.lead-cards{display:flex;flex-direction:column;gap:8px;padding:12px}
+@media(min-width:768px){.lead-cards{display:none}}
+.lcard{background:var(--card);border-radius:var(--r);padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;cursor:pointer}
+.lcard:active{background:#f0f4ff}
+.lcard .lc-avatar{width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0}
+.lcard .lc-info{flex:1;min-width:0}.lc-info .name{font-weight:700;font-size:14px}.lc-info .prop{font-size:12px;color:var(--gray);overflow:hidden;text-overflow:ellipsis}.lc-info .budget{font-size:12px;color:var(--green);font-weight:600}
+.lcard .lc-actions{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+.lcard .lc-actions a{display:block;padding:8px 14px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;text-align:center}.lca-call{background:var(--green);color:#fff}.lca-email{background:var(--blue);color:#fff}
+
+/* ── BADGES ── */
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700}
+.badge.green{background:#d1fae5;color:#065f46}.badge.amber{background:#fef3c7;color:#78350f}.badge.red{background:#fee2e2;color:#991b1b}.badge.blue{background:#dbeafe;color:#1e40af}.badge.gray{background:#e5e7eb;color:#374151}.badge.purple{background:#ede9fe;color:#5b21b6}.badge.gold{background:#fef9c3;color:#854d0e;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+
+/* ── SIDE PANEL ── */
+.panel{position:fixed;top:0;right:0;width:100%;max-width:440px;height:100vh;background:var(--card);box-shadow:-4px 0 24px rgba(0,0,0,.15);z-index:200;transform:translateX(100%);transition:transform .25s;overflow-y:auto;padding:16px}
+.panel.open{transform:translateX(0)}
+.panel h3{font-size:16px;margin-bottom:12px}
+.panel .p-close{position:absolute;top:8px;right:12px;background:none;border:none;font-size:22px;cursor:pointer;padding:8px}
+.panel .p-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #edf2f7;font-size:13px}
+.panel .p-label{color:var(--gray)}.panel .p-value{font-weight:600;text-align:right}
+.panel .p-actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.panel .p-actions a,.panel .p-actions button{flex:1;min-width:100px;padding:12px;border-radius:8px;font-weight:700;font-size:14px;text-align:center;text-decoration:none;border:none;cursor:pointer}
+.pa-call{background:var(--green);color:#fff}.pa-email{background:var(--blue);color:#fff}.pa-move{background:#edf2f7;color:var(--navy)}
+.overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.3);z-index:199}.overlay.open{display:block}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:8px 20px;border-radius:20px;font-size:13px;font-weight:700;z-index:300;opacity:0;transition:opacity .2s;pointer-events:none}.toast.show{opacity:1}
+
+/* ── CELL EDITING ── */
+.cell-editor{width:calc(100% + 4px);padding:3px 6px;border:2px solid var(--blue);border-radius:4px;font-size:12px;font-family:inherit;background:#fff;outline:none;margin:-3px -6px}
+.cell-select{width:100%;padding:3px 6px;border:2px solid var(--blue);border-radius:4px;font-size:12px;font-family:inherit;background:#fff}
+</style>
+{% endblock %}
+
+{% block body %}
+<header class="bar">
+  <h1>🏠 Renter</h1>
+  <div style="display:flex;gap:6px;align-items:center">
+    <a href="#" onclick="syncObsidian();return false">📓</a>
+    <a href="#" onclick="refreshAll();return false">↻</a>
+    <a href="/auth/logout" onclick="event.preventDefault();fetch('/auth/logout',{method:'POST'}).then(()=>location.href='/')">⏻</a>
+  </div>
+</header>
+
+<!-- LOW HANGING FRUIT -->
+<div class="lhf-strip" id="lhfStrip"></div>
+
+<!-- QUICK ACTIONS -->
+<div class="lhf-strip" style="padding-top:0" id="quickActions">
+  <div class="lhf-card" style="border-left-color:var(--blue);cursor:pointer" onclick="openAddLeadForm()"><div class="lhf-icon">👤</div><div class="lhf-title">Add Lead</div><div class="lhf-sub">Log new inquiry</div></div>
+  <div class="lhf-card" style="border-left-color:var(--green);cursor:pointer" onclick="switchTab('deals')"><div class="lhf-icon">💰</div><div class="lhf-title">New Sale</div><div class="lhf-sub">Track a sale</div></div>
+  <div class="lhf-card" style="border-left-color:var(--amber);cursor:pointer" onclick="switchTab('props')"><div class="lhf-icon">🏠</div><div class="lhf-title">Properties</div><div class="lhf-sub">View inventory</div></div>
+  <div class="lhf-card" style="border-left-color:var(--purple);cursor:pointer" onclick="switchTab('apps')"><div class="lhf-icon">📋</div><div class="lhf-title">Applications</div><div class="lhf-sub">Pipeline</div></div>
+</div>
+
+<!-- STATS -->
+<div class="stats" id="statsRow"></div>
+
+<!-- TABS -->
+<div class="tabs" id="tabBar">
+  <button class="tab active" data-tab="kanban">📋 Funnel</button>
+  <button class="tab" data-tab="leads">📧 Leads<span class="count" id="upsellCount"></span></button>
+  <button class="tab" data-tab="deals">💰 Sales</button>
+  <button class="tab" data-tab="apps">📋 Apps</button>
+  <button class="tab" data-tab="props">🏠 Props</button>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar" id="toolbar">
+  <input type="text" id="searchInput" placeholder="Search..." oninput="renderView()">
+  <select id="statusFilter" onchange="renderView()"><option value="">All</option></select>
+  <span id="rowCount" style="font-size:11px;color:var(--gray)"></span>
+  <button class="btn-sm green" onclick="refreshAll()">↻ Refresh</button>
+</div>
+
+<!-- KANBAN -->
+<div id="kanbanView"><div class="kanban" id="kanban"></div></div>
+
+<!-- LEAD CARDS (mobile) -->
+<div class="lead-cards" id="leadCards" style="display:none"></div>
+
+<!-- DESKTOP TABLE -->
+<div class="grid-wrap" id="gridWrap" style="display:none"><table class="grid" id="grid"></table></div>
+
+<!-- PANEL -->
+<div class="overlay" id="overlay"></div>
+<div class="panel" id="panel">
+  <button class="p-close" onclick="closePanel()">✕</button>
+  <h3 id="panelTitle"></h3>
+  <div id="panelBody"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let token='',currentTab='kanban',selectedId=null,selectedType=null,budgetOnly=false,kanbanMode="leads";
+let allLeads=[],allDeals=[],allApps=[],allProps=[],allCmas=[],allShowings=[],allOpportunities=[];
+let obsidianNotes=[],sortCol=null,sortDir=1;
+const isMobile=window.innerWidth<768;
+
+const COLS={
+  leads:[{k:'name',l:'Name',e:1,w:130},{k:'phone',l:'Phone',w:115},{k:'email',l:'Email',w:170},{k:'property',l:'Property',w:160},{k:'source',l:'Source',w:80},{k:'status',l:'Status',t:'status',w:95},{k:'monthly_income',l:'Income',e:1,w:80},{k:'days_old',l:'Age',w:45},{k:'received_at',l:'Received',w:85}],
+  deals:[{k:'address',l:'Property',w:190},{k:'status',l:'Status',t:'status',w:130},{k:'next_action',l:'Next',w:150},{k:'tc',l:'Coordinator',e:1,w:120},{k:'list_price',l:'Price',e:1,w:70},{k:'days_idle',l:'Idle',w:45},{k:'last_update',l:'Updated',w:85}],
+  apps:[{k:'applicant',l:'Applicant',e:1,w:130},{k:'property',l:'Property',w:170},{k:'status',l:'Status',t:'status',w:125},{k:'handler',l:'Handler',e:1,w:120},{k:'days_in_pipeline',l:'Days',w:45},{k:'last_update',l:'Updated',w:85}],
+  props:[{k:'address',l:'Address',w:190},{k:'unit',l:'Unit',w:45},{k:'status',l:'Status',t:'status',w:100},{k:'tenant',l:'Tenant',e:1,w:120},{k:'rent',l:'Rent',w:65},{k:'bedrooms',l:'BR',w:35},{k:'bathrooms',l:'BA',w:35}],
+};
+const STATUS_O={leads:['NEW','CONTACTED','QUALIFIED','CLOSED','LOST'],deals:['NEW_LISTING_ALERT','CMA_REQUESTED','LISTING_PREP','ACTIVE_LISTING','IN_ESCROW','UNDER_CONTRACT','CONTRACT_SIGNED','OFFER_RECEIVED','CLOSED'],apps:['APPLICATION_RECEIVED','OFFER_SENT','WELCOME_SENT','APPROVED','LEASE_SIGNED','MOVED_IN','DENIED'],props:['AVAILABLE','RENTED','OCCUPIED','OFF_MARKET','FOR_SALE','PENDING']};
+const STATUS_C={application_received:'blue',offer_sent:'amber',approved:'green',lease_signed:'green',moved_in:'green',denied:'red',NEW:'blue',CONTACTED:'amber',QUALIFIED:'green',CLOSED:'gray',LOST:'red',ACTIVE_LISTING:'blue',UNDER_CONTRACT:'green',CONTRACT_SIGNED:'green',IN_ESCROW:'amber',OFFER_RECEIVED:'amber',CMA_REQUESTED:'purple',LISTING_PREP:'amber',AVAILABLE:'green',RENTED:'blue',OCCUPIED:'amber',OFF_MARKET:'gray',FOR_SALE:'purple',PENDING:'amber'};
+const NEXT_TIPS={
+  'NEW_LISTING_ALERT':'Confirm listing with owner',
+  'CMA_REQUESTED':'Follow up on CMA report',
+  'LISTING_PREP':'Schedule photos & write listing',
+  'ACTIVE_LISTING':'Review showings, adjust price',
+  'IN_ESCROW':'Coordinate title & inspections',
+  'UNDER_CONTRACT':'Track contingencies',
+  'CONTRACT_SIGNED':'Prep closing docs',
+  'OFFER_RECEIVED':'Review & respond to offer',
+  'CLOSED':'✅ Done',
+};
+
+async function loginSilent(){
+  try{const r=await fetch('/api/leads?limit=1');if(r.ok)return true}catch(e){}
+  return false;
+}
+
+async function loadAll(){
+  try{
+    const[lr,dr,ar,pr,or]=await Promise.all([
+      fetch('/api/leads?limit=500').then(r=>r.json()),
+      fetch('/api/sales?limit=50').then(r=>r.json()),
+      fetch('/api/applications?limit=200').then(r=>r.json()),
+      fetch('/api/properties?limit=300').then(r=>r.json()),
+      fetch('/api/email-opportunities?hours=24').then(r=>r.json()),
+    ]);
+    allLeads=lr;allDeals=dr;allApps=ar;allProps=pr;allOpportunities=or||[];
+    allDeals.forEach(d=>d.next_action=NEXT_TIPS[d.status]||'');
+  }catch(e){}
+  renderAll();
+}
+
+function renderAll(){
+  renderStats();
+  renderLHF();
+  if(currentTab==='kanban')renderKanban();
+  else renderTabView(currentTab);
+}
+
+// ── LOW HANGING FRUIT ──
+function renderLHF(){
+  let cards=[];
+  // 1. Hot leads — NEW leads with phone numbers, last 48h
+  const hot=allLeads.filter(l=>l.status==='NEW'&&l.phone&&l.days_old<3).slice(0,4);
+  hot.forEach(l=>cards.push({icon:'🔥',title:l.name||'Lead',sub:(l.property||'')+' · '+(l.source||''),type:'lead',id:l.id,cls:'hot'}));
+
+  // 2. Good income / credit leads — income >= 3x rent or high absolute income
+  const incomeLeads=allLeads.filter(l=>{
+    if(!l.monthly_income)return false;
+    const prop=l.property_id?allProps.find(p=>p.id===l.property_id):null;
+    if(prop&&prop.rent&&l.monthly_income>=prop.rent*3)return true;
+    return l.monthly_income>=4000;
+  }).slice(0,3);
+  incomeLeads.forEach(l=>{
+    const income='$'+Number(l.monthly_income).toLocaleString()+'/mo';
+    cards.push({icon:'💵',title:l.name||'Qualified lead',sub:income+' · '+(l.property||''),type:'lead',id:l.id,cls:'income'});
+  });
+
+  // 3. High-traffic properties — lots of leads/applications
+  const traffic=allProps.map(p=>{
+    const leads=allLeads.filter(l=>l.property_id===p.id).length;
+    const apps=allApps.filter(a=>a.property_id===p.id).length;
+    return {...p,traffic:leads+apps};
+  }).filter(p=>p.traffic>=3).sort((a,b)=>b.traffic-a.traffic).slice(0,3);
+  traffic.forEach(p=>{
+    cards.push({icon:'🚦',title:(p.address||'').split(',')[0],sub:p.traffic+' inquiries · '+p.status,type:'props',id:p.id,cls:'traffic'});
+  });
+
+  // 4. Deals near closing — under contract, recent activity
+  const nearClose=allDeals.filter(d=>['UNDER_CONTRACT','CONTRACT_SIGNED','OFFER_RECEIVED'].includes(d.status)&&d.days_idle<7).slice(0,3);
+  nearClose.forEach(d=>cards.push({icon:'💰',title:d.address.split(',')[0],sub:'Near close · '+(d.status||'').replace(/_/g,' '),type:'deal',id:d.id,cls:'deal'}));
+
+  // 5. Bounce candidates — leads on rented units
+  allLeads.filter(l=>l.property_id).forEach(l=>{
+    const p=allProps.find(p=>p.id===l.property_id);
+    if(p&&['RENTED','OCCUPIED'].includes(p.status)&&cards.length<10){
+      cards.push({icon:'🔄',title:l.name||'Lead',sub:'Bounce from '+(p.address||'').substring(0,25),type:'lead',id:l.id,cls:'bounce'});
+    }
+  });
+
+  // 6. Business potential from Apple Mail
+  allOpportunities.slice(0,3).forEach(o=>{
+    const name=o.sender_name||o.sender_email||'Email';
+    cards.push({icon:'✉️',title:name,sub:o.subject.substring(0,35)+(o.subject.length>35?'...':''),type:'email',id:o.id,cls:'email'});
+  });
+
+  // 7. Stale deals needing attention
+  const stale=allDeals.filter(d=>d.days_idle>20&&!['CLOSED'].includes(d.status)).slice(0,2);
+  stale.forEach(d=>cards.push({icon:'⚠️',title:d.address.split(',')[0],sub:'Stale · '+(d.days_idle||0)+'d idle',type:'deal',id:d.id,cls:'hot'}));
+
+  document.getElementById('lhfStrip').innerHTML=cards.map(c=>
+    `<div class="lhf-card ${c.cls}" onclick="openPanel('${c.type}',${c.id})">
+      <div class="lhf-icon">${c.icon}</div>
+      <div class="lhf-title">${c.title||'?'}</div>
+      <div class="lhf-sub">${c.sub}</div>
+    </div>`
+  ).join('')||'';
+}
+
+// ── STATS ──
+function renderStats(){
+  const hotLeads=allLeads.filter(l=>['NEW','CONTACTED'].includes(l.status)).length;
+  const inPipe=allApps.filter(a=>['APPLICATION_RECEIVED','OFFER_SENT','APPROVED'].includes(a.status)).length;
+  const activeDeals=allDeals.filter(d=>!['CLOSED'].includes(d.status)).length;
+  const withBudget=allLeads.filter(l=>l.monthly_income).length;
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat-card" style="border-top-color:var(--red)" onclick="switchTab('leads')"><div class="sn">${fmt(hotLeads)}</div><div class="sl">Hot Leads</div></div>
+    <div class="stat-card" style="border-top-color:var(--green)" onclick="switchTab('apps')"><div class="sn">${fmt(inPipe)}</div><div class="sl">Pipeline</div></div>
+    <div class="stat-card" style="border-top-color:var(--purple)" onclick="switchTab('deals')"><div class="sn">${fmt(activeDeals)}</div><div class="sl">Sales</div></div>
+    <div class="stat-card" style="border-top-color:var(--amber)" onclick="showBudgetLeads()"><div class="sn">${fmt(withBudget)}</div><div class="sl">Budget</div></div>
+    <div class="stat-card" style="border-top-color:var(--blue)" onclick="switchTab('leads')"><div class="sn">${fmt(allLeads.length)}</div><div class="sl">Total</div></div>
+  `;
+}
+
+// ── ADD LEAD MODAL ──
+function openAddLeadForm(){
+  selectedType=null;selectedId=null;
+  document.getElementById('panelTitle').textContent='➕ Add Lead';
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  // ponytail: reuse the side-panel as the modal. form status defaults to NEW server-side.
+  document.getElementById('panelBody').innerHTML=`
+    <form id="addLeadForm" onsubmit="submitAddLead(event)" style="display:flex;flex-direction:column;gap:10px">
+      <input name="first_name" placeholder="First name" required style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
+      <input name="last_name" placeholder="Last name" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
+      <input name="phone" placeholder="Phone (e.g. 312-555-0100)" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
+      <input name="email" type="email" placeholder="Email" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
+      <input name="property_address" placeholder="Property address (or leave blank)" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
+      <input name="source" value="Manual" placeholder="Source" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
+      <input name="monthly_income" type="number" min="0" step="100" placeholder="Monthly income ($)" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
+      <button type="submit" class="btn-sm green" style="padding:12px;font-size:14px;margin-top:4px">Save Lead</button>
+    </form>`;
+}
+async function submitAddLead(e){
+  e.preventDefault();
+  const f=e.target;
+  const first=(f.first_name.value||'').trim();
+  const last=(f.last_name.value||'').trim();
+  const name=(first+' '+last).trim()||first;
+  const payload={
+    name,
+    phone:f.phone.value.trim(),
+    email:f.email.value.trim(),
+    property_address:f.property_address.value.trim(),
+    source:f.source.value.trim()||'Manual',
+    monthly_income:f.monthly_income.value||null,
+    status:'NEW',
+  };
+  try{
+    const r=await fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!r.ok){const j=await r.json().catch(()=>({}));toast('✗ '+(j.error||'Save failed'));return}
+    toast('✓ Lead added');
+    closePanel();
+    await loadAll();  // refreshes records list + Hot Leads + Total counters
+  }catch(err){toast('✗ '+err.message)}
+}
+
+// ── KANBAN (lead board) ──
+// ponytail: maps LeadStatus{NEW,CONTACTED,QUALIFIED,CLOSED,LOST} onto 4 columns.
+// IDLE/STALE = LOST status (no native IDLE). Add a dedicated status if you need it.
+const KANBAN_COLS=[
+  {key:'NEW',label:'New',color:'var(--blue)',statuses:['NEW'],dropStatus:'NEW'},
+  {key:'PIPELINE',label:'Pipeline',color:'var(--amber)',statuses:['CONTACTED','QUALIFIED'],dropStatus:'CONTACTED'},
+  {key:'UNDER_CONTRACT',label:'Under Contract',color:'var(--green)',statuses:['CLOSED'],dropStatus:'CLOSED'},
+  {key:'IDLE_STALE',label:'Idle / Stale',color:'var(--gray)',statuses:['LOST'],dropStatus:'LOST'},
+];
+// ponytail: sales pipe funnel using SalesStatus, custom stage labels.
 const SALES_KANBAN_COLS=[
   {key:'LISTING_AGREEMENT',label:'Listing Agreement',color:'var(--blue)',statuses:['CMA_REQUESTED','NEW_LISTING_ALERT'],dropStatus:'CMA_REQUESTED'},
   {key:'WORK_PREP',label:'Work Before Listing',color:'var(--amber)',statuses:['LISTING_PREP'],dropStatus:'LISTING_PREP'},
@@ -341,103 +340,42 @@ const SALES_KANBAN_COLS=[
   {key:'CLOSING',label:'Under Contract / Closing',color:'var(--red)',statuses:['UNDER_CONTRACT','CONTRACT_SIGNED'],dropStatus:'UNDER_CONTRACT'},
   {key:'CLOSED',label:'Closed',color:'var(--gray)',statuses:['CLOSED'],dropStatus:'CLOSED'},
 ];
-
 function renderKanban(){
-  // Toggle: shows pipe funnel for leads or sales
   const modeToggle='<div style="padding:0 12px 8px;display:flex;gap:8px;align-items:center">'+
-    '<button class="btn-sm '+(kanbanMode==="leads"?"blue":"gray")+'" onclick="kanbanMode=\'leads\';renderKanban()">📧 Lead Funnel</button>'+
-    '<button class="btn-sm '+(kanbanMode==="sales"?"blue":"gray")+'" onclick="kanbanMode=\'sales\';renderKanban()">💰 Sales Funnel</button>'+
+    '<button class="btn-sm '+(kanbanMode==="leads"?"blue":"gray")+'" onclick="kanbanMode=\\'leads\\';renderKanban()">📧 Lead Funnel</button>'+
+    '<button class="btn-sm '+(kanbanMode==="sales"?"blue":"gray")+'" onclick="kanbanMode=\\'sales\\';renderKanban()">💰 Sales Funnel</button>'+
     '</div>';
   if(kanbanMode==='sales'){renderSalesKanban(modeToggle);return}
-
-335|  const buckets={};KANBAN_COLS.forEach(c=>buckets[c.key]=[]);
-336|  const staleThreshold=21;
-337|  allLeads.forEach(l=>{
-338|    const col=KANBAN_COLS.find(c=>c.statuses.includes(l.status));
-339|    if(col)buckets[col.key].push(l);
-340|    else if((l.days_old||0)>staleThreshold)buckets.IDLE_STALE.push(l);
-341|    else buckets.NEW.push(l);
-342|  });
-343|  let h='';
-344|  KANBAN_COLS.forEach(col=>{
-345|    const items=buckets[col.key];
-346|    h+=`<div class="kanban-col" data-col="${col.key}"
-347|        ondragover="event.preventDefault();this.style.background='#dbeafe'"
-348|        ondragleave="this.style.background='#edf2f7'"
-349|        ondrop="dropLead(event,'${col.key}')">
-350|      <h2 style="color:${col.color}">${col.label} <span class="col-count" style="background:${col.color}">${items.length}</span></h2>`;
-351|    items.forEach(l=>{
-352|      const income=l.monthly_income?'$'+Number(l.monthly_income).toLocaleString()+'/mo':'—';
-353|      const src=l.source||'';
-354|      h+=`<div class="kcard" draggable="true"
-355|            ondragstart="dragLead(event,${l.id})"
-356|            ondragend="this.style.opacity='1'"
-357|            style="border-left-color:${col.color}"
-358|            onclick="openPanel('lead',${l.id})">
-359|        <div class="kc-title">${l.name||'?'}</div>
-360|        <div class="kc-sub">${l.property||'No property'}</div>
-361|        <div class="kc-meta">
-362|          <span class="badge ${l.monthly_income?'green':'gray'}">${income}</span>
-363|          ${src?`<span class="badge gray">${src}</span>`:''}
-364|        </div>
-365|      </div>`;
-366|    });
-367|    h+='</div>';
-368|  });
-369|  document.getElementById('kanban').innerHTML=h;
-370|  document.getElementById('kanbanView').style.display='block';
-371|  document.getElementById('leadCards').style.display='none';
-372|}
-373|function dragLead(e,id){
-374|  e.dataTransfer.setData('text/plain',id);
-375|  e.dataTransfer.effectAllowed='move';
-376|  e.target.style.opacity='0.4';
-377|}
-378|async function dropLead(e,colKey){
-379|  e.preventDefault();
-380|  e.currentTarget.style.background='#edf2f7';
-381|  const id=parseInt(e.dataTransfer.getData('text/plain'),10);
-382|  if(!id)return;
-383|  const col=KANBAN_COLS.find(c=>c.key===colKey);
-384|  if(!col)return;
-385|  const lead=allLeads.find(l=>l.id===id);
-386|  if(!lead)return;
-387|  if(col.statuses.includes(lead.status))return;  // already in this column
-388|  try{
-389|    const r=await fetch('/api/leads/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:col.dropStatus})});
-390|    if(!r.ok){toast('✗ Move failed');return}
-391|    lead.status=col.dropStatus;  // optimistic local update
-392|    toast('→ Moved to '+col.label);
-393|    renderAll();  // recalculates stats (Hot Leads, Total) + re-renders board
-394|  }catch(err){toast('✗ '+err.message)}
-395|}
-396|
-397|// ── TAB VIEWS ──
-
-function renderSalesKanban(modeToggle){
-  const buckets={};SALES_KANBAN_COLS.forEach(c=>buckets[c.key]=[]);
-  allDeals.forEach(d=>{
-    const col=SALES_KANBAN_COLS.find(c=>c.statuses.includes(d.status));
-    if(col)buckets[col.key].push(d);
+  const buckets={};KANBAN_COLS.forEach(c=>buckets[c.key]=[]);
+  const staleThreshold=21;
+  allLeads.forEach(l=>{
+    const col=KANBAN_COLS.find(c=>c.statuses.includes(l.status));
+    if(col)buckets[col.key].push(l);
+    else if((l.days_old||0)>staleThreshold)buckets.IDLE_STALE.push(l);
+    else buckets.NEW.push(l);
   });
   let h=modeToggle;
-  SALES_KANBAN_COLS.forEach(col=>{
-    const items=buckets[col.key]||[];
+  KANBAN_COLS.forEach(col=>{
+    const items=buckets[col.key];
     h+=`<div class="kanban-col" data-col="${col.key}"
         ondragover="event.preventDefault();this.style.background='#dbeafe'"
         ondragleave="this.style.background='#edf2f7'"
-        ondrop="dropDeal(event,'${col.key}')">
+        ondrop="dropLead(event,'${col.key}')">
       <h2 style="color:${col.color}">${col.label} <span class="col-count" style="background:${col.color}">${items.length}</span></h2>`;
-    items.forEach(d=>{
-      const price=d.list_price?'$'+Number(d.list_price).toLocaleString():'';
+    items.forEach(l=>{
+      const income=l.monthly_income?'$'+Number(l.monthly_income).toLocaleString()+'/mo':'—';
+      const src=l.source||'';
       h+=`<div class="kcard" draggable="true"
-            ondragstart="dragDeal(event,${d.id})"
+            ondragstart="dragLead(event,${l.id})"
             ondragend="this.style.opacity='1'"
             style="border-left-color:${col.color}"
-            onclick="openPanel('deal',${d.id})">
-        <div class="kc-title">${d.address.split(',')[0]||'?'}</div>
-        <div class="kc-sub">${(d.status||'').replace(/_/g,' ')}</div>
-        <div class="kc-meta">${price?`<span class="badge green">${price}</span>`:''}${d.tc?`<span class="badge gray">${d.tc}</span>`:''}</div>
+            onclick="openPanel('lead',${l.id})">
+        <div class="kc-title">${l.name||'?'}</div>
+        <div class="kc-sub">${l.property||'No property'}</div>
+        <div class="kc-meta">
+          <span class="badge ${l.monthly_income?'green':'gray'}">${income}</span>
+          ${src?`<span class="badge gray">${src}</span>`:''}
+        </div>
       </div>`;
     });
     h+='</div>';
@@ -446,131 +384,248 @@ function renderSalesKanban(modeToggle){
   document.getElementById('kanbanView').style.display='block';
   document.getElementById('leadCards').style.display='none';
 }
-function dragDeal(e,id){
+function dragLead(e,id){
   e.dataTransfer.setData('text/plain',id);
   e.dataTransfer.effectAllowed='move';
   e.target.style.opacity='0.4';
 }
-async function dropDeal(e,colKey){
+async function dropLead(e,colKey){
   e.preventDefault();
   e.currentTarget.style.background='#edf2f7';
   const id=parseInt(e.dataTransfer.getData('text/plain'),10);
   if(!id)return;
-  const col=SALES_KANBAN_COLS.find(c=>c.key===colKey);
+  const col=KANBAN_COLS.find(c=>c.key===colKey);
   if(!col)return;
-  const deal=allDeals.find(d=>d.id===id);
-  if(!deal||col.statuses.includes(deal.status))return;
+  const lead=allLeads.find(l=>l.id===id);
+  if(!lead)return;
+  if(col.statuses.includes(lead.status))return;  // already in this column
   try{
-    const r=await fetch('/api/sales/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:col.dropStatus})});
+    const r=await fetch('/api/leads/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:col.dropStatus})});
     if(!r.ok){toast('✗ Move failed');return}
-    deal.status=col.dropStatus;
-    deal.next_action=NEXT_TIPS[col.dropStatus]||'';
+    lead.status=col.dropStatus;  // optimistic local update
     toast('→ Moved to '+col.label);
-    renderAll();
+    renderAll();  // recalculates stats (Hot Leads, Total) + re-renders board
   }catch(err){toast('✗ '+err.message)}
 }
+function renderSalesKanban(modeToggle){
+const buckets={};SALES_KANBAN_COLS.forEach(c=>buckets[c.key]=[]);
+allDeals.forEach(d=>{
+  const col=SALES_KANBAN_COLS.find(c=>c.statuses.includes(d.status));
+  if(col)buckets[col.key].push(d);
+});
+let h=modeToggle;
+SALES_KANBAN_COLS.forEach(col=>{
+  const items=buckets[col.key]||[];
+  h+=`<div class="kanban-col" data-col="${col.key}"
+      ondragover="event.preventDefault();this.style.background='#dbeafe'"
+      ondragleave="this.style.background='#edf2f7'"
+      ondrop="dropDeal(event,'${col.key}')">
+    <h2 style="color:${col.color}">${col.label} <span class="col-count" style="background:${col.color}">${items.length}</span></h2>`;
+  items.forEach(d=>{
+    const price=d.list_price?'$'+Number(d.list_price).toLocaleString():'';
+    h+=`<div class="kcard" draggable="true"
+          ondragstart="dragDeal(event,${d.id})"
+          ondragend="this.style.opacity='1'"
+          style="border-left-color:${col.color}"
+          onclick="openPanel('deal',${d.id})">
+      <div class="kc-title">${d.address.split(',')[0]||'?'}</div>
+      <div class="kc-sub">${(d.status||'').replace(/_/g,' ')}</div>
+      <div class="kc-meta">${price?`<span class="badge green">${price}</span>`:''}${d.tc?`<span class="badge gray">${d.tc}</span>`:''}</div>
+    </div>`;
+  });
+  h+='</div>';
+});
+document.getElementById('kanban').innerHTML=h;
+document.getElementById('kanbanView').style.display='block';
+document.getElementById('leadCards').style.display='none';
+}
+function dragDeal(e,id){
+e.dataTransfer.setData('text/plain',id);
+e.dataTransfer.effectAllowed='move';
+e.target.style.opacity='0.4';
+}
+async function dropDeal(e,colKey){
+e.preventDefault();
+e.currentTarget.style.background='#edf2f7';
+const id=parseInt(e.dataTransfer.getData('text/plain'),10);
+if(!id)return;
+const col=SALES_KANBAN_COLS.find(c=>c.key===colKey);
+if(!col)return;
+const deal=allDeals.find(d=>d.id===id);
+if(!deal||col.statuses.includes(deal.status))return;
+try{
+  const r=await fetch('/api/sales/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:col.dropStatus})});
+  if(!r.ok){toast('✗ Move failed');return}
+  deal.status=col.dropStatus;
+  deal.next_action=NEXT_TIPS[col.dropStatus]||'';
+  toast('→ Moved to '+col.label);
+  renderAll();
+}catch(err){toast('✗ '+err.message)}
+}
+// ── TAB VIEWS ──
+function renderTabView(tab){
+document.getElementById('kanbanView').style.display='none';
+  const rows=tab==='leads'?allLeads:tab==='deals'?allDeals:tab==='apps'?allApps:allProps;
+  const cols=COLS[tab]||[];
+  
+  // Mobile: cards
+  if(isMobile&&tab==='leads'){
+    document.getElementById('leadCards').style.display='flex';
+    document.getElementById('gridWrap').style.display='none';
+    let h='';
+    const s=document.getElementById('searchInput').value.toLowerCase();
+    let f=budgetOnly?rows.filter(r=>r.monthly_income&&r.monthly_income>0):rows;
+    if(s)f=f.filter(r=>cols.some(c=>String(r[c.k]||'').toLowerCase().includes(s)));
+    f.slice(0,50).forEach(l=>{
+      const init=(l.name||'?')[0].toUpperCase();
+      h+=`<div class="lcard" onclick="openPanel('lead',${l.id})">
+        <div class="lc-avatar">${init}</div>
+        <div class="lc-info"><div class="name">${l.name||'?'}${l.upsell_eligible?'💰':''}${l.interested_in_buying?'🏡':''}</div>
+        <div class="prop">${l.property||''}</div><div class="budget">${l.source||''}${l.monthly_income?' · $'+(l.monthly_income/1000).toFixed(1)+'k/mo':''}</div></div>
+        <div class="lc-actions">${l.phone?`<a href="tel:${l.phone}" class="lca-call" onclick="event.stopPropagation()">📞</a>`:''}${l.email?`<a href="mailto:${l.email}" class="lca-email" onclick="event.stopPropagation()">✉️</a>`:''}</div>
+      </div>`;
+    });
+    document.getElementById('leadCards').innerHTML=h||'<p style="text-align:center;color:var(--gray);padding:40px">No leads</p>';
+  }else{
+    // Desktop: table
+    document.getElementById('leadCards').style.display='none';
+    document.getElementById('gridWrap').style.display='block';
+    const s=document.getElementById('searchInput').value.toLowerCase();
+    const sf=document.getElementById('statusFilter').value;
+    let f=rows;
+    if(budgetOnly&&tab==='leads')f=f.filter(r=>r.monthly_income&&r.monthly_income>0);
+    if(sf)f=f.filter(r=String(r.status||'').toLowerCase()===sf.toLowerCase());
+    if(s)f=f.filter(r=>cols.some(c=>String(r[c.k]||'').toLowerCase().includes(s)));
+    if(sortCol)f.sort((a,b)=>{let va=a[sortCol]||'',vb=b[sortCol]||'';return(va<vb?-1:va>vb?1:0)*sortDir});
+    document.getElementById('rowCount').textContent=(budgetOnly&&tab==='leads'?f.length+' with budget':f.length+' records');
 
-398|function renderTabView(tab){
-399|  document.getElementById('kanbanView').style.display='none';
-400|  const rows=tab==='leads'?allLeads:tab==='deals'?allDeals:tab==='apps'?allApps:allProps;
-401|  const cols=COLS[tab]||[];
-402|  
-403|  // Mobile: cards
-404|  if(isMobile&&tab==='leads'){
-405|    document.getElementById('leadCards').style.display='flex';
-406|    document.getElementById('gridWrap').style.display='none';
-407|    let h='';
-408|    const s=document.getElementById('searchInput').value.toLowerCase();
-409|    let f=budgetOnly?rows.filter(r=>r.monthly_income&&r.monthly_income>0):rows;
-410|    if(s)f=f.filter(r=>cols.some(c=>String(r[c.k]||'').toLowerCase().includes(s)));
-411|    f.slice(0,50).forEach(l=>{
-412|      const init=(l.name||'?')[0].toUpperCase();
-413|      h+=`<div class="lcard" onclick="openPanel('lead',${l.id})">
-414|        <div class="lc-avatar">${init}</div>
-415|        <div class="lc-info"><div class="name">${l.name||'?'}${l.upsell_eligible?'💰':''}${l.interested_in_buying?'🏡':''}</div>
-416|        <div class="prop">${l.property||''}</div><div class="budget">${l.source||''}${l.monthly_income?' · $'+(l.monthly_income/1000).toFixed(1)+'k/mo':''}</div></div>
-417|        <div class="lc-actions">${l.phone?`<a href="tel:${l.phone}" class="lca-call" onclick="event.stopPropagation()">📞</a>`:''}${l.email?`<a href="mailto:${l.email}" class="lca-email" onclick="event.stopPropagation()">✉️</a>`:''}</div>
-418|      </div>`;
-419|    });
-420|    document.getElementById('leadCards').innerHTML=h||'<p style="text-align:center;color:var(--gray);padding:40px">No leads</p>';
-421|  }else{
-422|    // Desktop: table
-423|    document.getElementById('leadCards').style.display='none';
-424|    document.getElementById('gridWrap').style.display='block';
-425|    const s=document.getElementById('searchInput').value.toLowerCase();
-426|    const sf=document.getElementById('statusFilter').value;
-427|    let f=rows;
-428|    if(budgetOnly&&tab==='leads')f=f.filter(r=>r.monthly_income&&r.monthly_income>0);
-429|    if(sf)f=f.filter(r=String(r.status||'').toLowerCase()===sf.toLowerCase());
-430|    if(s)f=f.filter(r=>cols.some(c=>String(r[c.k]||'').toLowerCase().includes(s)));
-431|    if(sortCol)f.sort((a,b)=>{let va=a[sortCol]||'',vb=b[sortCol]||'';return(va<vb?-1:va>vb?1:0)*sortDir});
-432|    document.getElementById('rowCount').textContent=(budgetOnly&&tab==='leads'?f.length+' with budget':f.length+' records');
-433|
-434|    let h='<thead><tr>';
-435|    cols.forEach(c=>h+=`<th style="width:${c.w||100}px" onclick="sortBy('${c.k}')">${c.l}${sortCol===c.k?(sortDir===1?' ▴':' ▾'):''}</th>`);
-436|    h+='</tr></thead><tbody>';
-437|    f.forEach(r=>{
-438|      h+='<tr onclick="openPanel(\''+tab+'\','+r.id+')">';
-439|      cols.forEach(c=>{
-440|        let v=r[c.k],d=v!=null?String(v):'';
-441|        if(['last_update','received_at'].includes(c.k))d=d?d.slice(0,10):'';
-442|        if(['list_price','monthly_income','rent'].includes(c.k)&&v)d='$'+Number(v).toLocaleString();
-443|        if(c.t==='status')d=`<span class="badge ${STATUS_C[v]||'gray'}">${(d||'').replace(/_/g,' ')}</span>`;
-444|        h+=`<td>${d||''}</td>`;
-445|      });
-446|      h+='</tr>';
-447|    });
-448|    h+='</tbody>';
-449|    document.getElementById('grid').innerHTML=h;
-450|  }
-451|
-452|  // Update status filter
-453|  const opts=STATUS_O[tab]||[];
-454|  document.getElementById('statusFilter').innerHTML='<option value="">All</option>'+opts.map(o=>`<option value="${o}">${o.replace(/_/g,' ')}</option>`).join('');
-455|}
-456|
-457|// ── PANEL ──
-458|async function openPanel(type,id){
-459|  let data;
-460|  if(type==='lead')data=allLeads.find(x=>x.id===id);
-461|  else if(type==='deal')data=allDeals.find(x=>x.id===id);
-462|  else if(type==='app')data=allApps.find(x=>x.id===id);
-463|  else if(type==='props')data=allProps.find(x=>x.id===id);
-464|  else if(type==='email')data=allOpportunities.find(x=>x.id===id);
-465|  if(!data)return;
-466|
-467|  selectedType=type;selectedId=id;
-468|  document.getElementById('panel').classList.add('open');
-469|  document.getElementById('overlay').classList.add('open');
-470|
-471|  let title='',body='';
-472|  const r=(l,v)=>v?`<div class="p-row"><span class="p-label">${l}</span><span class="p-value">${v}</span></div>`:'';
-473|
-474|  if(type==='lead'){
-475|    title=data.name||'Lead';
-476|    body=r('Phone',data.phone)+r('Email',data.email)+r('Property',data.property)+r('Source',data.source)+r('Status',data.status)+r('Budget',data.monthly_income?'$'+Number(data.monthly_income).toLocaleString()+'/mo':'')+r('Notes',data.notes);
-477|    body+=`<div class="p-actions">${data.phone?`<a href="tel:${data.phone}" class="pa-call">📞 Call</a>`:''}${data.email?`<a href="mailto:${data.email}" class="pa-email">✉️ Email</a>`:''}</div>`;
-478|  }else if(type==='deal'){
-479|    title=data.address||'Deal';
-480|    body=r('Status',(data.status||'').replace(/_/g,' '))+r('Idle',(data.days_idle||0)+' days')+r('Events',data.event_count||0)+r('Price',data.list_price?'$'+Number(data.list_price).toLocaleString():'');
-481|    body+=`<div class="p-actions"><button class="pa-move" onclick="advanceDeal(${data.id},'${data.status}')">→ Next Stage</button></div>`;
-482|  }else if(type==='app'){
-483|    title=data.applicant||'Applicant';
-484|    body=r('Property',data.property)+r('Status',data.status)+r('Handler',data.handler)+r('Income',data.monthly_income?'$'+Number(data.monthly_income).toLocaleString():'');
-485|  }else if(type==='email'){
-486|    title=data.sender_name||data.sender_email||'Email';
-487|    body=r('Subject',data.subject)+r('From',data.sender_email)+r('Received',data.received_at?new Date(data.received_at).toLocaleString():'')+r('Property',data.property_address)+r('Kind',data.matched_kind)+r('Preview',data.body_preview);
-488|    body+=`<div class="p-actions">${data.sender_email?`<a href="mailto:${data.sender_email}?subject=Re:${encodeURIComponent(data.subject)}" class="pa-email">✉️ Reply</a>`:''}</div>`;
-489|  }else{
-490|    title=data.address||'Property';
-491|    // Fetch rich detail from new endpoint
-492|    try{
-493|      const dr=await fetch(`/api/properties/${id}/detail`,{credentials:'include'});
-494|      const dd=await dr.json();
-495|      const dp=dd.property||data;
-496|      title=dp.address||'Property';
-497|      body=r('Unit',dp.unit)+r('Status',dp.status)+r('Rent',dp.rent?'$'+Number(dp.rent).toLocaleString():'')+r('BR/BA',(dp.bedrooms||'?')+'/'+(dp.bathrooms||'?'))+r('Tenant',dp.tenant_name)+r('Days on Market',dp.days_on_market!=null?dp.days_on_market+' days':'')+r('Lockbox',dp.lockbox_code)+r('Notes',dp.notes);
-498|      // Leads section
-499|      if(dd.leads&&dd.leads.length>0){
-500|        body+=`<div class="p-row" style="font-weight:700;color:var(--navy);margin-top:8px">📧 ${dd.leads.length} Leads</div>`;
-501|
+    let h='<thead><tr>';
+    cols.forEach(c=>h+=`<th style="width:${c.w||100}px" onclick="sortBy('${c.k}')">${c.l}${sortCol===c.k?(sortDir===1?' ▴':' ▾'):''}</th>`);
+    h+='</tr></thead><tbody>';
+    f.forEach(r=>{
+      h+='<tr onclick="openPanel(\''+tab+'\','+r.id+')">';
+      cols.forEach(c=>{
+        let v=r[c.k],d=v!=null?String(v):'';
+        if(['last_update','received_at'].includes(c.k))d=d?d.slice(0,10):'';
+        if(['list_price','monthly_income','rent'].includes(c.k)&&v)d='$'+Number(v).toLocaleString();
+        if(c.t==='status')d=`<span class="badge ${STATUS_C[v]||'gray'}">${(d||'').replace(/_/g,' ')}</span>`;
+        h+=`<td>${d||''}</td>`;
+      });
+      h+='</tr>';
+    });
+    h+='</tbody>';
+    document.getElementById('grid').innerHTML=h;
+  }
+
+  // Update status filter
+  const opts=STATUS_O[tab]||[];
+  document.getElementById('statusFilter').innerHTML='<option value="">All</option>'+opts.map(o=>`<option value="${o}">${o.replace(/_/g,' ')}</option>`).join('');
+}
+
+// ── PANEL ──
+async function openPanel(type,id){
+  let data;
+  if(type==='lead')data=allLeads.find(x=>x.id===id);
+  else if(type==='deal')data=allDeals.find(x=>x.id===id);
+  else if(type==='app')data=allApps.find(x=>x.id===id);
+  else if(type==='props')data=allProps.find(x=>x.id===id);
+  else if(type==='email')data=allOpportunities.find(x=>x.id===id);
+  if(!data)return;
+
+  selectedType=type;selectedId=id;
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+
+  let title='',body='';
+  const r=(l,v)=>v?`<div class="p-row"><span class="p-label">${l}</span><span class="p-value">${v}</span></div>`:'';
+
+  if(type==='lead'){
+    title=data.name||'Lead';
+    body=r('Phone',data.phone)+r('Email',data.email)+r('Property',data.property)+r('Source',data.source)+r('Status',data.status)+r('Budget',data.monthly_income?'$'+Number(data.monthly_income).toLocaleString()+'/mo':'')+r('Notes',data.notes);
+    body+=`<div class="p-actions">${data.phone?`<a href="tel:${data.phone}" class="pa-call">📞 Call</a>`:''}${data.email?`<a href="mailto:${data.email}" class="pa-email">✉️ Email</a>`:''}</div>`;
+  }else if(type==='deal'){
+    title=data.address||'Deal';
+    body=r('Status',(data.status||'').replace(/_/g,' '))+r('Idle',(data.days_idle||0)+' days')+r('Events',data.event_count||0)+r('Price',data.list_price?'$'+Number(data.list_price).toLocaleString():'');
+    body+=`<div class="p-actions"><button class="pa-move" onclick="advanceDeal(${data.id},'${data.status}')">→ Next Stage</button></div>`;
+  }else if(type==='app'){
+    title=data.applicant||'Applicant';
+    body=r('Property',data.property)+r('Status',data.status)+r('Handler',data.handler)+r('Income',data.monthly_income?'$'+Number(data.monthly_income).toLocaleString():'');
+  }else if(type==='email'){
+    title=data.sender_name||data.sender_email||'Email';
+    body=r('Subject',data.subject)+r('From',data.sender_email)+r('Received',data.received_at?new Date(data.received_at).toLocaleString():'')+r('Property',data.property_address)+r('Kind',data.matched_kind)+r('Preview',data.body_preview);
+    body+=`<div class="p-actions">${data.sender_email?`<a href="mailto:${data.sender_email}?subject=Re:${encodeURIComponent(data.subject)}" class="pa-email">✉️ Reply</a>`:''}</div>`;
+  }else{
+    title=data.address||'Property';
+    // Fetch rich detail from new endpoint
+    try{
+      const dr=await fetch(`/api/properties/${id}/detail`,{credentials:'include'});
+      const dd=await dr.json();
+      const dp=dd.property||data;
+      title=dp.address||'Property';
+      body=r('Unit',dp.unit)+r('Status',dp.status)+r('Rent',dp.rent?'$'+Number(dp.rent).toLocaleString():'')+r('BR/BA',(dp.bedrooms||'?')+'/'+(dp.bathrooms||'?'))+r('Tenant',dp.tenant_name)+r('Days on Market',dp.days_on_market!=null?dp.days_on_market+' days':'')+r('Lockbox',dp.lockbox_code)+r('Notes',dp.notes);
+      // Leads section
+      if(dd.leads&&dd.leads.length>0){
+        body+=`<div class="p-row" style="font-weight:700;color:var(--navy);margin-top:8px">📧 ${dd.leads.length} Leads</div>`;
+        dd.leads.slice(0,10).forEach(l=>{
+          body+=`<div style="font-size:12px;padding:4px 0;border-bottom:1px solid #edf2f7">${l.name||'?'} ${l.phone?`· <a href="tel:${l.phone}" style="color:var(--green);font-weight:700">📞</a>`:''} ${l.source?`· ${l.source}`:''}</div>`;
+        });
+      }
+      // Obsidian notes
+      if(dd.obsidian_notes&&dd.obsidian_notes.length>0){
+        body+=`<div class="p-row" style="font-weight:700;color:var(--purple);margin-top:8px">📓 Obsidian (${dd.obsidian_notes.length})</div>`;
+        dd.obsidian_notes.forEach(n=>{body+=`<div style="font-size:12px;padding:2px 0">${n.name||n.kind}</div>`});
+      }
+    }catch(e){}
+  }
+  document.getElementById('panelTitle').textContent=title;
+  document.getElementById('panelBody').innerHTML=body;
+}
+
+function closePanel(){document.getElementById('panel').classList.remove('open');document.getElementById('overlay').classList.remove('open')}
+
+// ── ACTIONS ──
+function advanceDeal(id,status){
+  const cycle={'CMA_REQUESTED':'LISTING_PREP','LISTING_PREP':'ACTIVE_LISTING','ACTIVE_LISTING':'IN_ESCROW','IN_ESCROW':'UNDER_CONTRACT','UNDER_CONTRACT':'CONTRACT_SIGNED','CONTRACT_SIGNED':'CLOSED','OFFER_RECEIVED':'UNDER_CONTRACT','NEW_LISTING_ALERT':'CMA_REQUESTED'};
+  const next=cycle[status]||status;
+  fetch('/api/sales/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:next})})
+    .then(()=>{toast('Moved to '+next.replace(/_/g,' '));loadAll()});
+}
+
+function showBudgetLeads(){
+  budgetOnly=true;
+  currentTab='leads';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector(`[data-tab="leads"]`).classList.add('active');
+  sortCol=null;
+  document.getElementById('searchInput').value='';
+  document.getElementById('rowCount').textContent='';
+  renderAll();
+}
+
+function switchTab(tab){
+  currentTab=tab;
+  budgetOnly=false,kanbanMode="leads";
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  sortCol=null;
+  document.getElementById('searchInput').value='';
+  document.getElementById('rowCount').textContent='';
+  renderAll();
+}
+
+function sortBy(col){sortCol===col?sortDir*=-1:(sortCol=col,sortDir=1);renderTabView(currentTab)}
+function refreshAll(){loadAll();toast('✓ Refreshed')}
+function syncObsidian(){toast('Syncing vault...');fetch('/api/enrich-leads',{method:'POST'}).then(()=>{toast('✓ Enriched');loadAll()})}
+function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2000)}
+function fmt(n){return n>=1000?(n/1000).toFixed(1)+'k':String(n)}
+
+document.getElementById('tabBar').onclick=e=>{if(e.target.classList.contains('tab'))switchTab(e.target.dataset.tab)};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePanel()});
+document.addEventListener('click',e=>{if(e.target===document.getElementById('overlay'))closePanel()});
+document.getElementById('searchInput').oninput=()=>renderTabView(currentTab);
+document.getElementById('statusFilter').onchange=()=>renderTabView(currentTab);
+
+// Init
+loginSilent().then(authed=>{loadAll()});
+</script>
+{% endblock %}

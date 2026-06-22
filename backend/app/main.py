@@ -8,7 +8,7 @@ from app.routers import auth, dashboard, microsoft, showings, tenant, files, obs
 
 settings = get_settings()
 app = FastAPI(
-    title="Renter Portal API",
+    title="Leasing & Sales NOD API",
     version="0.1.0",
     debug=settings.debug,
 )

@@ -254,7 +254,7 @@ async def dashboard_json(
                 "id": l.id, "name": l.name, "email": l.email, "phone": l.phone,
                 "property": (l.property.address if l.property else "") + (f" #{l.property.unit}" if l.property and l.property.unit else ""),
                 "source": l.source,
-                "status": l.status.value if l.status else "",
+                "status": l.status.value if l.status and hasattr(l.status, "value") else (str(l.status) if l.status else ""),
                 "days_old": l.days_old or 0,
             }
             for l in db.query(Lead).filter(Lead.org_id == org_id)
@@ -368,7 +368,7 @@ async def api_leads(
             "property": (l.property.address if l.property else "") + (f" #{l.property.unit}" if l.property and l.property.unit else ""),
             "property_id": l.property_id,
             "source": l.source,
-            "status": l.status.value if l.status else "",
+            "status": l.status.value if l.status and hasattr(l.status, "value") else (str(l.status) if l.status else ""),
             "days_old": l.days_old or 0,
             "received_at": l.received_at.isoformat() if l.received_at else None,
             "monthly_income": l.monthly_income,
@@ -705,7 +705,7 @@ async def property_detail(
         },
         "leads": [{
             "id": l.id, "name": l.name, "phone": l.phone, "email": l.email,
-            "status": l.status.value if l.status else "",
+            "status": l.status.value if l.status and hasattr(l.status, "value") else (str(l.status) if l.status else ""),
             "source": l.source, "monthly_income": l.monthly_income,
             "upsell_eligible": bool(l.upsell_eligible), "notes": l.notes,
         } for l in leads],

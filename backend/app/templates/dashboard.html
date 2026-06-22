@@ -89,6 +89,18 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
 /* ── CELL EDITING ── */
 .cell-editor{width:calc(100% + 4px);padding:3px 6px;border:2px solid var(--blue);border-radius:4px;font-size:12px;font-family:inherit;background:#fff;outline:none;margin:-3px -6px}
 .cell-select{width:100%;padding:3px 6px;border:2px solid var(--blue);border-radius:4px;font-size:12px;font-family:inherit;background:#fff}
+
+/* ── MOBILE TWEAKS ── */
+@media(max-width:767px){
+  header.bar h1{font-size:16px}
+  header.bar{padding:10px 12px}
+  .panel{width:100%;max-width:100%}
+  .tab{padding:12px 4px;font-size:11px;min-height:44px;display:flex;align-items:center;justify-content:center}
+  .kanban-col{flex:0 0 calc(100vw - 32px);max-width:calc(100vw - 32px)}
+  .kcard .kc-btn{min-height:36px;font-size:12px}
+  .btn-sm{padding:8px 12px;min-height:36px;font-size:12px}
+  .toolbar input{font-size:16px} /* prevent iOS zoom on focus */
+}
 </style>
 {% endblock %}
 

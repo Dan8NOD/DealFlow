@@ -50,7 +50,6 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
 
 /* ── GRID (desktop table) ── */
 .grid-wrap{overflow-x:auto;margin:0 12px;background:var(--card);border-radius:var(--r);border:1px solid #dde1e6;display:none}
-@media(min-width:768px){.grid-wrap{display:block}.kanban{display:none}}
 .grid-wrap.mobile-table{display:block}@media(min-width:768px){.grid-wrap.mobile-table{display:none}}
 .grid{width:100%;border-collapse:collapse;font-size:12px;min-width:800px}
 .grid th{background:#f7fafc;padding:8px;text-align:left;font-size:10px;font-weight:700;color:#4a5568;border-bottom:1px solid #dde1e6;cursor:pointer;white-space:nowrap}
@@ -108,8 +107,8 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
 
 <!-- QUICK ACTIONS -->
 <div class="lhf-strip" style="padding-top:0" id="quickActions">
-  <div class="lhf-card" style="border-left-color:var(--blue);cursor:pointer" onclick="switchTab('leads')"><div class="lhf-icon">👤</div><div class="lhf-title">Add Lead</div><div class="lhf-sub">Log new inquiry</div></div>
-  <div class="lhf-card" style="border-left-color:var(--green);cursor:pointer" onclick="switchTab('deals')"><div class="lhf-icon">💰</div><div class="lhf-title">New Deal</div><div class="lhf-sub">Track a sale</div></div>
+  <div class="lhf-card" style="border-left-color:var(--blue);cursor:pointer" onclick="openAddLeadForm()"><div class="lhf-icon">👤</div><div class="lhf-title">Add Lead</div><div class="lhf-sub">Log new inquiry</div></div>
+  <div class="lhf-card" style="border-left-color:var(--green);cursor:pointer" onclick="switchTab('deals')"><div class="lhf-icon">💰</div><div class="lhf-title">New Sale</div><div class="lhf-sub">Track a sale</div></div>
   <div class="lhf-card" style="border-left-color:var(--amber);cursor:pointer" onclick="switchTab('props')"><div class="lhf-icon">🏠</div><div class="lhf-title">Properties</div><div class="lhf-sub">View inventory</div></div>
   <div class="lhf-card" style="border-left-color:var(--purple);cursor:pointer" onclick="switchTab('apps')"><div class="lhf-icon">📋</div><div class="lhf-title">Applications</div><div class="lhf-sub">Pipeline</div></div>
 </div>
@@ -121,7 +120,7 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
 <div class="tabs" id="tabBar">
   <button class="tab active" data-tab="kanban">📋 Kanban</button>
   <button class="tab" data-tab="leads">📧 Leads<span class="count" id="upsellCount"></span></button>
-  <button class="tab" data-tab="deals">💰 Deals</button>
+  <button class="tab" data-tab="deals">💰 Sales</button>
   <button class="tab" data-tab="apps">📋 Apps</button>
   <button class="tab" data-tab="props">🏠 Props</button>
 </div>
@@ -160,12 +159,23 @@ const isMobile=window.innerWidth<768;
 
 const COLS={
   leads:[{k:'name',l:'Name',e:1,w:130},{k:'phone',l:'Phone',w:115},{k:'email',l:'Email',w:170},{k:'property',l:'Property',w:160},{k:'source',l:'Source',w:80},{k:'status',l:'Status',t:'status',w:95},{k:'monthly_income',l:'Income',e:1,w:80},{k:'days_old',l:'Age',w:45},{k:'received_at',l:'Received',w:85}],
-  deals:[{k:'address',l:'Property',w:190},{k:'status',l:'Status',t:'status',w:130},{k:'tc',l:'Coordinator',e:1,w:120},{k:'list_price',l:'Price',e:1,w:70},{k:'days_idle',l:'Idle',w:45},{k:'event_count',l:'#',w:35},{k:'last_update',l:'Updated',w:85}],
+  deals:[{k:'address',l:'Property',w:190},{k:'status',l:'Status',t:'status',w:130},{k:'next_action',l:'Next',w:150},{k:'tc',l:'Coordinator',e:1,w:120},{k:'list_price',l:'Price',e:1,w:70},{k:'days_idle',l:'Idle',w:45},{k:'last_update',l:'Updated',w:85}],
   apps:[{k:'applicant',l:'Applicant',e:1,w:130},{k:'property',l:'Property',w:170},{k:'status',l:'Status',t:'status',w:125},{k:'handler',l:'Handler',e:1,w:120},{k:'days_in_pipeline',l:'Days',w:45},{k:'last_update',l:'Updated',w:85}],
   props:[{k:'address',l:'Address',w:190},{k:'unit',l:'Unit',w:45},{k:'status',l:'Status',t:'status',w:100},{k:'tenant',l:'Tenant',e:1,w:120},{k:'rent',l:'Rent',w:65},{k:'bedrooms',l:'BR',w:35},{k:'bathrooms',l:'BA',w:35}],
 };
 const STATUS_O={leads:['NEW','CONTACTED','QUALIFIED','CLOSED','LOST'],deals:['NEW_LISTING_ALERT','CMA_REQUESTED','LISTING_PREP','ACTIVE_LISTING','IN_ESCROW','UNDER_CONTRACT','CONTRACT_SIGNED','OFFER_RECEIVED','CLOSED'],apps:['APPLICATION_RECEIVED','OFFER_SENT','WELCOME_SENT','APPROVED','LEASE_SIGNED','MOVED_IN','DENIED'],props:['AVAILABLE','RENTED','OCCUPIED','OFF_MARKET','FOR_SALE','PENDING']};
 const STATUS_C={application_received:'blue',offer_sent:'amber',approved:'green',lease_signed:'green',moved_in:'green',denied:'red',NEW:'blue',CONTACTED:'amber',QUALIFIED:'green',CLOSED:'gray',LOST:'red',ACTIVE_LISTING:'blue',UNDER_CONTRACT:'green',CONTRACT_SIGNED:'green',IN_ESCROW:'amber',OFFER_RECEIVED:'amber',CMA_REQUESTED:'purple',LISTING_PREP:'amber',AVAILABLE:'green',RENTED:'blue',OCCUPIED:'amber',OFF_MARKET:'gray',FOR_SALE:'purple',PENDING:'amber'};
+const NEXT_TIPS={
+  'NEW_LISTING_ALERT':'Confirm listing with owner',
+  'CMA_REQUESTED':'Follow up on CMA report',
+  'LISTING_PREP':'Schedule photos & write listing',
+  'ACTIVE_LISTING':'Review showings, adjust price',
+  'IN_ESCROW':'Coordinate title & inspections',
+  'UNDER_CONTRACT':'Track contingencies',
+  'CONTRACT_SIGNED':'Prep closing docs',
+  'OFFER_RECEIVED':'Review & respond to offer',
+  'CLOSED':'✅ Done',
+};
 
 async function loginSilent(){
   try{const r=await fetch('/api/leads?limit=1');if(r.ok)return true}catch(e){}
@@ -182,6 +192,7 @@ async function loadAll(){
       fetch('/api/email-opportunities?hours=24').then(r=>r.json()),
     ]);
     allLeads=lr;allDeals=dr;allApps=ar;allProps=pr;allOpportunities=or||[];
+    allDeals.forEach(d=>d.next_action=NEXT_TIPS[d.status]||'');
   }catch(e){}
   renderAll();
 }
@@ -262,38 +273,95 @@ function renderStats(){
   document.getElementById('statsRow').innerHTML=`
     <div class="stat-card" style="border-top-color:var(--red)" onclick="switchTab('leads')"><div class="sn">${fmt(hotLeads)}</div><div class="sl">Hot Leads</div></div>
     <div class="stat-card" style="border-top-color:var(--green)" onclick="switchTab('apps')"><div class="sn">${fmt(inPipe)}</div><div class="sl">Pipeline</div></div>
-    <div class="stat-card" style="border-top-color:var(--purple)" onclick="switchTab('deals')"><div class="sn">${fmt(activeDeals)}</div><div class="sl">Deals</div></div>
+    <div class="stat-card" style="border-top-color:var(--purple)" onclick="switchTab('deals')"><div class="sn">${fmt(activeDeals)}</div><div class="sl">Sales</div></div>
     <div class="stat-card" style="border-top-color:var(--amber)" onclick="showBudgetLeads()"><div class="sn">${fmt(withBudget)}</div><div class="sl">Budget</div></div>
     <div class="stat-card" style="border-top-color:var(--blue)" onclick="switchTab('leads')"><div class="sn">${fmt(allLeads.length)}</div><div class="sl">Total</div></div>
   `;
 }
 
-// ── KANBAN ──
-function renderKanban(){
-  const cols={todo:[],progress:[],done:[]};
-  allDeals.forEach(d=>{
-    const nextSteps={'CMA_REQUESTED':'Prepare CMA report','LISTING_PREP':'Take photos, write description','ACTIVE_LISTING':'Follow up on showings','IN_ESCROW':'Check closing timeline','UNDER_CONTRACT':'Send docs to title','CONTRACT_SIGNED':'Schedule closing','OFFER_RECEIVED':'Review and counter','NEW_LISTING_ALERT':'Call owner to discuss'};
-    const c={id:d.id,type:'deal',title:d.address.split(',')[0],sub:d.status.replace(/_/g,' '),status:d.status,days:d.days_idle||0,price:d.list_price,nextStep:nextSteps[d.status]||''};
-    if(d.status==='CLOSED')cols.done.push(c);
-    else if(['UNDER_CONTRACT','CONTRACT_SIGNED','IN_ESCROW','OFFER_RECEIVED'].includes(d.status))cols.progress.push(c);
-    else cols.todo.push(c);
-  });
-  // Add stale apps to todo
-  allApps.filter(a=>a.days_in_pipeline>10&&!['DENIED','LEASE_SIGNED','MOVED_IN'].includes(a.status)).forEach(a=>{
-    cols.todo.push({id:a.id,type:'app',title:a.applicant,sub:a.property+' · '+a.status.replace(/_/g,' '),status:a.status,days:a.days_in_pipeline});
-  });
+// ── ADD LEAD MODAL ──
+function openAddLeadForm(){
+  selectedType=null;selectedId=null;
+  document.getElementById('panelTitle').textContent='➕ Add Lead';
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  // ponytail: reuse the side-panel as the modal. form status defaults to NEW server-side.
+  document.getElementById('panelBody').innerHTML=`
+    <form id="addLeadForm" onsubmit="submitAddLead(event)" style="display:flex;flex-direction:column;gap:10px">
+      <input name="first_name" placeholder="First name" required style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
+      <input name="last_name" placeholder="Last name" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
+      <input name="phone" placeholder="Phone (e.g. 312-555-0100)" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
+      <input name="email" type="email" placeholder="Email" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
+      <input name="property_address" placeholder="Property address (or leave blank)" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
+      <input name="source" value="Manual" placeholder="Source" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
+      <input name="monthly_income" type="number" min="0" step="100" placeholder="Monthly income ($)" style="padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px">
+      <button type="submit" class="btn-sm green" style="padding:12px;font-size:14px;margin-top:4px">Save Lead</button>
+    </form>`;
+}
+async function submitAddLead(e){
+  e.preventDefault();
+  const f=e.target;
+  const first=(f.first_name.value||'').trim();
+  const last=(f.last_name.value||'').trim();
+  const name=(first+' '+last).trim()||first;
+  const payload={
+    name,
+    phone:f.phone.value.trim(),
+    email:f.email.value.trim(),
+    property_address:f.property_address.value.trim(),
+    source:f.source.value.trim()||'Manual',
+    monthly_income:f.monthly_income.value||null,
+    status:'NEW',
+  };
+  try{
+    const r=await fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!r.ok){const j=await r.json().catch(()=>({}));toast('✗ '+(j.error||'Save failed'));return}
+    toast('✓ Lead added');
+    closePanel();
+    await loadAll();  // refreshes records list + Hot Leads + Total counters
+  }catch(err){toast('✗ '+err.message)}
+}
 
+// ── KANBAN (lead board) ──
+// ponytail: maps LeadStatus{NEW,CONTACTED,QUALIFIED,CLOSED,LOST} onto 4 columns.
+// IDLE/STALE = LOST status (no native IDLE). Add a dedicated status if you need it.
+const KANBAN_COLS=[
+  {key:'NEW',label:'New',color:'var(--blue)',statuses:['NEW'],dropStatus:'NEW'},
+  {key:'PIPELINE',label:'Pipeline',color:'var(--amber)',statuses:['CONTACTED','QUALIFIED'],dropStatus:'CONTACTED'},
+  {key:'UNDER_CONTRACT',label:'Under Contract',color:'var(--green)',statuses:['CLOSED'],dropStatus:'CLOSED'},
+  {key:'IDLE_STALE',label:'Idle / Stale',color:'var(--gray)',statuses:['LOST'],dropStatus:'LOST'},
+];
+function renderKanban(){
+  const buckets={};KANBAN_COLS.forEach(c=>buckets[c.key]=[]);
+  const staleThreshold=21;
+  allLeads.forEach(l=>{
+    const col=KANBAN_COLS.find(c=>c.statuses.includes(l.status));
+    if(col)buckets[col.key].push(l);
+    else if((l.days_old||0)>staleThreshold)buckets.IDLE_STALE.push(l);
+    else buckets.NEW.push(l);
+  });
   let h='';
-  [{key:'todo',label:'To Do',color:'#718096'},{key:'progress',label:'In Progress',color:'#2b6cb0'},{key:'done',label:'Done',color:'#276749'}].forEach(col=>{
-    h+=`<div class="kanban-col"><h2>${col.label} <span class="col-count">${cols[col.key].length}</span></h2>`;
-    cols[col.key].forEach(c=>{
-      const ur=c.days>14?'urgent':(c.days>7?'':'todo');
-      const dn=c.done?'done':'';
-      h+=`<div class="kcard ${ur} ${dn}" onclick="openPanel('${c.type}',${c.id})">
-        <div class="kc-title">${c.title||'?'}</div><div class="kc-sub">${c.sub} · ${c.days>0?c.days+'d':'today'}</div>
-        ${c.price?`<div class="kc-meta"><span class="badge green">$${Number(c.price/1000).toFixed(0)}k</span></div>`:''}
-        ${c.nextStep?`<div style="background:#ebf8ff;padding:6px 8px;border-radius:6px;font-size:11px;margin-top:6px;color:var(--navy);font-weight:600">→ ${c.nextStep}</div>`:''}
-        ${c.type==='deal'?`<button class="kc-btn move" onclick="event.stopPropagation();advanceDeal(${c.id},'${c.status}')">Move →</button>`:''}
+  KANBAN_COLS.forEach(col=>{
+    const items=buckets[col.key];
+    h+=`<div class="kanban-col" data-col="${col.key}"
+        ondragover="event.preventDefault();this.style.background='#dbeafe'"
+        ondragleave="this.style.background='#edf2f7'"
+        ondrop="dropLead(event,'${col.key}')">
+      <h2 style="color:${col.color}">${col.label} <span class="col-count" style="background:${col.color}">${items.length}</span></h2>`;
+    items.forEach(l=>{
+      const income=l.monthly_income?'$'+Number(l.monthly_income).toLocaleString()+'/mo':'—';
+      const src=l.source||'';
+      h+=`<div class="kcard" draggable="true"
+            ondragstart="dragLead(event,${l.id})"
+            ondragend="this.style.opacity='1'"
+            style="border-left-color:${col.color}"
+            onclick="openPanel('lead',${l.id})">
+        <div class="kc-title">${l.name||'?'}</div>
+        <div class="kc-sub">${l.property||'No property'}</div>
+        <div class="kc-meta">
+          <span class="badge ${l.monthly_income?'green':'gray'}">${income}</span>
+          ${src?`<span class="badge gray">${src}</span>`:''}
+        </div>
       </div>`;
     });
     h+='</div>';
@@ -301,6 +369,29 @@ function renderKanban(){
   document.getElementById('kanban').innerHTML=h;
   document.getElementById('kanbanView').style.display='block';
   document.getElementById('leadCards').style.display='none';
+}
+function dragLead(e,id){
+  e.dataTransfer.setData('text/plain',id);
+  e.dataTransfer.effectAllowed='move';
+  e.target.style.opacity='0.4';
+}
+async function dropLead(e,colKey){
+  e.preventDefault();
+  e.currentTarget.style.background='#edf2f7';
+  const id=parseInt(e.dataTransfer.getData('text/plain'),10);
+  if(!id)return;
+  const col=KANBAN_COLS.find(c=>c.key===colKey);
+  if(!col)return;
+  const lead=allLeads.find(l=>l.id===id);
+  if(!lead)return;
+  if(col.statuses.includes(lead.status))return;  // already in this column
+  try{
+    const r=await fetch('/api/leads/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:col.dropStatus})});
+    if(!r.ok){toast('✗ Move failed');return}
+    lead.status=col.dropStatus;  // optimistic local update
+    toast('→ Moved to '+col.label);
+    renderAll();  // recalculates stats (Hot Leads, Total) + re-renders board
+  }catch(err){toast('✗ '+err.message)}
 }
 
 // ── TAB VIEWS ──

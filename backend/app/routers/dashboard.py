@@ -910,14 +910,38 @@ async def create_lead(
     db: Session = Depends(get_db),
 ):
     body = await request.json()
+    name = body.get("name", "").strip()
+    if not name:
+        return JSONResponse({"error": "name is required"}, status_code=400)
+    # ponytail: best-effort property_address → property_id by case-insensitive
+    # substring match. Upgrade to a proper geocoder/normalizer if matching gets noisy.
+    property_id = body.get("property_id")
+    addr = (body.get("property_address") or "").strip()
+    if not property_id and addr:
+        cand = (
+            db.query(Property)
+            .filter(Property.org_id == user.org_id)
+            .filter(Property.address.ilike(f"%{addr}%"))
+            .first()
+        )
+        if cand:
+            property_id = cand.id
+    income = body.get("monthly_income")
+    try:
+        income = float(income) if income not in (None, "") else None
+    except (TypeError, ValueError):
+        income = None
     l = Lead(
         org_id=user.org_id,
-        name=body.get("name", ""),
+        name=name,
         email=body.get("email", ""),
         phone=body.get("phone", ""),
-        source=body.get("source", "manual"),
+        source=body.get("source", "Manual"),
         status=body.get("status", "NEW"),
-        property_id=body.get("property_id"),
+        property_id=property_id,
+        monthly_income=income,
+        income_source="self-reported" if income else None,
+        upsell_eligible=bool(income and income >= 5000),
         received_at=datetime.now(timezone.utc),
         days_old=0,
     )

@@ -130,6 +130,15 @@ async def health():
     return {"status": "ok", "env": settings.environment}
 
 
+@app.get("/mixmatch")
+async def mixmatch():
+    from fastapi.responses import HTMLResponse
+    import os
+    path = os.path.join(os.path.dirname(__file__), "..", "..", "static", "mixmatch.html")
+    with open(path) as f:
+        return HTMLResponse(f.read())
+
+
 # Serve static frontend (built SPA) in production
 try:
     app.mount("/", StaticFiles(directory="static", html=True), name="static")

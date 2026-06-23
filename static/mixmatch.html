@@ -1649,10 +1649,10 @@ function getNextTool(){
         return e;
     })();
     if(tool.isBk && tool.expand!==false){
-        expandHint.innerHTML='🔴<span style="font-size:10px;margin-left:4px;opacity:0.8;">tap</span>';
+        expandHint.innerHTML='🟡<span style="font-size:10px;margin-left:3px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;">expand</span>';
         expandHint.style.display='inline-flex';
         expandHint.style.alignItems='center';
-        expandHint.style.cssText='display:inline-flex;align-items:center;font-size:14px;background:none;border:none;padding:0;margin-left:6px;animation:expand-pulse 1.2s ease-in-out infinite;vertical-align:middle;filter:drop-shadow(0 0 8px rgba(229,57,53,0.7));';
+        expandHint.style.cssText='display:inline-flex;align-items:center;font-size:13px;background:none;border:none;padding:0;margin-left:8px;margin-top:-2px;animation:expand-pulse 1.2s ease-in-out infinite;vertical-align:middle;filter:drop-shadow(0 0 10px rgba(212,168,83,0.6));';
     }else{
         expandHint.style.display='none';
     }

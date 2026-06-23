@@ -1095,8 +1095,17 @@
         </div>
     </div>
 
-    <!-- ██ VIEW: Haggle Mode ██ -->
+    <!-- ██ VIEW: Haggle Mode (Stages of Change + Scenarios) ██ -->
     <div class="view-container" id="view-haggle">
+        <div class="stage-bar" id="haggleStageBar" style="display:flex;align-items:center;gap:6px;margin-bottom:8px;padding:8px 10px;background:rgba(0,0,0,0.25);border-radius:10px;">
+            <span style="font-size:10px;text-transform:uppercase;color:rgba(255,255,255,0.3);flex-shrink:0;">STAGE</span>
+            <button class="btn btn-ghost btn-sm" onclick="haggPrev()" style="font-size:11px;padding:2px 8px;">◀</button>
+            <div style="flex:1;text-align:center;">
+                <div style="font-size:11px;font-weight:700;color:var(--accent);" id="haggStageName">Precontemplation</div>
+                <div style="font-size:9px;color:rgba(255,255,255,0.4);" id="haggStageDesc">They don't see a problem</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="haggNext()" style="font-size:11px;padding:2px 8px;">▶</button>
+        </div>
         <div class="mode-wrap">
             <div class="mode-header">
                 <h2>💰 HAGGLE MODE</h2>
@@ -1106,6 +1115,7 @@
                 <button class="btn" onclick="renderModeCards('haggle')">⇄ SHUFFLE</button>
                 <button class="btn" onclick="document.querySelectorAll('.mode-scenario').forEach(s=>s.classList.remove('open'))">✕ CLEAR</button>
             </div>
+            <div class="mode-recommend" id="haggRec" style="margin-bottom:8px;padding:8px 10px;background:rgba(212,168,83,0.08);border-radius:8px;border-left:3px solid var(--accent);font-size:12px;"></div>
             <div class="mode-scenario" id="scenario-haggle"></div>
             <div class="mode-grid" id="grid-haggle"></div>
         </div>
@@ -1366,7 +1376,7 @@ function switchView(name,btn){
 
     if(name==='stair') renderStair();
     if(name==='wheel'){ renderWheel(); buildEmoAccordion(); }
-    if(feels[name]) renderModeCards(name);
+    if(feels[name]){ renderModeCards(name); if(name==='haggle')haggRenderStage(); }
 }
 
 function triggerModeTransition(mode){
@@ -1404,6 +1414,26 @@ const MODE_CARDS = {
     ]
 };
 
+// ponytail: Stages of Change model for Haggle mode
+const HAGGL_STAGES = [
+    {id:'PRECONTEMPLATION', name:'Precontemplation', desc:'They don\'t see a problem.', 
+     tools:'Mirroring + Calibrated Questions', tip:'"How would things need to change for you to consider this?"',
+     toolNames:['Mirrors','Calibrated Questions','Dynamic Silence']},
+    {id:'CONTEMPLATION', name:'Contemplation', desc:'They see pros and cons.',
+     tools:'Labels + Tactical Empathy', tip:'"It sounds like you\'re weighing this carefully."',
+     toolNames:['Labels','Tactical Empathy','Minimal Encouragers']},
+    {id:'PREPARATION', name:'Preparation', desc:'They\'re getting ready to act.',
+     tools:'Summaries + Calibrated Questions', tip:'"So what I\'m hearing is… does that sound right?"',
+     toolNames:['Summaries','Calibrated Questions','Mirrors']},
+    {id:'ACTION', name:'Action', desc:'They\'re taking steps.',
+     tools:'Accusation Audit + Tactical Empathy', tip:'"You probably think this is just another sales pitch."',
+     toolNames:['Accusation Audit','Tactical Empathy','No-Oriented Questions']},
+    {id:'MAINTENANCE', name:'Maintenance', desc:'They\'re sustaining the change.',
+     tools:'Vision Labels + No-Oriented Questions', tip:'"It sounds like consistency matters to you."',
+     toolNames:['Vision Labels','No-Oriented Questions','Summaries']}
+];
+let haggStage = 0;
+
 function renderModeCards(mode){
     const grid = document.getElementById('grid-'+mode);
     const cards = MODE_CARDS[mode] || [];
@@ -1423,6 +1453,19 @@ function showModeScenario(mode, idx){
     box.innerHTML = `<span class="ms-label">${c.tag} :: ${c.name}</span>${c.hint}`;
     box.classList.remove('open'); void box.offsetWidth; box.classList.add('open');
 }
+
+// ponytail: Haggle Stages of Change — Precontemplation → Contemplation → Preparation → Action → Maintenance
+function haggRenderStage(){
+    const s = HAGGL_STAGES[haggStage];
+    document.getElementById('haggStageName').textContent = s.name;
+    document.getElementById('haggStageDesc').textContent = s.desc;
+    document.getElementById('haggRec').innerHTML = `
+        <strong style="color:var(--accent);font-size:10px;text-transform:uppercase;">Recommended Tools</strong><br>
+        <span style="font-size:13px;">${s.tools}</span>
+        <div style="margin-top:4px;font-size:12px;color:rgba(255,255,255,0.7);">${s.tip}</div>`;
+}
+function haggNext(){haggStage=(haggStage+1)%HAGGL_STAGES.length;haggRenderStage();}
+function haggPrev(){haggStage=(haggStage-1+HAGGL_STAGES.length)%HAGGL_STAGES.length;haggRenderStage();}
 
 // ═══════════════════════════════════════════════════════════════════════
 // TOOLS VIEW — RENDER

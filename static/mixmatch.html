@@ -927,6 +927,7 @@
                     <button class="btn btn-ghost" id="nextBtn" onclick="getNextTool()" disabled>→ Next</button>
                     <button class="btn btn-ghost btn-sm" id="skipBtn" onclick="skipTool()" style="display:none;">⏭ Skip</button>
                     <button class="btn btn-ghost btn-sm" id="stopBtn" onclick="stopSession()" style="display:none;color:var(--red);">⏹ Stop</button>
+                    <button class="btn btn-ghost btn-sm" id="pauseBtn" onclick="togglePauseSession()" style="display:none;">⏸ Pause</button>
                     <button class="btn btn-ghost btn-sm" onclick="resetSession()">↺ Reset</button>
                     <button class="btn btn-ghost btn-sm" onclick="shuffleTools()">🔀 Shuffle</button>
             <div class="timer-display">
@@ -1205,6 +1206,8 @@ let state = {
     currentView: 'tools',
     lastUsedEmotion: null,
     bareKnuckles: false,
+    sessionPaused: false,
+    pauseRemaining: 0,
 };
 
 function freshId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
@@ -1251,6 +1254,38 @@ function renderSessionWheel(){
     svg+=`<circle cx="${cx}" cy="${cy}" r="16" fill="#1a1a2e" stroke="rgba(212,168,83,0.25)" stroke-width="1"/>`;
     svg+=`</g></svg>`;
     container.innerHTML=svg;
+    // ponytail: vertical scroll → wheel spin. Captures touch/mouse wheel events.
+    const swg=container.querySelector('svg');
+    if(swg){
+        let lastY=0,swiping=false;
+        swg.addEventListener('touchstart',e=>{lastY=e.touches[0].clientY;swiping=true;},{passive:true});
+        swg.addEventListener('touchmove',e=>{
+            if(!swiping)return;
+            const dy=lastY-e.touches[0].clientY;
+            if(Math.abs(dy)>5){
+                const g=document.getElementById('sessionWheelGroup');
+                if(g){
+                    let r=parseFloat(g.getAttribute('data-rot')||'0');
+                    r+=dy*0.5;
+                    g.setAttribute('data-rot',r);
+                    g.setAttribute('transform',`rotate(${r},125,125)`);
+                }
+                lastY=e.touches[0].clientY;
+            }
+        },{passive:true});
+        swg.addEventListener('touchend',()=>{swiping=false;},{passive:true});
+        // Mouse wheel support
+        swg.addEventListener('wheel',e=>{
+            e.preventDefault();
+            const g=document.getElementById('sessionWheelGroup');
+            if(g){
+                let r=parseFloat(g.getAttribute('data-rot')||'0');
+                r+=e.deltaY*0.3;
+                g.setAttribute('data-rot',r);
+                g.setAttribute('transform',`rotate(${r},125,125)`);
+            }
+        },{passive:false});
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1382,6 +1417,7 @@ document.addEventListener('click', function(e) {
 // ═══════════════════════════════════════════════════════════════════════
 function startSession(){
     if(state.sessionActive) return;
+    state.sessionPaused=false;
     const dur=parseInt(document.getElementById('durationInput').value)||10;
     state.endTime=Date.now()+dur*60*1000;
     state.sessionStartTime=Date.now();
@@ -1393,10 +1429,9 @@ function startSession(){
     state.timer=setInterval(tick,1000);
     hideBanner();
     renderToolsView(); renderLog();
-    // Shove tool count into BK button
     const bkBtn=document.getElementById('bkBtn');
     if(bkBtn) bkBtn.textContent=state.bareKnuckles?'🥊 BK ON':`🥊 ${state.currentDeck.length}`;
-    // Show mini emotion wheel below the cards
+    document.getElementById('pauseBtn').style.display='';
     renderSessionWheel();
     document.getElementById('sessionWheel').style.display='block';
     document.getElementById('currentBanner').classList.add('show');
@@ -1405,7 +1440,7 @@ function startSession(){
 }
 
 function getNextTool(){
-    if(!state.sessionActive) return;
+    if(!state.sessionActive || state.sessionPaused) return;
     if(Date.now()>state.endTime){endSession();return;}
     if(!state.currentDeck.length){
         if(state.usedTools.length||state.skippedTools.length){buildDeck();state.round++;}
@@ -1438,10 +1473,31 @@ function stopSession(){
     cleanupSession();
 }
 
+function togglePauseSession(){
+    if(!state.sessionActive)return;
+    state.sessionPaused=!state.sessionPaused;
+    const btn=document.getElementById('pauseBtn');
+    if(state.sessionPaused){
+        // Adjust endTime so timer freezes
+        state.pauseRemaining=state.endTime-Date.now();
+        btn.textContent='▶ Resume';
+        btn.style.color='var(--green)';
+    }else{
+        // Adjust endTime forward by the paused duration
+        state.endTime=Date.now()+state.pauseRemaining;
+        btn.textContent='⏸ Pause';
+        btn.style.color='';
+    }
+}
+
 function cleanupSession(){
     if(state.timer) clearInterval(state.timer);
     state.sessionActive=false; state.timer=null; state.currentTool=null;
+    state.sessionPaused=false;
     document.getElementById('sessionWheel').style.display='none';
+    document.getElementById('pauseBtn').style.display='none';
+    document.getElementById('pauseBtn').textContent='⏸ Pause';
+    document.getElementById('pauseBtn').style.color='';
     renderToolsView();
 }
 
@@ -1516,6 +1572,10 @@ function animateCard(name){
 }
 
 function tick(){
+    if(state.sessionPaused){
+        updateTimerDisplay(state.pauseRemaining);
+        return;
+    }
     const left=state.endTime-Date.now();
     if(left<=0){endSession();document.getElementById('timerDisplay').textContent='00:00';return;}
     updateTimerDisplay(left);

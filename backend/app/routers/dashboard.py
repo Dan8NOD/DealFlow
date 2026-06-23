@@ -962,7 +962,7 @@ async def cleanup_leads(
     now = datetime.now(timezone.utc)
     cutoff_45 = now - timedelta(days=45)
     cutoff_10 = now - timedelta(days=10)
-    results = {"cold": 0, "lost_clyde": 0, "enriched": 0}
+    results = {"cold": 0, "lost_clyde": 0, "enriched": 0, "deduped": 0, "no_property": 0}
 
     # 1. Mark leads > 45 days old as COLD (skip if they have an application)
     app_lead_names = set(
@@ -1023,6 +1023,80 @@ async def cleanup_leads(
             changed = True
         if changed:
             results["enriched"] += 1
+
+    db.commit()
+    return {"ok": True, **results}
+
+
+# ═══════════ Lead dedup & trim ═══════════
+
+@router.post("/api/leads/trim")
+async def trim_leads(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    org_id = user.org_id
+    results = {"deduped": 0, "no_property": 0}
+
+    # 1. Dedup: for each name+property combo, keep newest NEW lead, mark older as COLD
+    from sqlalchemy import func as sa_func
+    dupes = db.query(
+        Lead.name, Lead.property_id,
+        sa_func.count(Lead.id).label("cnt")
+    ).filter(
+        Lead.org_id == org_id,
+        Lead.status == "NEW",
+        Lead.property_id != None,
+        Lead.name != "",
+    ).group_by(Lead.name, Lead.property_id).having(sa_func.count(Lead.id) > 1).all()
+
+    for name, prop_id, cnt in dupes:
+        dupe_leads = db.query(Lead).filter(
+            Lead.org_id == org_id,
+            Lead.status == "NEW",
+            Lead.name == name,
+            Lead.property_id == prop_id,
+        ).order_by(Lead.received_at.desc()).all()
+        # Keep first (newest), mark rest
+        for lead in dupe_leads[1:]:
+            lead.status = "COLD"
+            lead.notes = (lead.notes or "") + " | Duplicate — kept newest"
+            results["deduped"] += 1
+
+    # 2. Also dedup by name+property_address_string for leads with no property_id
+    dupes_str = db.query(
+        Lead.name, Lead.subject,
+        sa_func.count(Lead.id).label("cnt")
+    ).filter(
+        Lead.org_id == org_id,
+        Lead.status == "NEW",
+        Lead.property_id == None,
+        Lead.name != "",
+    ).group_by(Lead.name, Lead.subject).having(sa_func.count(Lead.id) > 1).all()
+
+    for name, subj, cnt in dupes_str:
+        dupe_leads = db.query(Lead).filter(
+            Lead.org_id == org_id,
+            Lead.status == "NEW",
+            Lead.name == name,
+            Lead.subject == subj,
+        ).order_by(Lead.received_at.desc()).all()
+        for lead in dupe_leads[1:]:
+            lead.status = "COLD"
+            lead.notes = (lead.notes or "") + " | Duplicate — kept newest"
+            results["deduped"] += 1
+
+    # 3. Mark NEW leads with no property match and no phone as LOST (can't call, can't bounce)
+    no_prop = db.query(Lead).filter(
+        Lead.org_id == org_id,
+        Lead.status == "NEW",
+        Lead.property_id == None,
+        Lead.phone == "",
+    ).all()
+    for lead in no_prop:
+        lead.status = "LOST"
+        lead.notes = (lead.notes or "") + " | No property match, no phone"
+        results["no_property"] += 1
 
     db.commit()
     return {"ok": True, **results}

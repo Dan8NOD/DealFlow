@@ -1649,10 +1649,13 @@ function getNextTool(){
         return e;
     })();
     if(tool.isBk && tool.expand!==false){
-        expandHint.innerHTML='🟡<span style="font-size:10px;margin-left:3px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;">expand</span>';
+        expandHint.innerHTML='<span style="display:inline-flex;align-items:center;gap:3px;cursor:pointer;"><span style="font-size:16px;line-height:1;filter:drop-shadow(0 0 10px rgba(212,168,83,0.7));">⬆️</span><span style="font-size:9px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:0.8px;">expand</span></span>';
         expandHint.style.display='inline-flex';
-        expandHint.style.alignItems='center';
-        expandHint.style.cssText='display:inline-flex;align-items:center;font-size:13px;background:none;border:none;padding:0;margin-left:8px;margin-top:-2px;animation:expand-pulse 1.2s ease-in-out infinite;vertical-align:middle;filter:drop-shadow(0 0 10px rgba(212,168,83,0.6));';
+        expandHint.style.cssText='display:inline-flex;align-items:center;font-size:13px;background:none;border:none;padding:0;margin-left:6px;animation:expand-pulse 1.2s ease-in-out infinite;vertical-align:middle;cursor:pointer;';
+        expandHint.onclick=tool.isBk?()=>{
+            const bk=BK_TOOLS.find(t=>t.name===tool.name);
+            if(bk)showBkToolModal(bk);
+        }:null;
     }else{
         expandHint.style.display='none';
     }

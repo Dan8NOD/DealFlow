@@ -985,8 +985,9 @@
                        oninput="sliderRotate(this.value)">
                 <span class="rotate-val" id="rotateVal">0&deg;</span>
             </div>
-            <button class="btn btn-ghost btn-sm" onclick="toggleLegend()" style="margin-top: 8px;">&#128196; Show all words</button>
-            <button class="btn btn-ghost btn-sm" id="focusBtn" onclick="toggleFocus()" style="margin-top: 8px; margin-left: 4px;">&#128065; Focus</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleAutoRotate()" id="autoRotateBtn" style="margin-top: 4px;">🔄 Spin</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleLegend()" style="margin-top: 4px;">&#128196; Show all words</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleFocus()" id="focusBtn" style="margin-top: 4px;">&#128065; Focus</button>
             <div class="wheel-legend" id="wheelLegend"></div>
             <div class="emotion-detail" id="emotionDetail"></div>
 
@@ -1547,6 +1548,9 @@ function toggleStage(i){
 let wheelRotation = 0;
 let isDragging = false;
 let dragStartX = 0;
+let dragVelocity = 0;
+let momentumId = null;
+let autoRotateId = null;
 
 function renderWheel(){
     const container = document.getElementById('wheelCanvas');
@@ -1555,6 +1559,12 @@ function renderWheel(){
     const R=232, rMid=162, rInner=120, rCenter=62;
 
     let svg = `<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" style="cursor:grab;touch-action:none;">
+        <style>
+            #wheelGroup { transition: transform 0.6s cubic-bezier(0.34, 1.1, 0.64, 1); transform-origin: 250px 250px; }
+            #wheelGroup.dragging { transition: none; }
+            .wheel-emotion-slice { transition: filter 0.4s, opacity 0.4s; }
+            .wheel-label { transition: opacity 0.3s; }
+        </style>
         <g id="wheelGroup" transform="rotate(${wheelRotation},250,250)">`;
 
     // Gold outer rim
@@ -1630,14 +1640,60 @@ function renderWheel(){
     if(slider) slider.value=Math.max(-180,Math.min(180,wheelRotation));
 }
 
-function startDrag(e){isDragging=true;dragStartX=e.clientX;const s=document.querySelector('#wheelCanvas svg');if(s)s.style.cursor='grabbing';const g=document.querySelector('#wheelGroup');if(g)g.classList.add('dragging');}
-function startDragTouch(e){isDragging=true;dragStartX=e.touches[0].clientX;const g=document.querySelector('#wheelGroup');if(g)g.classList.add('dragging');}
-function onDrag(e){if(!isDragging)return;const dx=e.clientX-dragStartX;if(Math.abs(dx)>3){wheelRotation+=dx*0.3;dragStartX=e.clientX;requestAnimationFrame(updateWheelRotation);}else if(Math.abs(dx)<2&&e.type!=='touchmove'){stopDrag();}}
-function onDragTouch(e){if(!isDragging)return;const dx=e.touches[0].clientX-dragStartX;if(Math.abs(dx)>3){wheelRotation+=dx*0.3;dragStartX=e.touches[0].clientX;requestAnimationFrame(updateWheelRotation);}}
-function stopDrag(){isDragging=false;const s=document.querySelector('#wheelCanvas svg');if(s)s.style.cursor='grab';const g=document.querySelector('#wheelGroup');if(g)g.classList.remove('dragging');}
+function startDrag(e){isDragging=true;dragStartX=e.clientX;dragVelocity=0;cancelMomentum();cancelAutoRotate();const s=document.querySelector('#wheelCanvas svg');if(s)s.style.cursor='grabbing';const g=document.querySelector('#wheelGroup');if(g)g.classList.add('dragging');}
+function startDragTouch(e){isDragging=true;dragStartX=e.touches[0].clientX;dragVelocity=0;cancelMomentum();cancelAutoRotate();const g=document.querySelector('#wheelGroup');if(g)g.classList.add('dragging');}
+function onDrag(e){if(!isDragging)return;const dx=e.clientX-dragStartX;if(Math.abs(dx)>3){dragVelocity=dx*0.3;wheelRotation+=dragVelocity;dragStartX=e.clientX;requestAnimationFrame(updateWheelRotation);}else if(Math.abs(dx)<2&&e.type!=='touchmove'){stopDrag();}}
+function onDragTouch(e){if(!isDragging)return;const dx=e.touches[0].clientX-dragStartX;if(Math.abs(dx)>3){dragVelocity=dx*0.3;wheelRotation+=dragVelocity;dragStartX=e.touches[0].clientX;requestAnimationFrame(updateWheelRotation);}}
+function stopDrag(){
+    isDragging=false;
+    const s=document.querySelector('#wheelCanvas svg');
+    if(s)s.style.cursor='grab';
+    const g=document.querySelector('#wheelGroup');
+    if(g)g.classList.remove('dragging');
+    // Start momentum if velocity is significant
+    if(Math.abs(dragVelocity)>2) startMomentum();
+}
+function startMomentum(){
+    cancelMomentum();
+    function step(){
+        dragVelocity*=0.96; // Decay
+        if(Math.abs(dragVelocity)<0.3){cancelMomentum();return;}
+        wheelRotation+=dragVelocity;
+        updateWheelRotation();
+        momentumId=requestAnimationFrame(step);
+    }
+    momentumId=requestAnimationFrame(step);
+}
+function cancelMomentum(){if(momentumId){cancelAnimationFrame(momentumId);momentumId=null;}}
+function startAutoRotate(){
+    cancelAutoRotate();
+    cancelMomentum();
+    const btn=document.getElementById('autoRotateBtn');
+    if(btn)btn.textContent='⏸ Pause';
+    const speed=0.15;
+    function step(){
+        wheelRotation=(wheelRotation+speed)%360;
+        updateWheelRotation();
+        autoRotateId=requestAnimationFrame(step);
+    }
+    autoRotateId=requestAnimationFrame(step);
+}
+function cancelAutoRotate(){
+    if(autoRotateId){cancelAnimationFrame(autoRotateId);autoRotateId=null;}
+    const btn=document.getElementById('autoRotateBtn');
+    if(btn)btn.textContent='🔄 Spin';
+}
+function toggleAutoRotate(){
+    if(autoRotateId){cancelAutoRotate();}
+    else{startAutoRotate();}
+}
 function updateWheelRotation(){
     const g=document.querySelector('#wheelGroup');
-    if(g)g.setAttribute('transform',`rotate(${wheelRotation},250,250)`);
+    if(g){
+        // Use CSS transform so the CSS transition applies for smooth animation
+        g.style.transform=`rotate(${wheelRotation}deg)`;
+        g.setAttribute('transform',`rotate(${wheelRotation},250,250)`);
+    }
     const s=document.getElementById('wheelSlider');
     if(s)s.value=Math.max(-180,Math.min(180,wheelRotation));
     const rv=document.getElementById('rotateVal');

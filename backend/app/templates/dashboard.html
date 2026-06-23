@@ -352,7 +352,7 @@ const KANBAN_COLS=[
   {key:'NEW',label:'New',color:'var(--blue)',statuses:['NEW'],dropStatus:'NEW'},
   {key:'PIPELINE',label:'Pipeline',color:'var(--amber)',statuses:['CONTACTED','QUALIFIED'],dropStatus:'CONTACTED'},
   {key:'UNDER_CONTRACT',label:'Under Contract',color:'var(--green)',statuses:['CLOSED'],dropStatus:'CLOSED'},
-  {key:'IDLE_STALE',label:'Idle / Stale',color:'var(--gray)',statuses:['LOST'],dropStatus:'LOST'},
+  {key:'COLD',label:'Cold (60+ days)',color:'var(--gray)',statuses:['COLD'],dropStatus:'COLD'},
 ];
 // ponytail: sales pipe funnel using SalesStatus, custom stage labels.
 const SALES_KANBAN_COLS=[
@@ -370,11 +370,11 @@ function renderKanban(){
     `</div>`;
   if(kanbanMode==='sales'){renderSalesKanban(modeToggle);return}
   const buckets={};KANBAN_COLS.forEach(c=>buckets[c.key]=[]);
-  const staleThreshold=21;
+  const staleThreshold=60;
   allLeads.forEach(l=>{
     const col=KANBAN_COLS.find(c=>c.statuses.includes(l.status));
     if(col)buckets[col.key].push(l);
-    else if((l.days_old||0)>staleThreshold)buckets.IDLE_STALE.push(l);
+    else if((l.days_old||0)>staleThreshold)buckets.COLD.push(l);
     else buckets.NEW.push(l);
   });
   let h=modeToggle;

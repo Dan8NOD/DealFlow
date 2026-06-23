@@ -615,12 +615,12 @@ async def purge_leads(
     deleted = 0
 
     # 1. Kill all 660 Clyde leads (building already rented, unbounceable)
+    clyde_ids = [r[0] for r in db.query(Property.id)
+        .filter(Property.org_id == org_id, Property.address.ilike("%660%clyde%")).all()]
     clyde = db.query(Lead).filter(
         Lead.org_id == org_id,
-        Lead.property_id == db.query(Property.id)
-            .filter(Property.org_id == org_id, Property.address.ilike("%660%clyde%"))
-            .scalar_subquery()
-    ).all()
+        Lead.property_id.in_(clyde_ids),
+    ).all() if clyde_ids else []
     # also catch leads with no FK but 660 Clyde in subject line
     clyde2 = db.query(Lead).filter(
         Lead.org_id == org_id,

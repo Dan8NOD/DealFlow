@@ -847,6 +847,20 @@
             .bk-section { font-size:13px; }
         }
 
+        /* Bare Knuckle mode — boxing ring green translucent overlay */
+        .bk-mode::before {
+            content:''; position:fixed; inset:0;
+            background:radial-gradient(ellipse at center, rgba(30,90,58,0.25) 0%, rgba(20,69,44,0.4) 100%);
+            pointer-events:none; z-index:1;
+        }
+        .bk-mode .view-container.active { position:relative; z-index:2; }
+        .bk-mode .table-surface::after {
+            content:'🥊 BARE KNUCKLE'; position:fixed; bottom:8px; left:50%;
+            transform:translateX(-50%); font-size:10px; font-weight:800;
+            color:rgba(255,255,255,0.06); letter-spacing:4px; text-transform:uppercase;
+            pointer-events:none; z-index:0;
+        }
+
         @keyframes pulse-danger { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
         @media (max-width: 768px) {
@@ -1119,7 +1133,7 @@
 const CAT_COLORS = {
     Rapport:['#43a047','#2e7d32'], Information:['#1e88e5','#1565c0'],
     Emotion:['#e53935','#c62828'], Strategy:['#8e24aa','#6a1b9a'],
-    Closure:['#fb8c00','#ef6c00'], Custom:['#00897b','#00695c'],
+    Closure:['#d4a853','#b8860b'], Custom:['#00897b','#00695c'],
 };
 
 const BASE_TOOLS = [
@@ -1256,6 +1270,12 @@ const BK_TOOLS = [
      mistakes:['Don\'t mirror everything — pick key words','Don\'t parrot — repeat only the meaningful phrase','Don\'t break the silence afterward'],
      reminder:'Mirror → silence. Let them fill the gap.',
      cat:'Rapport',count:3},
+    {name:'Trigger',desc:'Use words that provoke a reaction — fear, shock, urgency, or past bad experiences.',
+     why:'Triggers break patterned thinking. A well-placed trigger jolts someone out of their script and opens room for real negotiation.',
+     examples:['"Have you considered what happens if this falls apart?"','"Other people in your position have been burned by that."','"I know this might be uncomfortable to hear…"','"What\'s the worst that could happen?"'],
+     mistakes:['Don\'t overuse — one trigger per conversation is enough','Don\'t sound threatening — stay calm and curious','Don\'t trigger without a follow-up (label or question)'],
+     reminder:'One trigger. Then label or ask. Don\'t pile on.',
+     cat:'Emotion',count:2},
     {name:'Minimal Encouragers',desc:'Small responses that encourage the other person to continue talking.',
      why:'People reveal more when they feel heard. Minimal encouragers keep them talking without interrupting their flow.',
      examples:['"Hmm."','"Interesting."','"Go on."','"Tell me more."','"I see."','"Really?"','"And?"','"What happened next?"'],
@@ -1264,28 +1284,28 @@ const BK_TOOLS = [
      cat:'Rapport',count:1},
     {name:'Calibrated Questions',desc:'Questions that start with What or How — designed to create collaboration.',
      why:'Calibrated questions give the other person a sense of control while steering the conversation. What/How questions avoid defensiveness.',
-     examples:[{q:'What makes this important to you?'},{q:'What would an ideal outcome look like?'},{q:'What concerns you most?'},{q:'How am I supposed to do that?'},{q:'How would that work?'},{q:'How can we solve this together?'}],
+     examples:[{q:'"What makes this important to you?"'},{q:'"What would an ideal outcome look like?"'},{q:'"What concerns you most?"'},{q:'"How am I supposed to do that?"'},{q:'"How would that work?"'},{q:'"How can we solve this together?"'}],
      mistakes:['Avoid Why questions — they trigger defensiveness','Don\'t ask leading questions','Don\'t ask more than one at a time'],
      reminder:'What/How only. No Why. No leading.',
-     cat:'Information',count:3},
+     cat:'Information',count:4},
     {name:'No-Oriented Questions',desc:'Questions designed to make the other person feel safe by inviting a "no."',
      why:'People feel safer saying no than yes. A "no" protects their autonomy and opens real dialogue.',
-     examples:['"Would it be ridiculous to explore another option?"','"Is now a bad time to talk?"','"Would it be unreasonable to discuss this?"','"Is it a bad idea to look at alternatives?"','"Are you against moving forward?"','"Is this not a priority right now?"'],
-     mistakes:['Don\'t use closed-ended no-questions too much','Focus on open-ended no-oriented questions','Don\'t sound manipulative — genuine curiosity'],
+     examples:['OPEN-ENDED (preferred):','"Would it be ridiculous to explore another option?"','"Is now a bad time to talk?"','"Would it be unreasonable to discuss this?"','"Is it a bad idea to look at alternatives?"','','CLOSED-ENDED (use sparingly):','"Are you against moving forward?"','"Is this not a priority right now?"'],
+     mistakes:['Focus on OPEN-ENDED no-questions — they invite explanation','Closed-ended can feel manipulative','Don\'t sound pushy — genuine curiosity only'],
      reminder:'Give them a safe "no." Then ask what they CAN say yes to.',
-     cat:'Information',count:2},
+     cat:'Information',count:3},
     {name:'Accusation Audit',desc:'List negative thoughts they may have before they say them.',
-     why:'Bringing negatives into the open early defuses them. If you name their fear, they don\'t have to raise it.',
-     examples:['"You probably think I\'m wasting your time."','"It may seem like I\'m pushing too hard."','"You might feel this is too expensive."','"You may think this isn\'t a good fit."'],
+     why:'Bringing negatives into the open early defuses them. If you name their fear, they don\'t have to raise it — and they trust you more.',
+     examples:['"You probably think I\'m wasting your time."','"It may seem like I\'m pushing too hard."','"You might feel this is too expensive."','"You may think this isn\'t a good fit."','"It probably seems like I don\'t understand your situation."'],
      mistakes:['Don\'t skip the real fears — go for the hardest one','Don\'t apologize for the accusation — just name it','Don\'t try to rebut it immediately'],
-     reminder:'Name the elephant in the room first. Then silence.',
-     cat:'Information',count:1},
+     reminder:'Name the elephant in the room first. Then silence. Let them respond.',
+     cat:'Information',count:5},
     {name:'Summaries',desc:'Summaries demonstrate understanding and help move conversations forward.',
-     why:'A good summary shows you\'ve truly heard them. It builds trust and clarifies next steps.',
+     why:'A good summary shows you\'ve truly heard them. It builds trust and clarifies next steps. Only deploy twice — once mid-session, once near the end.',
      examples:['"So far you\'ve told me that timing is important, you\'re concerned about cost, and you\'ve had bad experiences. Because of that, it sounds like you\'re feeling cautious."'],
-     mistakes:['Don\'t summarize more than twice per session','Don\'t add your own opinions — just reflect back','Don\'t skip the emotional layer: Facts + Concerns + Emotions'],
-     reminder:'Formula: Facts + Concerns + Emotions. Max 2 per session.',
-     cat:'Information',count:2},
+     mistakes:['Don\'t summarize more than TWICE per session','Don\'t add your own opinions — just reflect back','Don\'t skip the emotional layer: Facts + Concerns + Emotions'],
+     reminder:'Formula: Facts + Concerns + Emotions. Once mid-session, once near end.',
+     cat:'Closure',count:2},
     {name:'Tactical Empathy',desc:'Demonstrate understanding without agreeing.',
      why:'Understanding lowers defenses. People negotiate differently with someone who "gets it." You don\'t have to agree to understand.',
      examples:['"It sounds like that\'s been frustrating."','"It seems like you\'ve been dealing with this for a while."','"It sounds like you\'ve put a lot of thought into this."'],
@@ -1334,6 +1354,19 @@ function toggleBareKnuckles(){
     const btn=document.getElementById('bkBtn');
     if(btn)btn.textContent=state.bareKnuckles?'🥊 BK ON':'🥊 BK OFF';
     if(btn)btn.style.color=state.bareKnuckles?'var(--red)':'';
+    // Green ring overlay + reset
+    document.body.classList.toggle('bk-mode',state.bareKnuckles);
+    if(state.bareKnuckles){
+        resetSession();
+        const total=BK_TOOLS.reduce((s,t)=>s+(t.count||1),0);
+        toast('🥊 Bare Knuckle — '+BK_TOOLS.length+' tools · '+total+' cards · Tap any card to learn');
+        // Shove BK info into stats bar
+        const sb=document.getElementById('statsBar');
+        if(sb) sb.innerHTML+=`<div class="stat-item" style="color:var(--red);">🥊 BK: <strong style="color:var(--accent);">${BK_TOOLS.length} tools</strong></div>`;
+    }else{
+        const sb=document.getElementById('statsBar');
+        if(sb){const el=sb.querySelector('.stat-item:last-child');if(el&&el.textContent.includes('BK:'))el.remove();}
+    }
     renderCards();
 }
 function buildDeck(){
@@ -1443,7 +1476,8 @@ function renderToolsView(){
 }
 
 function renderCategoryFilters(){
-    const cats = ['All',...new Set(state.tools.map(t=>t.cat))];
+    const source = state.bareKnuckles ? BK_TOOLS : state.tools;
+    const cats = ['All',...new Set(source.map(t=>t.cat))];
     document.getElementById('categoryFilters').innerHTML =
         cats.map(c=>`<button class="cat-pill ${c===state.activeFilter?'active':''}" onclick="setFilter('${c}')">${c}</button>`).join('');
 }
@@ -1451,7 +1485,8 @@ function setFilter(cat){state.activeFilter=cat; renderCards();}
 
 function renderCards(){
     const area = document.getElementById('cardsArea');
-    const filtered = state.activeFilter==='All' ? state.tools : state.tools.filter(t=>t.cat===state.activeFilter);
+    const source = state.bareKnuckles ? BK_TOOLS : state.tools;
+    const filtered = state.activeFilter==='All' ? source : source.filter(t=>t.cat===state.activeFilter);
     if(!filtered.length){
         area.innerHTML='<div class="empty-state"><div style="font-size:48px;opacity:0.3;margin-bottom:10px;">&#128220;</div><h3>No tools in this category</h3></div>';
         area._cache = null;
@@ -1468,8 +1503,8 @@ function renderCards(){
         area.innerHTML = filtered.map(tool => {
             const colors = CAT_COLORS[tool.cat]||['#666','#444'];
             return `<div class="tool-card" data-tool="${tool.name.replace(/"/g,'&quot;')}" style="border-top:3px solid ${colors[0]};">
-                <span class="cat-badge" style="color:${colors[0]};">${tool.cat}</span>
-                <div class="card-name">${tool.name}</div>
+                <span class="cat-badge" style="color:${colors[0]};">${tool.cat}${state.bareKnuckles?' <span style="float:right;font-size:10px;opacity:0.5;">👆</span>':''}</span>
+                <div class="card-name">${tool.name}${state.bareKnuckles?' <span style="font-size:10px;opacity:0.3;float:right;">ⓘ</span>':''}</div>
                 <div class="card-desc">${tool.desc}</div>
                 <div class="card-count"></div>
                 <div class="card-check">&#10003;</div>
@@ -1777,6 +1812,9 @@ function showBkToolModal(tool){
     document.getElementById('bkModal').classList.add('open');
 }
 function closeBkModal(){document.getElementById('bkModal').classList.remove('open');}
+// ponytail: simple toast notification
+const toastEl=document.createElement('div');toastEl.style.cssText='position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.1);';document.body.appendChild(toastEl);let toastTimer=null;
+function toast(m){toastEl.textContent=m;toastEl.style.opacity='1';clearTimeout(toastTimer);toastTimer=setTimeout(()=>{toastEl.style.opacity='0';},3000);}
 
 // Custom tools
 function showAddToolModal(){document.getElementById('addToolModal').classList.add('open');}

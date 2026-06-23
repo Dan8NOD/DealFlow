@@ -810,6 +810,43 @@
         .detail-content .dc-desc { font-size:14px; line-height:1.7; color:var(--text); }
         .detail-content .dc-close { margin-top:16px; padding:8px 20px; border:none; border-radius:8px; background:var(--accent); color:#1a1a2e; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; }
 
+        /* Bare Knuckle tool modal */
+        .bk-modal {
+            display:none; position:fixed; inset:0;
+            background:rgba(0,0,0,0.8); backdrop-filter:blur(6px);
+            z-index:500; align-items:flex-start; justify-content:center;
+            overflow-y:auto; -webkit-overflow-scrolling:touch;
+            padding:16px 12px;
+        }
+        .bk-modal.open { display:flex; }
+        .bk-modal-content {
+            background:var(--card-bg); border-radius:16px;
+            padding:28px 22px; width:100%; max-width:520px;
+            margin:auto; position:relative; animation:fade-up 0.3s;
+        }
+        .bk-close {
+            position:absolute; top:12px; right:14px;
+            background:none; border:none; font-size:22px;
+            cursor:pointer; padding:6px 8px; color:#666; line-height:1;
+        }
+        .bk-name { font-size:24px; font-weight:800; margin-bottom:14px; padding-right:30px; }
+        .bk-section { font-size:14px; line-height:1.65; margin-bottom:10px; color:var(--text); }
+        .bk-section strong { display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-dim); margin-bottom:2px; }
+        .bk-section ul { margin:4px 0 0 16px; }
+        .bk-section li { margin-bottom:4px; font-size:13px; line-height:1.5; }
+        .bk-example { padding:6px 10px; margin:3px 0; background:rgba(0,0,0,0.035); border-radius:6px; font-size:13px; border-left:3px solid var(--green); }
+        .bk-reminder {
+            margin-top:14px; padding:12px 14px;
+            background:rgba(212,168,83,0.1); border-radius:8px;
+            border-left:4px solid var(--accent);
+            font-size:14px; font-weight:600; color:#1a1a2e;
+        }
+        @media(max-width:480px){
+            .bk-modal-content { padding:20px 16px; border-radius:12px; }
+            .bk-name { font-size:20px; }
+            .bk-section { font-size:13px; }
+        }
+
         @keyframes pulse-danger { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
         @media (max-width: 768px) {
@@ -1062,6 +1099,19 @@
         <button class="dc-close" onclick="closeDetail()">Close</button>
     </div>
 </div>
+
+<!-- ponytail: Bare Knuckle tool detail modal — full-screen on mobile, rich content -->
+<div class="bk-modal" id="bkModal">
+    <div class="bk-modal-content">
+        <button class="bk-close" onclick="closeBkModal()">✕</button>
+        <div class="bk-name" id="bkName"></div>
+        <div class="bk-section"><strong>What is it?</strong> <span id="bkDesc"></span></div>
+        <div class="bk-section"><strong>Why it works</strong> <span id="bkWhy"></span></div>
+        <div class="bk-section" id="bkExamplesWrap"><strong>Examples</strong> <div id="bkExamples"></div></div>
+        <div class="bk-section" id="bkMistakesWrap"><strong>Common Mistakes</strong> <ul id="bkMistakes"></ul></div>
+        <div class="bk-reminder" id="bkReminder"></div>
+    </div>
+</div>
 <script>
 // ═══════════════════════════════════════════════════════════════════════
 // TOOLS DATA
@@ -1186,6 +1236,70 @@ const EMOTIONS = [
     },
 ];
 
+// ponytail: Bare Knuckle 10 core tools — structured for training, not random
+const BK_TOOLS = [
+    {name:'Labels',desc:'Identify emotions, concerns, beliefs, or perceptions.',
+     why:'Naming emotions diffuses them and builds rapport. It shows you are listening on a deeper level.',
+     examples:['"It sounds like…"','"It seems like…"','"It looks like…"','"It feels like…"','"It appears that…"','"It sounds frustrating…"','"It sounds important…"','"It sounds like you\'re concerned…"','"It seems like that\'s been difficult…"'],
+     mistakes:['Do not say "I understand"','Focus on identifying emotions, not fixing them','Don\'t guess — observe and name what you hear'],
+     reminder:'Stay curious. Name the emotion. Then be quiet. Let them confirm.',
+     cat:'Rapport',count:2},
+    {name:'Vision Labels',desc:'Labels aimed at future concerns, goals, fears, or outcomes.',
+     why:'Future-focused labels address unspoken worries before they become objections.',
+     examples:['"It sounds like reliability is important to you."','"It seems like you\'re trying to avoid surprises."','"It sounds like you want confidence before moving forward."','"It sounds like timing matters here."','"I get the sense that certainty is key for you."'],
+     mistakes:['Don\'t make assumptions — listen first','Tonality matters: calm, curious, non-judgmental','Avoid leading the witness'],
+     reminder:'Label what they want NEXT, not what\'s happening NOW.',
+     cat:'Rapport',count:2},
+    {name:'Mirrors',desc:'Repeat the last 1–3 important words your counterpart says.',
+     why:'Mirroring encourages elaboration. People naturally want to fill the silence after hearing their own words echoed back.',
+     examples:['Them: "The biggest issue is the timeline."  You: "The timeline?"','Them: "We\'ve had bad experiences before."  You: "Bad experiences?"','Them: "This feels risky for our team."  You: "Risky?"'],
+     mistakes:['Don\'t mirror everything — pick key words','Don\'t parrot — repeat only the meaningful phrase','Don\'t break the silence afterward'],
+     reminder:'Mirror → silence. Let them fill the gap.',
+     cat:'Rapport',count:3},
+    {name:'Minimal Encouragers',desc:'Small responses that encourage the other person to continue talking.',
+     why:'People reveal more when they feel heard. Minimal encouragers keep them talking without interrupting their flow.',
+     examples:['"Hmm."','"Interesting."','"Go on."','"Tell me more."','"I see."','"Really?"','"And?"','"What happened next?"'],
+     mistakes:['Don\'t overuse — one word is enough','Don\'t make it sound sarcastic','Don\'t interrupt — place between their sentences'],
+     reminder:'Less is more. One word. Then quiet.',
+     cat:'Rapport',count:1},
+    {name:'Calibrated Questions',desc:'Questions that start with What or How — designed to create collaboration.',
+     why:'Calibrated questions give the other person a sense of control while steering the conversation. What/How questions avoid defensiveness.',
+     examples:[{q:'What makes this important to you?'},{q:'What would an ideal outcome look like?'},{q:'What concerns you most?'},{q:'How am I supposed to do that?'},{q:'How would that work?'},{q:'How can we solve this together?'}],
+     mistakes:['Avoid Why questions — they trigger defensiveness','Don\'t ask leading questions','Don\'t ask more than one at a time'],
+     reminder:'What/How only. No Why. No leading.',
+     cat:'Information',count:3},
+    {name:'No-Oriented Questions',desc:'Questions designed to make the other person feel safe by inviting a "no."',
+     why:'People feel safer saying no than yes. A "no" protects their autonomy and opens real dialogue.',
+     examples:['"Would it be ridiculous to explore another option?"','"Is now a bad time to talk?"','"Would it be unreasonable to discuss this?"','"Is it a bad idea to look at alternatives?"','"Are you against moving forward?"','"Is this not a priority right now?"'],
+     mistakes:['Don\'t use closed-ended no-questions too much','Focus on open-ended no-oriented questions','Don\'t sound manipulative — genuine curiosity'],
+     reminder:'Give them a safe "no." Then ask what they CAN say yes to.',
+     cat:'Information',count:2},
+    {name:'Accusation Audit',desc:'List negative thoughts they may have before they say them.',
+     why:'Bringing negatives into the open early defuses them. If you name their fear, they don\'t have to raise it.',
+     examples:['"You probably think I\'m wasting your time."','"It may seem like I\'m pushing too hard."','"You might feel this is too expensive."','"You may think this isn\'t a good fit."'],
+     mistakes:['Don\'t skip the real fears — go for the hardest one','Don\'t apologize for the accusation — just name it','Don\'t try to rebut it immediately'],
+     reminder:'Name the elephant in the room first. Then silence.',
+     cat:'Information',count:1},
+    {name:'Summaries',desc:'Summaries demonstrate understanding and help move conversations forward.',
+     why:'A good summary shows you\'ve truly heard them. It builds trust and clarifies next steps.',
+     examples:['"So far you\'ve told me that timing is important, you\'re concerned about cost, and you\'ve had bad experiences. Because of that, it sounds like you\'re feeling cautious."'],
+     mistakes:['Don\'t summarize more than twice per session','Don\'t add your own opinions — just reflect back','Don\'t skip the emotional layer: Facts + Concerns + Emotions'],
+     reminder:'Formula: Facts + Concerns + Emotions. Max 2 per session.',
+     cat:'Information',count:2},
+    {name:'Tactical Empathy',desc:'Demonstrate understanding without agreeing.',
+     why:'Understanding lowers defenses. People negotiate differently with someone who "gets it." You don\'t have to agree to understand.',
+     examples:['"It sounds like that\'s been frustrating."','"It seems like you\'ve been dealing with this for a while."','"It sounds like you\'ve put a lot of thought into this."'],
+     mistakes:['Don\'t confuse empathy with agreement','Don\'t fake it — genuine curiosity matters','Don\'t follow empathy with a solution — just sit in it'],
+     reminder:'Understand their world. You don\'t have to agree.',
+     cat:'Rapport',count:2},
+    {name:'Dynamic Silence',desc:'After a mirror, label, calibrated question, or summary — remain silent.',
+     why:'Silence creates pressure. The other person will fill it — often with the information you need.',
+     examples:['Mirror → Silence','Label → Silence','Calibrated Question → Silence','Summary → Silence'],
+     mistakes:['Don\'t rush to fill the silence','Don\'t fidget or look away — maintain eye contact','Don\'t cave — 3+ seconds feels long but works'],
+     reminder:'Speak last. The one who talks least wins.',
+     cat:'Rapport',count:2},
+];
+
 // ═══════════════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════════════
@@ -1193,6 +1307,7 @@ let state = {
     tools: JSON.parse(JSON.stringify(BASE_TOOLS)),
     currentDeck: [],
     usedTools: [],
+    usedNames: [],
     skippedTools: [],
     currentTool: null,
     timer: null,
@@ -1208,6 +1323,7 @@ let state = {
     bareKnuckles: false,
     sessionPaused: false,
     pauseRemaining: 0,
+    toolCounts: {},
 };
 
 function freshId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
@@ -1221,12 +1337,18 @@ function toggleBareKnuckles(){
     renderCards();
 }
 function buildDeck(){
-    let pool=state.bareKnuckles
-        ? [...state.tools].sort(()=>Math.random()-0.5).slice(0,10)
-        : state.tools;
-    state.currentDeck=[];
-    pool.forEach(t=>{for(let i=0;i<(t.count||1);i++)state.currentDeck.push({...t});});
-    shuffleArray(state.currentDeck);
+    if(state.bareKnuckles){
+        state.toolCounts={};
+        BK_TOOLS.forEach(t=>state.toolCounts[t.name]=0);
+        state.currentDeck=[];
+        BK_TOOLS.forEach(t=>{for(let i=0;i<(t.count||1);i++)state.currentDeck.push({...t,isBk:true});});
+        shuffleArray(state.currentDeck);
+    }else{
+        let pool=state.tools;
+        state.currentDeck=[];
+        pool.forEach(t=>{for(let i=0;i<(t.count||1);i++)state.currentDeck.push({...t});});
+        shuffleArray(state.currentDeck);
+    }
     renderToolsView();
 }
 function renderSessionWheel(){
@@ -1449,8 +1571,17 @@ function getNextTool(){
     const tool=state.currentDeck.pop();
     state.currentTool=tool;
     state.usedTools.push(tool);
+    if(state.bareKnuckles && tool.name && state.toolCounts[tool.name]!==undefined){
+        state.toolCounts[tool.name]=(state.toolCounts[tool.name]||0)+1;
+        state.usedNames.push(tool.name);
+    }
     document.getElementById('currentBanner').classList.add('show');
     document.getElementById('ctName').textContent=tool.name;
+    document.getElementById('ctName').style.cursor=tool.isBk?'pointer':'';
+    document.getElementById('ctName').onclick=tool.isBk?()=>{
+        const bk=BK_TOOLS.find(t=>t.name===tool.name);
+        if(bk)showBkToolModal(bk);
+    }:null;
     document.getElementById('ctDesc').textContent=tool.desc;
     document.getElementById('skipBtn').style.display='';
     animateCard(tool.name);
@@ -1524,6 +1655,29 @@ function showSessionSummary(){
             🎯 <strong>Last emotion:</strong> ${state.lastUsedEmotion}
         </div>` : '';
 
+    // ponytail: BK coaching stats
+    let bkStats='';
+    if(state.bareKnuckles && state.toolCounts){
+        const counts=state.toolCounts;
+        const entries=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+        const used=entries.filter(e=>e[1]>0);
+        if(used.length){
+            const most=used[0]; const least=used[used.length-1];
+            bkStats=`
+                <div style="margin-top:10px;padding:8px 10px;background:rgba(67,160,71,0.08);border-radius:8px;border-left:3px solid var(--green);">
+                    <strong style="color:var(--accent);font-size:11px;text-transform:uppercase;">📊 Coaching Report</strong>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px;font-size:12px;">
+                        ${entries.map(([name,cnt])=>`<div>${name}: <strong style="color:var(--accent);">${cnt}</strong></div>`).join('')}
+                    </div>
+                    <div style="font-size:11px;margin-top:6px;color:rgba(255,255,255,0.6);">
+                        🔥 Most used: <strong style="color:var(--accent);">${most[0]}</strong> (${most[1]}×) ·
+                        🧊 Least used: <strong>${least[0]}</strong> (${least[1]}×) ·
+                        <br>🎯 Practice: <strong>${least[0]}</strong>
+                    </div>
+                </div>`;
+        }
+    }
+
     document.getElementById('currentBanner').classList.add('show');
     document.getElementById('ctName').innerHTML = '🏁 <span style="color:var(--accent);">Session Summary</span>';
     document.getElementById('ctDesc').innerHTML = `
@@ -1537,6 +1691,7 @@ function showSessionSummary(){
             Rounds: ${state.round+1} · Categories: ${categories.join(', ')}
         </div>
         ${emotionHint}
+        ${bkStats}
         ${completed.length ? `<div style="margin-top:6px;font-size:10px;color:rgba(255,255,255,0.3);max-height:60px;overflow-y:auto;">${completed.map(t=>t.name).join(' → ')}</div>` : ''}
     `;
     document.getElementById('stopBtn').style.display='none';
@@ -1591,12 +1746,37 @@ function updateTimerDisplay(ms){
 function onCardClick(name){
     const tool=state.tools.find(t=>t.name===name);
     if(!tool) return;
+    if(state.bareKnuckles){
+        const bk=BK_TOOLS.find(t=>t.name===name);
+        if(bk){showBkToolModal(bk);return;}
+    }
     document.getElementById('dcName').textContent=tool.name;
     document.getElementById('dcCat').textContent=tool.cat;
     document.getElementById('dcDesc').textContent=tool.desc;
     document.getElementById('detailPopover').classList.add('open');
 }
 function closeDetail(){document.getElementById('detailPopover').classList.remove('open');}
+
+// ponytail: BK tool detail modal — full educational popup
+function showBkToolModal(tool){
+    document.getElementById('bkName').textContent=tool.name;
+    document.getElementById('bkName').style.color=tool.cat==='Rapport'?'var(--green)':'var(--blue)';
+    document.getElementById('bkDesc').textContent=tool.desc;
+    document.getElementById('bkWhy').textContent=tool.why;
+    // Examples
+    const exDiv=document.getElementById('bkExamples');
+    exDiv.innerHTML=tool.examples.map(ex=>{
+        const text=typeof ex==='string'?ex:(ex.q||'');
+        return `<div class="bk-example">${text}</div>`;
+    }).join('');
+    // Mistakes
+    const misUl=document.getElementById('bkMistakes');
+    misUl.innerHTML=tool.mistakes.map(m=>`<li>${m}</li>`).join('');
+    // Reminder
+    document.getElementById('bkReminder').innerHTML='💡 '+tool.reminder;
+    document.getElementById('bkModal').classList.add('open');
+}
+function closeBkModal(){document.getElementById('bkModal').classList.remove('open');}
 
 // Custom tools
 function showAddToolModal(){document.getElementById('addToolModal').classList.add('open');}

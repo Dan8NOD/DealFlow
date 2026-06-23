@@ -848,17 +848,36 @@
         }
 
         /* Bare Knuckle mode — boxing ring green translucent overlay */
-        .bk-mode::before {
-            content:''; position:fixed; inset:0;
-            background:radial-gradient(ellipse at center, rgba(30,90,58,0.25) 0%, rgba(20,69,44,0.4) 100%);
-            pointer-events:none; z-index:1;
+        .bk-mode .table-surface {
+            background: radial-gradient(ellipse at center, #0d3320 0%, #091f14 100%) !important;
+            box-shadow: inset 0 0 120px rgba(0,0,0,0.6);
         }
-        .bk-mode .view-container.active { position:relative; z-index:2; }
-        .bk-mode .table-surface::after {
-            content:'🥊 BARE KNUCKLE'; position:fixed; bottom:8px; left:50%;
-            transform:translateX(-50%); font-size:10px; font-weight:800;
-            color:rgba(255,255,255,0.06); letter-spacing:4px; text-transform:uppercase;
-            pointer-events:none; z-index:0;
+        .bk-mode .nav-tab.active { background:rgba(30,90,58,0.5); }
+        .bk-mode #bkBtn {
+            animation: bk-pulse 1.2s ease-in-out infinite;
+            border-color: var(--red) !important;
+        }
+        @keyframes bk-pulse {
+            0%,100% { box-shadow: 0 0 6px rgba(229,57,53,0.3); }
+            50% { box-shadow: 0 0 20px rgba(229,57,53,0.7), 0 0 40px rgba(229,57,53,0.3); }
+        }
+        /* Card wiggle attention-grabber for BK mode */
+        .bk-mode .tool-card[data-tool] {
+            animation: card-attention 2s ease-in-out infinite;
+            animation-delay: calc(var(--card-i,0) * 0.1s);
+        }
+        .bk-mode .tool-card[data-tool]:hover { animation: none; }
+        @keyframes card-attention {
+            0%,100% { transform: translateY(0); }
+            5% { transform: translateY(-3px) scale(1.02); box-shadow: 0 0 12px rgba(212,168,83,0.3); }
+            10% { transform: translateY(0); }
+        }
+        .bk-mode .cat-badge span[style*="float:right"] { animation: wiggle 2s ease-in-out infinite; display:inline-block; }
+        @keyframes wiggle {
+            0%,100% { transform: rotate(0deg); }
+            25% { transform: rotate(-8deg) scale(1.2); }
+            50% { transform: rotate(5deg) scale(1.1); }
+            75% { transform: rotate(-3deg); }
         }
 
         @keyframes pulse-danger { 0%,100%{opacity:1} 50%{opacity:0.5} }

@@ -1105,12 +1105,24 @@
         </div>
         <!-- ponytail: Session mini-wheel — appears between current tool and cards -->
         <div class="session-wheel" id="sessionWheel" style="display:none;width:100%;max-width:500px;margin:6px auto 0;">
+            <div id="sessionToolCards" style="display:flex;gap:6px;margin-bottom:6px;">
+                <div id="lastToolCard" style="flex:1;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:6px;border-left:3px solid #666;min-height:30px;">
+                    <div style="font-size:8px;text-transform:uppercase;color:rgba(255,255,255,0.3);letter-spacing:0.5px;">&#9664; PAST</div>
+                    <div id="lastToolName" style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:600;">—</div>
+                </div>
+                <div id="nextToolCard" style="flex:1;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:6px;border-left:3px solid var(--accent);min-height:30px;">
+                    <div style="font-size:8px;text-transform:uppercase;color:var(--accent);letter-spacing:0.5px;">NEXT &#9654;</div>
+                    <div id="nextToolName" style="font-size:11px;color:var(--accent);font-weight:600;">—</div>
+                </div>
+            </div>
             <div class="wheel-header">
                 <h2 style="color:#fff;font-size:16px;font-weight:700;margin-bottom:1px;">&#127804; Emotions</h2>
             </div>
             <div class="wheel-layout" style="flex-direction:column;gap:2px;">
                 <div class="wheel-canvas-wrap" id="sessionWheelCanvas" style="position:relative;width:100%;max-width:300px;margin:0 auto;"></div>
             </div>
+            <button class="btn btn-ghost btn-sm" onclick="buildSessionLabel()" id="sessionLabelBtn" style="margin-top:4px;border-color:#c0c0c0;color:#c0c0c0;font-size:11px;text-shadow:0 0 8px rgba(192,192,192,0.3);">🖨️ Label Maker</button>
+            <div class="label-output" id="sessionLabelOutput" style="display:none;width:100%;margin:4px 0 0;padding:8px 10px;background:var(--card-bg);border-radius:8px;"></div>
         </div>
         <div class="session-panel" id="sessionPanel">
             <div class="sp-header">
@@ -1854,10 +1866,11 @@ function startSession(){
     document.getElementById('sessionWheel').style.display='block';
     // ponytail: BK start flash — 90s arcade boxer + BARE KNUCKLE label
     if(state.bareKnuckles){
-        const ov=document.createElement('div');ov.id='bkOverlay';ov.className='bk-start';
-        ov.innerHTML='<div class="bk-fighter"></div><div class="bk-label">BARE KNUCKLE</div>';
+        const ov=document.createElement('div');ov.id='bkOverlay';
+        ov.style.cssText='position:fixed;inset:0;z-index:999;background:#000;display:flex;align-items:center;justify-content:center;animation:bk-flash 1s ease-out forwards;pointer-events:none;';
+        ov.innerHTML='<div style="font-size:32px;font-weight:900;color:#d4a853;letter-spacing:3px;text-shadow:0 0 30px rgba(212,168,83,0.4);animation:bk-label-fade 1s ease-out forwards;">BARE KNUCKLE</div>';
         document.body.appendChild(ov);
-        setTimeout(()=>{const e=document.getElementById('bkOverlay');if(e)e.remove();}, 1400);
+        setTimeout(()=>{const e=document.getElementById('bkOverlay');if(e)e.remove();}, 1000);
     }
     document.getElementById('currentBanner').classList.add('show');
     document.getElementById('ctName').textContent='Session Started!';
@@ -1866,6 +1879,8 @@ function startSession(){
 
 function getNextTool(){
     if(!state.sessionActive || state.sessionPaused) return;
+    // ponytail: save last tool for PAST card before popping
+    if(state.currentTool) state.lastTool = state.currentTool;
     if(Date.now()>state.endTime){endSession();return;}
     if(!state.currentDeck.length){
         if(state.usedTools.length||state.skippedTools.length){buildDeck();state.round++;}
@@ -1908,6 +1923,10 @@ function getNextTool(){
     document.getElementById('skipBtn').style.display='';
     animateCard(tool.name);
     renderToolsView(); renderLog();
+    // ponytail: update PAST / NEXT session cards
+    const lt=document.getElementById('lastToolName');const nt=document.getElementById('nextToolName');
+    if(lt)lt.textContent=state.lastTool?state.lastTool.name:'—';
+    if(nt)nt.textContent=state.currentDeck.length?state.currentDeck[state.currentDeck.length-1].name:'—';
 }
 function skipTool(){
     if(!state.sessionActive || !state.currentTool) return;
@@ -2102,6 +2121,39 @@ function showBkToolModal(tool){
     document.getElementById('bkModal').classList.add('open');
 }
 function closeBkModal(){document.getElementById('bkModal').classList.remove('open');}
+
+// ponytail: session label maker — same as buildMyLabel but routes to sessionLabelOutput
+let slLabelLevel=0;
+function buildSessionLabel(){
+    const em=EMOTIONS.find(e=>e.name===state.lastUsedEmotion);
+    const out=document.getElementById('sessionLabelOutput');
+    if(!em){
+        out.style.display='block'; out.innerHTML='<div style="padding:6px;text-align:center;color:#999;font-size:12px;">👆 Tap an emotion sector on the wheel first</div>'; return;
+    }
+    slLabelLevel=(slLabelLevel+1)%2;
+    const allWords=[]; Object.values(em.tertiary).forEach(arr=>arr.forEach(w=>allWords.push(w)));
+    const pick=(arr)=>arr[Math.floor(Math.random()*arr.length)];
+    const w1=pick(em.secondary), w2=pick(allWords);
+    const intros=['It sounds like','It seems like','It feels like','It looks like'];
+    const deep=['I get the sense that','Behind this I hear','Underneath that I wonder if'];
+    const si=intros[Math.floor(Math.random()*intros.length)];
+    const di=deep[Math.floor(Math.random()*deep.length)];
+    const de=pick(['vulnerability','uncertainty','exhaustion','disappointment','betrayal','loss','hopelessness']);
+    if(slLabelLevel===0){
+        out.style.display='block'; out.innerHTML=`
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#c0c0c0;margin-bottom:3px;">🖨️ Label Maker — Surface</div>
+            <div class="bk-example" style="font-size:12px;">${si} you\u2019re feeling some <strong>${w1.toLowerCase()}</strong>.</div>
+            <div class="bk-example" style="font-size:12px;">${si} there\u2019s some <strong>${w2.toLowerCase()}</strong> here.</div>
+            <div style="font-size:9px;color:var(--text-dim);margin-top:4px;">💡 Say one, stay silent · <span style="color:var(--red);font-weight:700;">Tap again for deep</span></div>`;
+    }else{
+        out.style.display='block'; out.innerHTML=`
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#c0c0c0;margin-bottom:3px;">🖨️ Label Maker — Deep</div>
+            <div class="bk-example" style="font-size:12px;border-left-color:#c0c0c0;">${di} there\u2019s some <strong>${w1.toLowerCase()}</strong> here, and maybe even <strong>${de}</strong>.</div>
+            <div class="bk-example" style="font-size:12px;border-left-color:#c0c0c0;">${di} what I\u2019m hearing is <strong>${de}</strong> is at the core of this.</div>
+            <div style="margin-top:4px;padding:4px 8px;background:rgba(229,57,53,0.06);border-radius:4px;border-left:3px solid var(--red);font-size:10px;font-weight:600;">\u26a1 Negative label = <strong style="color:var(--red);">7\u00d7</strong> positive. Acknowledge the hard stuff.</div>
+            <div style="font-size:9px;color:var(--text-dim);margin-top:4px;">💡 Say one, stay silent · <span style="color:var(--accent);font-weight:700;">Tap again for surface</span></div>`;
+    }
+}
 // ponytail: simple toast notification
 const toastEl=document.createElement('div');toastEl.style.cssText='position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.1);';document.body.appendChild(toastEl);let toastTimer=null;
 function toast(m){toastEl.textContent=m;toastEl.style.opacity='1';clearTimeout(toastTimer);toastTimer=setTimeout(()=>{toastEl.style.opacity='0';},3000);}

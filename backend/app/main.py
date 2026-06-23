@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.db import engine, Base
-from app.routers import auth, dashboard, microsoft, showings, tenant, files, obsidian, bounce
+from app.routers import auth, dashboard, microsoft, showings, tenant, files, obsidian, bounce, trainer
 
 settings = get_settings()
 app = FastAPI(
@@ -138,40 +138,12 @@ app.include_router(tenant.router)
 app.include_router(files.router)
 app.include_router(obsidian.router)
 app.include_router(bounce.router)
+app.include_router(trainer.router)
 
 
 @app.get("/health")
 async def health():
     return {"status": "ok", "env": settings.environment}
-
-
-@app.get("/mixmatch")
-async def mixmatch():
-    from fastapi.responses import HTMLResponse
-    import os
-    path = os.path.join(os.path.dirname(__file__), "..", "..", "static", "mixmatch.html")
-    with open(path) as f:
-        return HTMLResponse(f.read())
-
-
-@app.post("/api/mixmatch-notes")
-async def save_mixmatch_note(data: dict = Body(...)):
-    from sqlalchemy import text
-    with engine.connect() as conn:
-        conn.execute(
-            text("INSERT INTO mixmatch_notes (note_text, tool_name) VALUES (:note, :tool)"),
-            {"note": data.get("note_text", ""), "tool": data.get("tool_name", "")}
-        )
-        conn.commit()
-    return {"ok": True}
-
-
-@app.get("/api/mixmatch-notes")
-async def get_mixmatch_notes():
-    from sqlalchemy import text
-    with engine.connect() as conn:
-        rows = conn.execute(text("SELECT id, note_text, tool_name, created_at FROM mixmatch_notes ORDER BY id DESC LIMIT 50")).fetchall()
-    return [{"id": r[0], "note_text": r[1], "tool_name": r[2], "created_at": str(r[3])} for r in rows]
 
 
 # Serve static frontend (built SPA) in production

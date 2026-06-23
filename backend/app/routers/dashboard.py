@@ -951,6 +951,83 @@ async def create_lead(
     return {"id": l.id, "ok": True}
 
 
+# ═══════════ Lead cleanup & enrichment ═══════════
+
+@router.post("/api/leads/cleanup")
+async def cleanup_leads(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    org_id = user.org_id
+    now = datetime.now(timezone.utc)
+    cutoff_45 = now - timedelta(days=45)
+    cutoff_10 = now - timedelta(days=10)
+    results = {"cold": 0, "lost_clyde": 0, "enriched": 0}
+
+    # 1. Mark leads > 45 days old as COLD (skip if they have an application)
+    app_lead_names = set(
+        row[0] for row in db.query(Lead.name)
+        .join(Application, Application.applicant_name == Lead.name, isouter=True)
+        .filter(Lead.org_id == org_id, Lead.status == "NEW", Application.id != None)
+        .all()
+    )
+    old_leads = db.query(Lead).filter(
+        Lead.org_id == org_id,
+        Lead.status == "NEW",
+        Lead.received_at < cutoff_45,
+    ).all()
+    for lead in old_leads:
+        if lead.name in app_lead_names:
+            continue  # has an application, keep visible
+        lead.status = "COLD"
+        lead.notes = (lead.notes or "") + f" | Auto-cold {now.strftime('%Y-%m-%d')} (45d+ stale)"
+        results["cold"] += 1
+
+    # 2. Mark 660 Clyde leads as LOST (building rented, no bounce options)
+    clyde_leads = db.query(Lead).filter(
+        Lead.org_id == org_id,
+        Lead.status.in_(["NEW", "COLD"]),
+        Lead.property.has(Property.address.ilike("%660%clyde%")),
+    ).all()
+    # Also match by string if no property FK
+    clyde_by_addr = db.query(Lead).filter(
+        Lead.org_id == org_id,
+        Lead.status.in_(["NEW", "COLD"]),
+        Lead.property_id == None,
+        Lead.subject.ilike("%660 clyde%"),
+    ).all()
+    for lead in clyde_leads + clyde_by_addr:
+        lead.status = "LOST"
+        lead.notes = (lead.notes or "") + f" | 660 Clyde — building rented, no bounce options"
+        results["lost_clyde"] += 1
+
+    # 3. Enrich hot leads (< 10 days) with property data
+    hot = db.query(Lead).filter(
+        Lead.org_id == org_id,
+        Lead.status == "NEW",
+        Lead.received_at >= cutoff_10,
+    ).all()
+    props = {p.id: p for p in db.query(Property).filter(Property.org_id == org_id).all()}
+    for lead in hot:
+        changed = False
+        prop = props.get(lead.property_id) if lead.property_id else None
+        if prop and not lead.monthly_income:
+            # ponytail: estimate income as rent*3 (standard qualification metric)
+            if prop.rent and prop.rent > 0:
+                lead.monthly_income = prop.rent * 3
+                lead.income_source = "estimated"
+                lead.upsell_eligible = (prop.rent * 3) >= 5000
+                changed = True
+        if prop and not lead.notes:
+            lead.notes = f"Property: {prop.address} {prop.unit or ''} · Rent: ${prop.rent or 'unk'}/mo"
+            changed = True
+        if changed:
+            results["enriched"] += 1
+
+    db.commit()
+    return {"ok": True, **results}
+
+
 @router.post("/api/sales")
 async def create_sales_deal(
     request: Request,

@@ -34,6 +34,7 @@ class LeadStatus(str, enum.Enum):
     QUALIFIED = "QUALIFIED"
     CLOSED    = "CLOSED"
     LOST      = "LOST"
+    COLD      = "COLD"
 
 
 class ApplicationStatus(str, enum.Enum):

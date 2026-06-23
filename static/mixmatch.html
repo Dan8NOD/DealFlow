@@ -1105,7 +1105,7 @@
             <button class="btn btn-ghost btn-sm" onclick="toggleAutoRotate()" id="autoRotateBtn" style="margin-top: 4px;">🔄 Spin</button>
             <button class="btn btn-ghost btn-sm" onclick="toggleLegend()" style="margin-top: 4px;">&#128196; Show all words</button>
             <button class="btn btn-ghost btn-sm" onclick="toggleFocus()" id="focusBtn" style="margin-top: 4px;">&#128065; Focus</button>
-            <button class="btn btn-ghost btn-sm" onclick="buildMyLabel()" id="labelBtn" style="margin-top: 4px;border-color:var(--accent);color:var(--accent);">🏷️ Build My Label</button>
+            <button class="btn btn-ghost btn-sm" onclick="buildMyLabel()" id="labelBtn" style="margin-top: 4px;border-color:#c0c0c0;color:#c0c0c0;text-shadow:0 0 8px rgba(192,192,192,0.3);">🖨️ Label Maker</button>
             <div class="wheel-legend" id="wheelLegend"></div>
             <div class="emotion-detail" id="emotionDetail"></div>
             <!-- ponytail: Label builder output -->
@@ -2264,7 +2264,8 @@ function exitFocus(){
     closeEmotion();
 }
 
-// ponytail: Build My Label — generates 3 example labels from last selected emotion
+// ponytail: Label Maker — generates surface + deep labels from selected emotion
+let labelLevel=0; // 0=surface, 1=deep
 function buildMyLabel(){
     const em=EMOTIONS.find(e=>e.name===state.lastUsedEmotion);
     const out=document.getElementById('labelOutput');
@@ -2273,24 +2274,57 @@ function buildMyLabel(){
         out.innerHTML='<div style="padding:8px;text-align:center;color:#999;">👆 Tap an emotion sector first</div>';
         return;
     }
-    // Grab some tertiary words for variety
+    // Toggle level on each tap
+    labelLevel=(labelLevel+1)%2;
     const allWords=[];
     Object.values(em.tertiary).forEach(arr=>arr.forEach(w=>allWords.push(w)));
     const pick=(arr)=>arr[Math.floor(Math.random()*arr.length)];
-    const pick2=()=>allWords[Math.floor(Math.random()*allWords.length)];
-    const w1=pick(em.secondary), w2=pick2(), w3=pick(allWords.filter(w=>w!==w2));
-    const intros=['It sounds like','It seems like','It feels like','It looks like'];
-    const i1=intros[Math.floor(Math.random()*intros.length)];
-    const i2=intros[Math.floor(Math.random()*intros.length)];
-    const i3=intros[Math.floor(Math.random()*intros.length)];
-    out.style.display='block';
-    out.innerHTML=`
-        <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);margin-bottom:6px;">🏷️ Based on <strong style="color:${em.color};">${em.name}</strong></div>
-        <div class="bk-example">${i1} you\'re feeling <strong>${w1.toLowerCase()}</strong>.</div>
-        <div class="bk-example">${i2} there\'s some <strong>${w2.toLowerCase()}</strong> here.</div>
-        <div class="bk-example">${i3} this is bringing up feelings of <strong>${w3.toLowerCase()}</strong>.</div>
-        <div style="font-size:10px;color:var(--text-dim);margin-top:4px;">💡 Say one of these, then stay silent.</div>
-    `;
+    const w1=pick(em.secondary), w2=pick(allWords);
+    
+    const surfaceIntros=['It sounds like','It seems like','It feels like','It looks like'];
+    const deepIntros=['I get the sense that','Behind this I hear','Underneath that I wonder if','What I\'m picking up is'];
+    const si=surfaceIntros[Math.floor(Math.random()*surfaceIntros.length)];
+    const di=deepIntros[Math.floor(Math.random()*deepIntros.length)];
+    
+    if(labelLevel===0){
+        // Surface label — simple, direct
+        const phrases=[
+            `${si} you're feeling some <strong>${w1.toLowerCase()}</strong> right now.`,
+            `${si} there's a bit of <strong>${w2.toLowerCase()}</strong> in what you're saying.`,
+            `${si} this is bringing up feelings of <strong>${pick(allWords).toLowerCase()}</strong>.`,
+        ];
+        out.style.display='block';
+        out.innerHTML=`
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                <span style="font-size:18px;filter:drop-shadow(0 0 6px rgba(192,192,192,0.5));">🖨️</span>
+                <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#c0c0c0;">Label Maker — Surface</span>
+            </div>
+            ${phrases.map(p=>`<div class="bk-example">${p}</div>`).join('')}
+            <div style="font-size:10px;color:var(--text-dim);margin-top:6px;padding-top:6px;border-top:1px solid rgba(0,0,0,0.06);">
+                💡 Say one, then stay silent · <span style="color:var(--red);font-weight:700;">Tap again for deep</span>
+            </div>`;
+    }else{
+        // Deep label — emotional layer, vulnerability, unspoken fears
+        const deepEmotions=['vulnerability','uncertainty','exhaustion','disappointment','betrayal','loss','abandonment','shame','hopelessness'];
+        const de=pick(deepEmotions);
+        const phrases=[
+            `${di} there's some <strong>${w1.toLowerCase()}</strong> here, and maybe even <strong>${de}</strong>.`,
+            `${di} behind the ${w1.toLowerCase()}, there's a deeper feeling of <strong>${pick(allWords).toLowerCase()}</strong>.`,
+            `${di} what I'm hearing is that <strong>${de}</strong> is really at the core of this.`,
+        ];
+        out.style.display='block';
+        out.innerHTML=`
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                <span style="font-size:20px;filter:drop-shadow(0 0 8px rgba(192,192,192,0.6));">🖨️</span>
+                <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#c0c0c0;">Label Maker — Deep Emotion</span>
+            </div>
+            ${phrases.map(p=>`<div class="bk-example" style="border-left-color:#c0c0c0;">${p}</div>`).join('')}
+            <div style="margin-top:8px;padding:8px 10px;background:rgba(229,57,53,0.06);border-radius:6px;border-left:3px solid var(--red);font-size:11px;font-weight:600;">
+                ⚡ A negative label is worth <strong style="color:var(--red);">7×</strong> a positive label
+                <span style="display:block;font-weight:400;font-size:10px;color:var(--text-dim);margin-top:2px;">Acknowledging what's hard builds trust faster than praising what's good.</span>
+            </div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:4px;">💡 Say one, then stay silent · <span style="color:var(--accent);font-weight:700;">Tap again for surface</span></div>`;
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════

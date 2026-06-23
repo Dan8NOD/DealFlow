@@ -37,16 +37,24 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
 .btn-sm.blue{background:var(--blue);color:#fff}.btn-sm.green{background:var(--green);color:#fff}
 
 /* ── KANBAN ── */
-.kanban{display:flex;gap:10px;padding:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.kanban-col{flex:0 0 85vw;max-width:360px;background:#edf2f7;border-radius:var(--r);padding:10px}
+.kanban{display:flex;gap:10px;padding:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;align-items:flex-start}
+.kanban-col{flex:0 0 85vw;max-width:360px;background:#edf2f7;border-radius:var(--r);padding:10px;transition:background .12s,outline .12s;outline:2px dashed transparent;outline-offset:-4px;min-height:120px}
 @media(min-width:768px){.kanban-col{flex:0 0 30%;max-width:none}}
-.kanban-col h2{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin-bottom:10px;display:flex;justify-content:space-between}
-.kanban-col h2 .col-count{background:var(--gray);color:#fff;border-radius:10px;padding:1px 8px;font-size:11px}
-.kcard{background:var(--card);border-radius:8px;padding:12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.06);cursor:pointer;border-left:4px solid var(--blue)}
-.kcard:active{transform:scale(.98)}.kcard.urgent{border-left-color:var(--red)}.kcard.todo{border-left-color:var(--gray)}.kcard.done{border-left-color:var(--green)}
-.kcard .kc-title{font-size:14px;font-weight:700}.kcard .kc-sub{font-size:12px;color:var(--gray)}.kcard .kc-meta{display:flex;gap:6px;margin-top:4px;font-size:11px;flex-wrap:wrap}
+.kanban-col h2{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.kanban-col h2 .col-count{background:var(--gray);color:#fff;border-radius:10px;padding:1px 8px;font-size:11px;min-width:24px;text-align:center}
+.kanban-col.drag-over{background:#dbeafe!important;outline-color:var(--blue)}
+.kanban-col.drag-invalid{background:#fed7d7!important;outline-color:var(--red)}
+.kanban-col.empty .col-empty{display:block}
+.col-empty{display:none;text-align:center;color:var(--gray);font-size:12px;padding:24px 8px;font-style:italic;border:1px dashed #cbd5e0;border-radius:6px;margin-top:4px}
+.kcard{background:var(--card);border-radius:8px;padding:12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.06);cursor:grab;border-left:4px solid var(--blue);transition:transform .08s,box-shadow .12s,opacity .12s}
+.kcard:active{cursor:grabbing;transform:scale(.98)}
+.kcard:hover{box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.kcard.dragging{opacity:.35;transform:scale(.97)}
+.kcard.urgent{border-left-color:var(--red)}.kcard.todo{border-left-color:var(--gray)}.kcard.done{border-left-color:var(--green)}
+.kcard .kc-title{font-size:14px;font-weight:700}.kcard .kc-sub{font-size:12px;color:var(--gray);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.kcard .kc-meta{display:flex;gap:6px;margin-top:4px;font-size:11px;flex-wrap:wrap}
 .kcard .kc-btn{flex:1;padding:5px 8px;border:none;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;margin-top:6px}
 .kc-btn.move{background:#edf2f7;color:var(--navy)}
+.kcard .kc-timer{font-size:10px;color:var(--red);font-weight:700;margin-top:4px;display:flex;align-items:center;gap:3px}
 
 /* ── GRID (desktop table) ── */
 .grid-wrap{overflow-x:auto;margin:0 12px;background:var(--card);border-radius:var(--r);border:1px solid #dde1e6;display:none}
@@ -364,9 +372,10 @@ const SALES_KANBAN_COLS=[
   {key:'CLOSED',label:'Closed',color:'var(--gray)',statuses:['CLOSED'],dropStatus:'CLOSED'},
 ];
 function renderKanban(){
-  const modeToggle=`<div style="padding:0 12px 8px;display:flex;gap:8px;align-items:center">`+
+  const modeToggle=`<div style="padding:0 12px 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">`+
     `<button class="btn-sm ${kanbanMode==="leads"?"blue":"gray"}" onclick="kanbanMode='leads';renderKanban()">📧 Lead Funnel</button>`+
     `<button class="btn-sm ${kanbanMode==="sales"?"blue":"gray"}" onclick="kanbanMode='sales';renderKanban()">💰 Sales Funnel</button>`+
+    `<span style="font-size:11px;color:var(--gray);margin-left:auto">💡 Drag cards between columns</span>`+
     `</div>`;
   if(kanbanMode==='sales'){renderSalesKanban(modeToggle);return}
   const buckets={};KANBAN_COLS.forEach(c=>buckets[c.key]=[]);
@@ -380,17 +389,18 @@ function renderKanban(){
   let h=modeToggle;
   KANBAN_COLS.forEach(col=>{
     const items=buckets[col.key];
-    h+=`<div class="kanban-col" data-col="${col.key}"
-        ondragover="event.preventDefault();this.style.background='#dbeafe'"
-        ondragleave="this.style.background='#edf2f7'"
-        ondrop="dropLead(event,'${col.key}')">
+    const emptyCls=items.length===0?' empty':'';
+    h+=`<div class="kanban-col${emptyCls}" data-col="${col.key}" data-color="${col.color}" data-kanban="leads">
       <h2 style="color:${col.color}">${col.label} <span class="col-count" style="background:${col.color}">${items.length}</span></h2>`;
+    if(items.length===0){
+      h+=`<div class="col-empty">Drop a card here</div>`;
+    }
     items.forEach(l=>{
       const income=l.monthly_income?'$'+Number(l.monthly_income).toLocaleString()+'/mo':'—';
       const src=l.source||'';
-      h+=`<div class="kcard" draggable="true"
-            ondragstart="dragLead(event,${l.id})"
-            ondragend="this.style.opacity='1'"
+      const days=l.days_old||0;
+      const timerHtml=days>=staleThreshold?`<div class="kc-timer">⏰ ${days}d old</div>`:'';
+      h+=`<div class="kcard" draggable="true" data-lead-id="${l.id}"
             style="border-left-color:${col.color}"
             onclick="openPanel('lead',${l.id})">
         <div class="kc-title">${l.name||'?'}</div>
@@ -398,7 +408,9 @@ function renderKanban(){
         <div class="kc-meta">
           <span class="badge ${l.monthly_income?'green':'gray'}">${income}</span>
           ${src?`<span class="badge gray">${src}</span>`:''}
+          ${days>=7?`<span class="badge ${days>=staleThreshold?'red':'amber'}">${days}d</span>`:''}
         </div>
+        ${timerHtml}
       </div>`;
     });
     h+='</div>';
@@ -406,28 +418,77 @@ function renderKanban(){
   document.getElementById('kanban').innerHTML=h;
   document.getElementById('kanbanView').style.display='block';
   document.getElementById('leadCards').style.display='none';
+  bindKanbanDnD();
 }
-function dragLead(e,id){
-  e.dataTransfer.setData('text/plain',id);
-  e.dataTransfer.effectAllowed='move';
-  e.target.style.opacity='0.4';
+function bindKanbanDnD(){
+  // ponytail: counter trick — dragenter/dragleave fire on every child, so we track depth to avoid flicker.
+  document.querySelectorAll('.kcard[draggable]').forEach(card=>{
+    card.addEventListener('dragstart',e=>{
+      const id=card.dataset.leadId||card.dataset.dealId;
+      e.dataTransfer.setData('text/plain',id);
+      e.dataTransfer.effectAllowed='move';
+      requestAnimationFrame(()=>card.classList.add('dragging'));
+    });
+    card.addEventListener('dragend',()=>{
+      card.classList.remove('dragging');
+      document.querySelectorAll('.kanban-col').forEach(c=>{
+        c.classList.remove('drag-over','drag-invalid');
+        c._dragDepth=0;
+      });
+    });
+  });
+  document.querySelectorAll('.kanban-col').forEach(col=>{
+    col._dragDepth=0;
+    col.addEventListener('dragover',e=>{
+      e.preventDefault();
+      e.dataTransfer.dropEffect='move';
+    });
+    col.addEventListener('dragenter',e=>{
+      e.preventDefault();
+      col._dragDepth++;
+      col.classList.add('drag-over');
+    });
+    col.addEventListener('dragleave',()=>{
+      col._dragDepth--;
+      if(col._dragDepth<=0){col._dragDepth=0;col.classList.remove('drag-over')}
+    });
+    col.addEventListener('drop',e=>{
+      e.preventDefault();
+      col._dragDepth=0;
+      col.classList.remove('drag-over');
+      const id=parseInt(e.dataTransfer.getData('text/plain'),10);
+      if(!id)return;
+      if(col.dataset.kanban==='sales') dropDeal(id,col.dataset.col);
+      else dropLead(id,col.dataset.col);
+    });
+  });
 }
-async function dropLead(e,colKey){
-  e.preventDefault();
-  e.currentTarget.style.background='#edf2f7';
-  const id=parseInt(e.dataTransfer.getData('text/plain'),10);
-  if(!id)return;
+async function dropLead(id,colKey){
   const col=KANBAN_COLS.find(c=>c.key===colKey);
   if(!col)return;
   const lead=allLeads.find(l=>l.id===id);
   if(!lead)return;
-  if(col.statuses.includes(lead.status))return;  // already in this column
+  if(col.statuses.includes(lead.status)){toast('✓ Already in '+col.label);return}
   try{
     const r=await fetch('/api/leads/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:col.dropStatus})});
     if(!r.ok){toast('✗ Move failed');return}
-    lead.status=col.dropStatus;  // optimistic local update
+    lead.status=col.dropStatus;
     toast('→ Moved to '+col.label);
-    renderAll();  // recalculates stats (Hot Leads, Total) + re-renders board
+    renderAll();
+  }catch(err){toast('✗ '+err.message)}
+}
+async function dropDeal(id,colKey){
+  const col=SALES_KANBAN_COLS.find(c=>c.key===colKey);
+  if(!col)return;
+  const deal=allDeals.find(d=>d.id===id);
+  if(!deal||col.statuses.includes(deal.status)){toast('✓ Already in '+col.label);return}
+  try{
+    const r=await fetch('/api/sales/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:col.dropStatus})});
+    if(!r.ok){toast('✗ Move failed');return}
+    deal.status=col.dropStatus;
+    deal.next_action=NEXT_TIPS[col.dropStatus]||'';
+    toast('→ Moved to '+col.label);
+    renderAll();
   }catch(err){toast('✗ '+err.message)}
 }
 function renderSalesKanban(modeToggle){
@@ -439,19 +500,16 @@ allDeals.forEach(d=>{
 let h=modeToggle;
 SALES_KANBAN_COLS.forEach(col=>{
   const items=buckets[col.key]||[];
-  h+=`<div class="kanban-col" data-col="${col.key}"
-      ondragover="event.preventDefault();this.style.background='#dbeafe'"
-      ondragleave="this.style.background='#edf2f7'"
-      ondrop="dropDeal(event,'${col.key}')">
+  const emptyCls=items.length===0?' empty':'';
+  h+=`<div class="kanban-col${emptyCls}" data-col="${col.key}" data-color="${col.color}" data-kanban="sales">
     <h2 style="color:${col.color}">${col.label} <span class="col-count" style="background:${col.color}">${items.length}</span></h2>`;
+  if(items.length===0){h+=`<div class="col-empty">Drop a deal here</div>`}
   items.forEach(d=>{
     const price=d.list_price?'$'+Number(d.list_price).toLocaleString():'';
-    h+=`<div class="kcard" draggable="true"
-          ondragstart="dragDeal(event,${d.id})"
-          ondragend="this.style.opacity='1'"
+    h+=`<div class="kcard" draggable="true" data-deal-id="${d.id}"
           style="border-left-color:${col.color}"
           onclick="openPanel('deal',${d.id})">
-      <div class="kc-title">${d.address.split(',')[0]||'?'}</div>
+      <div class="kc-title">${(d.address||'').split(',')[0]||'?'}</div>
       <div class="kc-sub">${(d.status||'').replace(/_/g,' ')}</div>
       <div class="kc-meta">${price?`<span class="badge green">${price}</span>`:''}${d.tc?`<span class="badge gray">${d.tc}</span>`:''}</div>
     </div>`;
@@ -461,29 +519,7 @@ SALES_KANBAN_COLS.forEach(col=>{
 document.getElementById('kanban').innerHTML=h;
 document.getElementById('kanbanView').style.display='block';
 document.getElementById('leadCards').style.display='none';
-}
-function dragDeal(e,id){
-e.dataTransfer.setData('text/plain',id);
-e.dataTransfer.effectAllowed='move';
-e.target.style.opacity='0.4';
-}
-async function dropDeal(e,colKey){
-e.preventDefault();
-e.currentTarget.style.background='#edf2f7';
-const id=parseInt(e.dataTransfer.getData('text/plain'),10);
-if(!id)return;
-const col=SALES_KANBAN_COLS.find(c=>c.key===colKey);
-if(!col)return;
-const deal=allDeals.find(d=>d.id===id);
-if(!deal||col.statuses.includes(deal.status))return;
-try{
-  const r=await fetch('/api/sales/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:col.dropStatus})});
-  if(!r.ok){toast('✗ Move failed');return}
-  deal.status=col.dropStatus;
-  deal.next_action=NEXT_TIPS[col.dropStatus]||'';
-  toast('→ Moved to '+col.label);
-  renderAll();
-}catch(err){toast('✗ '+err.message)}
+bindKanbanDnD();
 }
 // ── TAB VIEWS ──
 function renderTabView(tab){

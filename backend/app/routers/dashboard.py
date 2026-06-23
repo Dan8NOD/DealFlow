@@ -676,6 +676,25 @@ async def dedup_leads(
     """), {"org": org_id})
     db.commit()
     removed = getattr(result, 'rowcount', -1)
+
+    # Also dedup by phone for leads with no email
+    result2 = db.execute(text("""
+        DELETE FROM leads
+        WHERE org_id = :org
+          AND (email IS NULL OR email = '')
+          AND phone IS NOT NULL AND phone != ''
+          AND id NOT IN (
+              SELECT MAX(id) FROM leads
+              WHERE org_id = :org AND (email IS NULL OR email = '')
+                    AND phone IS NOT NULL AND phone != ''
+              GROUP BY REGEXP_REPLACE(phone, '[^0-9]', '', 'g')
+          )
+          AND name NOT IN (
+              SELECT COALESCE(applicant_name,'') FROM applications WHERE org_id = :org
+          )
+    """), {"org": org_id})
+    db.commit()
+    removed += getattr(result2, 'rowcount', 0)
     remaining = db.query(func.count(Lead.id)).filter(Lead.org_id == org_id).scalar()
     return {"deduped": removed, "remaining": remaining}
 

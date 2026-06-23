@@ -25,6 +25,19 @@ app.add_middleware(
 @app.on_event("startup")
 def on_startup():
     Base.metadata.create_all(bind=engine)
+    # ponytail: add unique constraint on (org_id, email) to stop ShowMojo dupe re-inserts
+    # Idempotent — silently skips if index already exists (Postgres/SQLite both)
+    from sqlalchemy import text
+    from app.db import engine as _engine
+    try:
+        with _engine.connect() as conn:
+            conn.execute(text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS ix_leads_org_email "
+                "ON leads (org_id, LOWER(email)) WHERE email IS NOT NULL AND email != ''"
+            ))
+            conn.commit()
+    except Exception:
+        pass  # already exists or not supported — safe to ignore
     _ensure_columns(engine)
     _fix_lowercase_enums(engine)
 

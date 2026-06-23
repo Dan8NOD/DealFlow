@@ -591,6 +591,38 @@
                     0%,100% { filter: brightness(1.4) drop-shadow(0 0 12px rgba(255,255,255,0.3)); }
                     50% { filter: brightness(1.7) drop-shadow(0 0 24px rgba(255,255,255,0.6)); }
                 }
+
+                /* Emotion Focus mode — deep purple backdrop, gold glow */
+                .emotion-focus { position:relative; }
+                .emotion-focus::before {
+                    content:''; position:fixed; inset:0; z-index:50;
+                    background:radial-gradient(ellipse at center, rgba(30,10,60,0.85) 0%, rgba(15,5,30,0.95) 100%);
+                    pointer-events:none;
+                }
+                .emotion-focus .view-wheel,
+                .emotion-focus .view-wheel * { pointer-events:auto; }
+                .emotion-focus .view-container.active { position:relative; z-index:60; }
+                .emotion-focus .view-wheel .wheel-header h2 { color:var(--accent) !important; text-shadow:0 0 20px rgba(212,168,83,0.4); }
+                .emotion-focus .view-wheel .wheel-header p { color:rgba(255,255,255,0.6) !important; }
+                .emotion-focus .wheel-emotion-slice:not(.active-slice) { opacity:0.08 !important; filter:grayscale(1) !important; }
+                .emotion-focus .wheel-emotion-slice.active-slice {
+                    filter: brightness(1.8) drop-shadow(0 0 30px rgba(212,168,83,0.8)) !important;
+                    animation: slice-pulse 1.5s ease-in-out infinite;
+                }
+                .emotion-focus .wheel-label:not(.active-label) { opacity:0.06 !important; }
+                .emotion-focus .wheel-label.active-label {
+                    fill:var(--accent) !important; font-size:20px !important;
+                    filter:drop-shadow(0 0 12px rgba(212,168,83,0.8));
+                }
+                .emotion-focus .wheel-rotate-bar { opacity:0.5; }
+                .emotion-focus .emotion-detail {
+                    z-index:70; position:relative;
+                    box-shadow:0 0 40px rgba(212,168,83,0.3), 0 4px 20px rgba(0,0,0,0.5);
+                    border:1px solid rgba(212,168,83,0.2);
+                }
+                .emotion-focus .wheel-legend,
+                .emotion-focus #focusBtn { position:relative; z-index:60; }
+                .emotion-focus #focusBtn { color:var(--accent) !important; border-color:var(--accent) !important; }
                 #wheelGroup {
                     transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
                 }
@@ -1242,32 +1274,38 @@ const STAIR_STEPS = [
 // ═══════════════════════════════════════════════════════════════════════
 const EMOTIONS = [
     {
-        name:'ANGER', color:'#4A78B8',
+        name:'ANGER', simple:'😤 Frustrated, mad, annoyed',
+        color:'#4A78B8',
         secondary: ['Hurt','Threatened','Hateful','Mad'],
         tertiary: { 'Hurt':['Devastated','Embarrassed'], 'Threatened':['Hurt','Insecure','Jealous','Resentful','Violated'], 'Hateful':['Mad','Aggressive','Frustrated','Distant','Critical'], 'Mad':['Enraged','Furious'] },
     },
     {
-        name:'DISGUST', color:'#6DBB75',
+        name:'DISGUST', simple:'🤢 Grossed out, disapproving, sickened',
+        color:'#6DBB75',
         secondary: ['Disapproving','Disappointed','Awful','Avoidance','Guilty'],
         tertiary: { 'Disapproving':['Judgmental','Loathing','Revolted'], 'Disappointed':['Repugnant','Awful'], 'Awful':['Detestable'], 'Avoidance':['Aversion','Hesitant'], 'Guilty':['Remorseful','Ashamed'] },
     },
     {
-        name:'SAD', color:'#5DA9D6',
+        name:'SAD', simple:'😢 Lonely, hurt, depressed, empty',
+        color:'#5DA9D6',
         secondary: ['Abandoned','Despair','Depressed','Lonely','Bored'],
         tertiary: { 'Abandoned':['Ignored','Victimized'], 'Despair':['Powerless','Vulnerable'], 'Depressed':['Inferior','Empty'], 'Lonely':['Abandoned','Isolated'], 'Bored':['Apathetic','Indifferent'] },
     },
     {
-        name:'HAPPY', color:'#3FB8E5',
+        name:'HAPPY', simple:'😊 Joyful, excited, peaceful, loved',
+        color:'#3FB8E5',
         secondary: ['Optimistic','Intimate','Peaceful','Powerful','Accepted','Proud','Interested','Joyful'],
         tertiary: { 'Optimistic':['Inspired','Open'], 'Intimate':['Playful','Sensitive'], 'Peaceful':['Hopeful','Loving'], 'Powerful':['Provocative','Courageous'], 'Accepted':['Fulfilled','Respected'], 'Proud':['Confident','Important'], 'Interested':['Inquisitive','Curious'], 'Joyful':['Amazed','Excited'] },
     },
     {
-        name:'SURPRISE', color:'#F4D03F',
+        name:'SURPRISE', simple:'😲 Shocked, amazed, confused',
+        color:'#F4D03F',
         secondary: ['Startled','Confused','Amazed','Excited'],
         tertiary: { 'Startled':['Shocked','Dismayed'], 'Confused':['Disillusioned','Perplexed'], 'Amazed':['Astonished'], 'Excited':['Eager','Energetic'] },
     },
     {
-        name:'FEAR', color:'#F39C34',
+        name:'FEAR', simple:'😨 Scared, anxious, worried, unsafe',
+        color:'#F39C34',
         secondary: ['Humiliated','Rejected','Submissive','Insecure','Anxious','Scared'],
         tertiary: { 'Humiliated':['Ridiculed','Disrespected'], 'Rejected':['Alienated','Inadequate'], 'Submissive':['Insignificant','Worthless'], 'Insecure':['Inferior','Incompetent'], 'Anxious':['Worried','Overwhelmed'], 'Scared':['Frightened','Terrified'] },
     },
@@ -2141,6 +2179,7 @@ function selectEmotion(idx){
     const d=document.getElementById('emotionDetail');
     d.innerHTML=`
         <div class="ed-name" style="color:${em.color};">${em.name}</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:8px;color:#555;">${em.simple}</div>
         <div class="ed-intensities">${em.secondary.map(s=>`<span class="ed-int" style="background:${em.color};">${s}</span>`).join('')}</div>
         <div class="ed-combos"><h4>Feelings</h4>${secHtml}</div>
         <button class="ed-close" onclick="closeEmotion()">Close</button>
@@ -2160,13 +2199,60 @@ function toggleFocus(){
     const wg=document.querySelector('#wheelGroup');
     if(!wg) return;
     const btn=document.getElementById('focusBtn');
-    if(wg.classList.contains('focus-mode')){
+    const body=document.body;
+    if(body.classList.contains('emotion-focus')){
+        body.classList.remove('emotion-focus');
         wg.classList.remove('focus-mode');
-        if(btn) btn.textContent='\u{1F441} Focus';
+        if(btn){btn.textContent='\u{1F441} Focus';btn.style.color='';}
+        // Restore emotion detail
+        if(state.lastUsedEmotion){
+            const idx=EMOTIONS.findIndex(e=>e.name===state.lastUsedEmotion);
+            if(idx>=0)selectEmotion(idx);
+        }
     } else {
+        // Require an emotion to be selected first
+        if(!state.lastUsedEmotion){
+            document.getElementById('emotionDetail').innerHTML='<div style="padding:12px;text-align:center;color:#999;">Tap an emotion sector first, then Focus.</div>';
+            document.getElementById('emotionDetail').classList.add('open');
+            return;
+        }
+        body.classList.add('emotion-focus');
         wg.classList.add('focus-mode');
-        if(btn) btn.textContent='\u{1F441} Focus ON';
+        if(btn){btn.textContent='\u{1F441} Focus ON';btn.style.color='var(--accent)';}
+        // Re-render emotion detail with expanded focus view
+        const idx=EMOTIONS.findIndex(e=>e.name===state.lastUsedEmotion);
+        if(idx>=0)renderFocusDetail(idx);
     }
+}
+function renderFocusDetail(idx){
+    const em=EMOTIONS[idx];
+    const d=document.getElementById('emotionDetail');
+    d.classList.add('open');
+    let secHtml='';
+    Object.entries(em.tertiary).forEach(([sec,ters])=>{
+        secHtml+=`<div class="ed-sec"><strong>${sec}</strong>: ${ters.join(', ')}</div>`;
+    });
+    d.innerHTML=`
+        <div class="ed-name" style="color:${em.color};font-size:28px;">${em.name}</div>
+        <div style="font-size:18px;font-weight:600;margin-bottom:6px;color:#555;">${em.simple}</div>
+        <div style="font-size:13px;margin-bottom:10px;color:#888;border-top:1px solid #eee;padding-top:8px;">
+            <strong>What does this feel like?</strong><br>
+            ${em.secondary.map(s=>`<span style="display:inline-block;padding:3px 10px;margin:2px;border-radius:6px;background:${em.color};color:#fff;font-size:12px;">${s}</span>`).join('')}
+        </div>
+        <div style="font-size:13px;color:#888;">
+            <strong>Deeper feelings</strong><br>
+            ${secHtml}
+        </div>
+        <button class="ed-close" onclick="exitFocus()" style="margin-top:12px;padding:10px 24px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;">Exit Focus</button>
+    `;
+}
+function exitFocus(){
+    document.body.classList.remove('emotion-focus');
+    const wg=document.querySelector('#wheelGroup');
+    if(wg)wg.classList.remove('focus-mode');
+    const btn=document.getElementById('focusBtn');
+    if(btn){btn.textContent='\u{1F441} Focus';btn.style.color='';}
+    closeEmotion();
 }
 
 // ═══════════════════════════════════════════════════════════════════════

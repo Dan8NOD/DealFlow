@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Find Your Dream Home — $400K+ Properties{% endblock %}
+{% block extra_css %}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(135deg,#1a365d,#2b6cb0);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.card{background:#fff;border-radius:16px;padding:32px 24px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center}
+.card h1{font-size:22px;font-weight:800;color:#1a365d;margin-bottom:4px}
+.card h1 span{color:#b7791f}
+.card p.sub{font-size:14px;color:#718096;margin-bottom:16px}
+.benefits{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;text-align:left}
+.benefit{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;font-size:13px;color:#78350f}
+.benefit .check{color:#b7791f;font-weight:700;font-size:16px}
+.card form{display:flex;flex-direction:column;gap:10px}
+.card input,.card textarea{padding:12px 16px;border:2px solid #e2e8f0;border-radius:10px;font-size:15px;font-family:inherit}
+.card input:focus,.card textarea:focus{border-color:#b7791f;outline:none}
+.card button{background:linear-gradient(135deg,#b7791f,#92400e);color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
+.card button:active{transform:scale(0.97)}
+.card .trust{font-size:11px;color:#a0aec0;margin-top:12px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;background:#e2e8f0;border-radius:3px;outline:none;margin:4px 0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#b7791f;cursor:pointer;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+{% endblock %}
+
+{% block body %}
+<div class="card" id="formCard">
+    <h1>Find Your <span>Dream Home</span></h1>
+    <p class="sub">Premium properties $400K and above. We'll match you with homes that fit your vision.</p>
+    <div class="benefits">
+        <div class="benefit"><span class="check">✓</span> Exclusive access to off-market listings</div>
+        <div class="benefit"><span class="check">✓</span> Dedicated agent works for you — not the seller</div>
+        <div class="benefit"><span class="check">✓</span> Renovation financing available — pay later, move in sooner</div>
+        <div class="benefit"><span class="check">✓</span> Estate sale and probate properties — hidden gems</div>
+    </div>
+    <form onsubmit="submitLead(event)">
+        <input type="text" name="first_name" placeholder="First name" required>
+        <input type="text" name="last_name" placeholder="Last name">
+        <input type="tel" name="phone" placeholder="Phone number" required>
+        <input type="email" name="email" placeholder="Email address" required>
+        <div style="text-align:left;margin:4px 0;">
+            <div style="font-size:12px;color:#718096;margin-bottom:2px;">Budget: <strong style="color:#b7791f;" id="budgetLabel">$400K+</strong></div>
+            <input type="range" name="budget" min="400000" max="2000000" step="50000" value="400000" oninput="document.getElementById('budgetLabel').textContent='$'+(this.value/1000).toFixed(0)+'K+'">
+        </div>
+        <input type="text" name="desired_area" placeholder="Preferred area (e.g. Lincoln Park, Oak Park)">
+        <textarea name="details" placeholder="What are you looking for? (bedrooms, style, must-haves)" rows="2" style="resize:none;"></textarea>
+        <button type="submit">🔑 Show Me Listings</button>
+    </form>
+    <div class="trust">🔒 No obligation · Free service · We work for you</div>
+</div>
+
+<div class="card" id="successCard" style="display:none;">
+    <h1>You're In!</h1>
+    <p class="sub">An agent will reach out within 24 hours with curated listings matching your criteria. We'll also send you off-market opportunities before they hit Zillow.</p>
+    <p style="color:#718096;font-size:14px;margin-top:12px;">Questions? Call <strong>312-555-0100</strong></p>
+</div>
+
+<script>
+async function submitLead(e){
+    e.preventDefault();
+    const btn=e.target.querySelector('button');btn.textContent='Submitting…';btn.disabled=true;
+    const f=e.target;
+    const name=(f.first_name.value+' '+f.last_name.value).trim();
+    const budget=parseInt(f.budget.value);
+    try{
+        const r=await fetch('/api/leads-from-landing',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({name,phone:f.phone.value.trim(),email:f.email.value.trim(),
+                property_address:f.desired_area.value.trim()||'Chicago area',
+                source:'Facebook Ad - Buyer $400K+',
+                monthly_income:Math.round(budget/36),
+                notes:`🏠 BUYER · Budget: $${budget.toLocaleString()} · Area: ${f.desired_area.value.trim()||'Chicago'} · ${f.details.value.trim()||'No details'}`,
+                status:'NEW'})});
+        if(r.ok){document.getElementById('formCard').style.display='none';document.getElementById('successCard').style.display='block';}
+    }catch(err){document.getElementById('formCard').style.display='none';document.getElementById('successCard').style.display='block';}
+    btn.textContent='Show Me Listings';btn.disabled=false;
+}
+</script>
+{% endblock %}

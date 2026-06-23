@@ -1239,6 +1239,18 @@ async def ad_landing(request: Request):
     return templates.TemplateResponse("ad-landing.html", {"request": request})
 
 
+@router.get("/sell", response_class=HTMLResponse)
+async def seller_landing(request: Request):
+    """Home seller landing page — renovate now, pay at closing."""
+    return templates.TemplateResponse("seller-landing.html", {"request": request})
+
+
+@router.get("/buy", response_class=HTMLResponse)
+async def buyer_landing(request: Request):
+    """Buyer landing page — $400K+ properties."""
+    return templates.TemplateResponse("buyer-landing.html", {"request": request})
+
+
 @router.post("/api/leads-from-landing")
 async def create_lead_from_landing(data: dict = Body(...), db: Session = Depends(get_db)):
     """Unauthenticated lead capture from Facebook ad landing page."""

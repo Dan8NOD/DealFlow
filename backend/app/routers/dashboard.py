@@ -359,6 +359,9 @@ async def api_leads(
     q = db.query(Lead).filter(Lead.org_id == user.org_id)
     if status:
         q = q.filter(Lead.status == status)
+    else:
+        # ponytail: exclude LOST/COLD by default — dead leads clutter the funnel
+        q = q.filter(Lead.status.notin_(["LOST", "COLD"]))
     if property_id:
         q = q.filter(Lead.property_id == property_id)
     leads = q.order_by(desc(Lead.received_at)).limit(limit).all()
@@ -960,28 +963,28 @@ async def cleanup_leads(
 ):
     org_id = user.org_id
     now = datetime.now(timezone.utc)
-    cutoff_45 = now - timedelta(days=45)
+    cutoff_60 = now - timedelta(days=60)
     cutoff_10 = now - timedelta(days=10)
-    results = {"cold": 0, "lost_clyde": 0, "enriched": 0, "deduped": 0, "no_property": 0}
+    results = {"purged": 0, "lost_clyde": 0, "enriched": 0, "deduped": 0, "no_property": 0}
 
-    # 1. Mark leads > 45 days old as COLD (skip if they have an application)
-    app_lead_names = set(
-        row[0] for row in db.query(Lead.name)
+    # 1. DELETE leads > 60 days old with no application (cold/dead at 60d for rentals)
+    # ponytail: hard delete — Dan explicitly wants these gone, not archived
+    app_lead_ids = set(
+        row[0] for row in db.query(Lead.id)
         .join(Application, Application.applicant_name == Lead.name, isouter=True)
-        .filter(Lead.org_id == org_id, Lead.status == "NEW", Application.id != None)
+        .filter(Lead.org_id == org_id, Application.id != None)
         .all()
     )
-    old_leads = db.query(Lead).filter(
+    stale = db.query(Lead).filter(
         Lead.org_id == org_id,
-        Lead.status == "NEW",
-        Lead.received_at < cutoff_45,
+        Lead.status.in_(["NEW", "COLD", "CONTACTED"]),
+        Lead.received_at < cutoff_60,
     ).all()
-    for lead in old_leads:
-        if lead.name in app_lead_names:
-            continue  # has an application, keep visible
-        lead.status = "COLD"
-        lead.notes = (lead.notes or "") + f" | Auto-cold {now.strftime('%Y-%m-%d')} (45d+ stale)"
-        results["cold"] += 1
+    for lead in stale:
+        if lead.id in app_lead_ids:
+            continue  # has an application, keep it
+        db.delete(lead)
+        results["purged"] += 1
 
     # 2. Mark 660 Clyde leads as LOST (building rented, no bounce options)
     clyde_leads = db.query(Lead).filter(

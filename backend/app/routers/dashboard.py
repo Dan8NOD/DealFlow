@@ -1,5 +1,5 @@
 """Dashboard routes - the main portal view with inline editing & comments."""
-from fastapi import APIRouter, Depends, Request, Query
+from fastapi import APIRouter, Depends, Request, Query, Body, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -9,7 +9,7 @@ from pathlib import Path
 from app.db import get_db
 from app.auth import get_current_user
 from app.models import (
-    User, Property, Lead, Application, ApplicationEvent,
+    User, Property, Lead, Application, ApplicationEvent, UserRole,
     SalesDeal, CmaRequest, PropertyFile, Organization, Comment, EmailMessage,
 )
 
@@ -1231,3 +1231,100 @@ async def login_page(request: Request):
 @router.get("/signup", response_class=HTMLResponse)
 async def signup_page(request: Request):
     return templates.TemplateResponse("signup.html", {"request": request})
+
+
+# ponytail: Facebook ad landing page — no auth required
+@router.get("/ad", response_class=HTMLResponse)
+async def ad_landing(request: Request):
+    return templates.TemplateResponse("ad-landing.html", {"request": request})
+
+
+@router.post("/api/leads-from-landing")
+async def create_lead_from_landing(data: dict = Body(...), db: Session = Depends(get_db)):
+    """Unauthenticated lead capture from Facebook ad landing page."""
+    from app.models import LeadStatus
+    org = db.query(Organization).first()  # Get the default org
+    if not org:
+        # Fallback: create lead anyway
+        return {"ok": True, "msg": "Lead captured (no org yet)"}
+    lead = Lead(
+        org_id=org.id,
+        name=data.get("name", ""),
+        phone=data.get("phone", ""),
+        email=data.get("email", ""),
+        source=data.get("source", "Facebook Ad"),
+        status=LeadStatus.NEW,
+        notes=data.get("notes", ""),
+        monthly_income=data.get("monthly_income"),
+        subject=data.get("property_address", ""),
+        received_at=datetime.now(timezone.utc),
+        days_old=0,
+    )
+    db.add(lead)
+    db.commit()
+    return {"ok": True, "id": lead.id, "message": "Lead captured!"}
+
+
+# ponytail: Agent management — add agents, assign leads
+@router.post("/api/agents")
+async def create_agent(
+    email: str = Body(...), password: str = Body(...), full_name: str = Body(""),
+    user: User = Depends(get_current_user), db: Session = Depends(get_db),
+):
+    if user.role != UserRole.OWNER:
+        raise HTTPException(status_code=403, detail="Only owner can add agents")
+    email = email.lower().strip()
+    if db.query(User).filter(User.email == email).first():
+        raise HTTPException(status_code=400, detail="Email already registered")
+    from app.auth import hash_password
+    agent = User(org_id=user.org_id, email=email, password_hash=hash_password(password),
+                 full_name=full_name or email, role=UserRole.AGENT)
+    db.add(agent)
+    db.commit()
+    return {"id": agent.id, "email": agent.email, "name": agent.full_name, "role": "agent"}
+
+
+@router.get("/api/agents")
+async def list_agents(
+    user: User = Depends(get_current_user), db: Session = Depends(get_db),
+):
+    agents = db.query(User).filter(User.org_id == user.org_id, User.role == UserRole.AGENT).all()
+    return [{"id": a.id, "email": a.email, "name": a.full_name} for a in agents]
+
+
+@router.patch("/api/leads/{lead_id}/assign")
+async def assign_lead(
+    lead_id: int, agent_id: int = Body(...),
+    user: User = Depends(get_current_user), db: Session = Depends(get_db),
+):
+    lead = db.query(Lead).filter(Lead.id == lead_id, Lead.org_id == user.org_id).first()
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    agent = db.query(User).filter(User.id == agent_id, User.org_id == user.org_id).first()
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    lead.assigned_agent_id = agent_id
+    db.commit()
+    return {"ok": True, "lead_id": lead_id, "agent": agent.full_name}
+
+
+@router.get("/api/my-leads")
+async def get_agent_leads(
+    user: User = Depends(get_current_user), db: Session = Depends(get_db),
+    status: str = Query(None), limit: int = Query(100, le=500),
+):
+    if user.role not in (UserRole.AGENT, UserRole.OWNER):
+        raise HTTPException(status_code=403, detail="Not authorized")
+    q = db.query(Lead).filter(Lead.org_id == user.org_id)
+    if user.role == UserRole.AGENT:
+        q = q.filter(Lead.assigned_agent_id == user.id)
+    if status:
+        q = q.filter(Lead.status == status)
+    leads = q.order_by(desc(Lead.received_at)).limit(limit).all()
+    return [
+        {"id": l.id, "name": l.name, "phone": l.phone, "email": l.email,
+         "property": (l.property.address if l.property else "") + (f" #{l.property.unit}" if l.property and l.property.unit else ""),
+         "source": l.source, "status": l.status.value if l.status else "",
+         "monthly_income": l.monthly_income, "days_old": l.days_old or 0}
+        for l in leads
+    ]

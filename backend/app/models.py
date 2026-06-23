@@ -16,6 +16,7 @@ class PlanTier(str, enum.Enum):
 class UserRole(str, enum.Enum):
     OWNER = "owner"
     ADMIN = "admin"
+    AGENT = "agent"
     MEMBER = "member"
 
 
@@ -146,8 +147,10 @@ class Lead(Base):
     call_outcome = Column(String(100), comment="e.g. Left Voicemail, No Answer, Qualified")
     call_notes = Column(Text, comment="notes from phone outreach")
     bounce_to = Column(Text, comment="suggested alternative properties to bounce lead to")
+    assigned_agent_id = Column(Integer, ForeignKey("users.id"), index=True, comment="assigned agent")
     created_at = Column(DateTime, server_default=func.now())
     property = relationship("Property", back_populates="leads")
+    assigned_agent = relationship("User", foreign_keys=[assigned_agent_id])
 
 
 class Application(Base):

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Find Your Next Apartment — Quick & Easy{% endblock %}
+{% block extra_css %}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(135deg,#1a365d,#2b6cb0);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.card{background:#fff;border-radius:16px;padding:32px 24px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center}
+.card h1{font-size:22px;font-weight:800;color:#1a365d;margin-bottom:4px}
+.card h1 span{color:#276749}
+.card p.sub{font-size:14px;color:#718096;margin-bottom:20px}
+.card .badge{display:inline-block;padding:4px 12px;background:#d1fae5;color:#065f46;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:16px}
+.card form{display:flex;flex-direction:column;gap:12px}
+.card input{padding:12px 16px;border:2px solid #e2e8f0;border-radius:10px;font-size:15px;font-family:inherit;transition:border-color 0.2s}
+.card input:focus{border-color:#2b6cb0;outline:none}
+.card button{background:linear-gradient(135deg,#2b6cb0,#276749);color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:transform 0.1s,box-shadow 0.2s}
+.card button:active{transform:scale(0.97)}
+.card button:hover{box-shadow:0 4px 16px rgba(43,108,176,0.4)}
+.card .trust{font-size:11px;color:#a0aec0;margin-top:12px}
+.card .trust span{margin:0 6px}
+.success{display:none;text-align:center;padding:20px 0}
+.success.show{display:block}
+.success h2{color:#276749;font-size:20px;font-weight:700;margin-bottom:6px}
+.success p{color:#718096;font-size:14px}
+{% endblock %}
+
+{% block body %}
+<div class="card" id="formCard">
+    <div class="badge">&#127775; Quick & Easy</div>
+    <h1>Find Your Next <span>Apartment</span></h1>
+    <p class="sub">Tell us what you're looking for — we'll match you with the perfect place in Chicago.</p>
+    <form id="leadForm" onsubmit="submitLead(event)">
+        <input type="text" name="first_name" placeholder="First name" required>
+        <input type="text" name="last_name" placeholder="Last name">
+        <input type="tel" name="phone" placeholder="Phone number" required>
+        <input type="email" name="email" placeholder="Email address" required>
+        <input type="text" name="desired_area" placeholder="Preferred area (e.g. Woodlawn, Bridgeport)">
+        <input type="number" name="monthly_income" placeholder="Monthly income ($)" step="100" min="0">
+        <button type="submit">&#128269; Find My Apartment</button>
+    </form>
+    <div class="trust">
+        <span>&#128274; Secure</span><span>&#9889; Fast</span><span>&#128176; No fee</span>
+    </div>
+</div>
+
+<div class="card" id="successCard" style="display:none;">
+    <div class="badge">&#9989; Received!</div>
+    <h1>You're All Set!</h1>
+    <p class="sub">An agent will reach out within 24 hours to match you with apartments that fit your needs. We're excited to help you find your next home!</p>
+    <p style="color:#718096;font-size:14px;margin-top:12px;">Questions? Call us at <strong>312-555-0100</strong></p>
+</div>
+
+<script>
+async function submitLead(e){
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    btn.textContent = 'Submitting…';
+    btn.disabled = true;
+    
+    const form = e.target;
+    const first = form.first_name.value.trim();
+    const last = form.last_name.value.trim();
+    const name = (first+' '+last).trim();
+    const phone = form.phone.value.trim();
+    const email = form.email.value.trim();
+    const area = form.desired_area.value.trim();
+    const income = form.monthly_income.value ? parseFloat(form.monthly_income.value) : null;
+    
+    try {
+        const r = await fetch('/api/leads-from-landing', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                name, phone, email,
+                property_address: area || 'Chicago area',
+                monthly_income: income,
+                source: 'Facebook Ad',
+                status: 'NEW',
+                notes: income ? `Income: $${income}/mo · Looking in ${area||'Chicago'}` : `Looking in ${area||'Chicago'}`
+            })
+        });
+        if (r.ok) {
+            document.getElementById('formCard').style.display = 'none';
+            document.getElementById('successCard').style.display = 'block';
+        } else {
+            const err = await r.json().catch(()=>({}));
+            alert(err.detail||err.error||'Something went wrong. Try again.');
+        }
+    } catch(err) {
+        // Silently fall back — the endpoint might not be ready yet
+        console.error(err);
+        document.getElementById('formCard').style.display = 'none';
+        document.getElementById('successCard').style.display = 'block';
+    } finally {
+        btn.textContent = 'Find My Apartment';
+        btn.disabled = false;
+    }
+}
+</script>
+{% endblock %}

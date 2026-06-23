@@ -151,7 +151,6 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
   <select id="statusFilter" onchange="renderView()"><option value="">All</option></select>
   <span id="rowCount" style="font-size:11px;color:var(--gray)"></span>
   <button class="btn-sm green" onclick="refreshAll()">↻ Refresh</button>
-  <button class="btn-sm" style="background:#fed7d7;color:#c53030" onclick="purgeLeads()">🧹 Purge</button>
 </div>
 
 <!-- KANBAN -->
@@ -561,9 +560,10 @@ document.getElementById('kanbanView').style.display='none';
 
     let h='<thead><tr>';
     cols.forEach(c=>h+=`<th style="width:${c.w||100}px" onclick="sortBy('${c.k}')">${c.l}${sortCol===c.k?(sortDir===1?' ▴':' ▾'):''}</th>`);
+    if(tab==='leads')h+='<th style="width:36px"></th>';
     h+='</tr></thead><tbody>';
     f.forEach(r=>{
-      h+='<tr onclick="openPanel(\''+tab+'\','+r.id+')">';
+      h+='<tr onclick="openPanel(\''+tab+'\','+r.id+'">';
       cols.forEach(c=>{
         let v=r[c.k],d=v!=null?String(v):'';
         if(['last_update','received_at'].includes(c.k))d=d?d.slice(0,10):'';
@@ -571,6 +571,8 @@ document.getElementById('kanbanView').style.display='none';
         if(c.t==='status')d=`<span class="badge ${STATUS_C[v]||'gray'}">${(d||'').replace(/_/g,' ')}</span>`;
         h+=`<td>${d||''}</td>`;
       });
+      // ponytail: inline delete — no panel needed, stopPropagation keeps row click intact
+      if(tab==='leads')h+=`<td onclick="event.stopPropagation();deleteLead(${r.id})" style="cursor:pointer;text-align:center;color:#e53e3e;font-size:15px" title="Delete">🗑</td>`;
       h+='</tr>';
     });
     h+='</tbody>';
@@ -709,15 +711,6 @@ async function deleteLead(id){
   if(!confirm('Delete this lead? This cannot be undone.'))return;
   const r=await fetch('/api/leads/'+id,{method:'DELETE'});
   if(r.ok){toast('🗑 Deleted');closePanel();loadAll();}else toast('✗ Delete failed');
-}
-
-async function purgeLeads(){
-  if(!confirm('Purge 660 Clyde leads + all leads older than 45 days (no applications)?\nThis cannot be undone.'))return;
-  toast('Purging...');
-  const r=await fetch('/api/leads/purge',{method:'POST'});
-  const j=await r.json();
-  toast(`🧹 Purged ${j.deleted}, ${j.remaining} remain`);
-  loadAll();
 }
 
 function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2000)}

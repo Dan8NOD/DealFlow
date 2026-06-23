@@ -88,7 +88,9 @@ def _ensure_columns(engine):
                       ('upsell_eligible','BOOLEAN DEFAULT FALSE'),('notes','TEXT'),
                       # New call-tracking fields
                       ('move_in_date','VARCHAR(30)'),('last_called','TIMESTAMP'),
-                      ('call_outcome','VARCHAR(100)'),('call_notes','TEXT'),('bounce_to','TEXT')]:
+                      ('call_outcome','VARCHAR(100)'),('call_notes','TEXT'),('bounce_to','TEXT'),
+                      # ponytail: assigned_agent_id — added to model but missing from initial migration
+                      ('assigned_agent_id','INTEGER')]:
         if col not in lead_cols:
             with engine.connect() as conn:
                 conn.execute(text(f"ALTER TABLE leads ADD COLUMN {col} {typ}"))

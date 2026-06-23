@@ -911,6 +911,21 @@
             50% { transform: rotate(5deg) scale(1.1); }
             75% { transform: rotate(-3deg); }
         }
+        /* BK start flash — brief overlay signaling 11-tool mode */
+        .bk-start::after {
+            content:'11 TOOLS'; position:fixed; inset:0; z-index:999;
+            display:flex; align-items:center; justify-content:center;
+            background:radial-gradient(ellipse at center, rgba(20,69,44,0.95) 0%, rgba(10,30,20,0.98) 100%);
+            font-size:48px; font-weight:900; color:var(--accent);
+            letter-spacing:4px; text-shadow:0 0 40px rgba(212,168,83,0.5);
+            animation: bk-flash 1.4s ease-out forwards;
+            pointer-events:none;
+        }
+        @keyframes bk-flash {
+            0% { opacity:1; transform:scale(1.1); }
+            30% { opacity:1; transform:scale(1); }
+            100% { opacity:0; transform:scale(0.95); }
+        }
         @keyframes expand-pulse {
             0%,100% { box-shadow: 0 0 4px rgba(212,168,83,0.2); transform: scale(1); }
             50% { box-shadow: 0 0 14px rgba(212,168,83,0.5); transform: scale(1.04); }
@@ -1822,6 +1837,11 @@ function startSession(){
     document.getElementById('pauseBtn').style.display='';
     renderSessionWheel();
     document.getElementById('sessionWheel').style.display='block';
+    // ponytail: BK start flash — brief overlay to signal 11-tool mode
+    if(state.bareKnuckles){
+        document.body.classList.add('bk-start');
+        setTimeout(()=>document.body.classList.remove('bk-start'), 1400);
+    }
     document.getElementById('currentBanner').classList.add('show');
     document.getElementById('ctName').textContent='Session Started!';
     document.getElementById('ctDesc').textContent=`${dur} min · ${state.currentDeck.length} tools loaded. Press Next to draw.`;

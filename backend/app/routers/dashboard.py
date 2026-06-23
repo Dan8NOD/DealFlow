@@ -655,37 +655,27 @@ async def dedup_leads(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Keep only the newest lead per email. Hard-delete older dupes."""
+    """Keep only the newest lead per email. Hard-delete older dupes via raw SQL."""
     org_id = user.org_id
-    removed = 0
     from sqlalchemy import text
 
-    # ponytail: fetch all leads, group in Python — avoids complex SQL subqueries
-    all_leads = db.query(Lead).filter(
-        Lead.org_id == org_id,
-        Lead.email != None,
-        Lead.email != "",
-    ).order_by(Lead.id.desc()).all()
-
-    # Protected: any lead whose name matches an application
-    app_names = {a.applicant_name for a in db.query(Application.applicant_name)
-                 .filter(Application.org_id == org_id).all() if a.applicant_name}
-
-    seen_emails = {}
-    to_delete = []
-    for l in all_leads:  # already sorted newest first
-        key = l.email.lower().strip()
-        if key not in seen_emails:
-            seen_emails[key] = l.id
-        else:
-            if (l.name or "") not in app_names:
-                to_delete.append(l)
-
-    for l in to_delete:
-        db.delete(l)
-        removed += 1
-
+    # ponytail: raw SQL — single pass, no ORM overhead, safe for 1k+ rows
+    # Delete all but the MAX(id) per email for this org
+    result = db.execute(text("""
+        DELETE FROM leads
+        WHERE org_id = :org
+          AND email IS NOT NULL AND email != ''
+          AND id NOT IN (
+              SELECT MAX(id) FROM leads
+              WHERE org_id = :org AND email IS NOT NULL AND email != ''
+              GROUP BY LOWER(email)
+          )
+          AND name NOT IN (
+              SELECT COALESCE(applicant_name,'') FROM applications WHERE org_id = :org
+          )
+    """), {"org": org_id})
     db.commit()
+    removed = getattr(result, 'rowcount', -1)
     remaining = db.query(func.count(Lead.id)).filter(Lead.org_id == org_id).scalar()
     return {"deduped": removed, "remaining": remaining}
 

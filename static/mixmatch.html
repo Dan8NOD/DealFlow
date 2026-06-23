@@ -1105,8 +1105,11 @@
             <button class="btn btn-ghost btn-sm" onclick="toggleAutoRotate()" id="autoRotateBtn" style="margin-top: 4px;">🔄 Spin</button>
             <button class="btn btn-ghost btn-sm" onclick="toggleLegend()" style="margin-top: 4px;">&#128196; Show all words</button>
             <button class="btn btn-ghost btn-sm" onclick="toggleFocus()" id="focusBtn" style="margin-top: 4px;">&#128065; Focus</button>
+            <button class="btn btn-ghost btn-sm" onclick="buildMyLabel()" id="labelBtn" style="margin-top: 4px;border-color:var(--accent);color:var(--accent);">🏷️ Build My Label</button>
             <div class="wheel-legend" id="wheelLegend"></div>
             <div class="emotion-detail" id="emotionDetail"></div>
+            <!-- ponytail: Label builder output -->
+            <div class="label-output" id="labelOutput" style="display:none;width:100%;max-width:500px;margin:8px auto 0;padding:12px 16px;background:var(--card-bg);border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);"></div>
 
             <!-- Emotion Accordion with depth dial -->
             <div class="emo-accordion" id="emoAccordion">
@@ -1379,6 +1382,12 @@ const BK_TOOLS = [
      mistakes:['Don\'t rush to fill the silence','Don\'t fidget or look away — maintain eye contact','Don\'t cave — 3+ seconds feels long but works'],
      reminder:'Speak last. The one who talks least wins.',
      cat:'Rapport',count:2},
+    {name:'Three Ways of Saying No',desc:'Three powerful ways to say no — from soft to hard. Start with grace, escalate only if needed.',expand:false,
+     why:'Great negotiators rarely start with a hard no. They guide the conversation toward a no before saying it directly. This gives you three levels of refusal.',
+     examples:['"I\'M AFRAID WE CAN\'T DO THAT"  —  "Your offer is generous, but I\'m afraid we can\'t do that."  (Firm boundary, maintains rapport)','"THAT DOESN\'T WORK FOR US"  —  "I appreciate the effort, but that doesn\'t work for us."  (Rejects proposal without conflict)','"NO"  —  "No."  (Final boundary when necessary)'],
+     mistakes:['Don\'t jump straight to "No" — start with the softer options','Don\'t apologize — these are statements, not apologies','Don\'t over-explain — a clear no is better than a confused maybe'],
+     reminder:'Start with "I\'m afraid…" → "That doesn\'t work…" → "No." Only escalate when needed.',
+     cat:'Closure',count:2},
 ];
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -2253,6 +2262,35 @@ function exitFocus(){
     const btn=document.getElementById('focusBtn');
     if(btn){btn.textContent='\u{1F441} Focus';btn.style.color='';}
     closeEmotion();
+}
+
+// ponytail: Build My Label — generates 3 example labels from last selected emotion
+function buildMyLabel(){
+    const em=EMOTIONS.find(e=>e.name===state.lastUsedEmotion);
+    const out=document.getElementById('labelOutput');
+    if(!em){
+        out.style.display='block';
+        out.innerHTML='<div style="padding:8px;text-align:center;color:#999;">👆 Tap an emotion sector first</div>';
+        return;
+    }
+    // Grab some tertiary words for variety
+    const allWords=[];
+    Object.values(em.tertiary).forEach(arr=>arr.forEach(w=>allWords.push(w)));
+    const pick=(arr)=>arr[Math.floor(Math.random()*arr.length)];
+    const pick2=()=>allWords[Math.floor(Math.random()*allWords.length)];
+    const w1=pick(em.secondary), w2=pick2(), w3=pick(allWords.filter(w=>w!==w2));
+    const intros=['It sounds like','It seems like','It feels like','It looks like'];
+    const i1=intros[Math.floor(Math.random()*intros.length)];
+    const i2=intros[Math.floor(Math.random()*intros.length)];
+    const i3=intros[Math.floor(Math.random()*intros.length)];
+    out.style.display='block';
+    out.innerHTML=`
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);margin-bottom:6px;">🏷️ Based on <strong style="color:${em.color};">${em.name}</strong></div>
+        <div class="bk-example">${i1} you\'re feeling <strong>${w1.toLowerCase()}</strong>.</div>
+        <div class="bk-example">${i2} there\'s some <strong>${w2.toLowerCase()}</strong> here.</div>
+        <div class="bk-example">${i3} this is bringing up feelings of <strong>${w3.toLowerCase()}</strong>.</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:4px;">💡 Say one of these, then stay silent.</div>
+    `;
 }
 
 // ═══════════════════════════════════════════════════════════════════════

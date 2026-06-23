@@ -879,6 +879,10 @@
             50% { transform: rotate(5deg) scale(1.1); }
             75% { transform: rotate(-3deg); }
         }
+        @keyframes expand-pulse {
+            0%,100% { box-shadow: 0 0 4px rgba(212,168,83,0.2); transform: scale(1); }
+            50% { box-shadow: 0 0 14px rgba(212,168,83,0.5); transform: scale(1.04); }
+        }
 
         @keyframes pulse-danger { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
@@ -1630,12 +1634,26 @@ function getNextTool(){
         state.usedNames.push(tool.name);
     }
     document.getElementById('currentBanner').classList.add('show');
-    document.getElementById('ctName').textContent=tool.name;
+    document.getElementById('ctName').textContent=tool.name+' ';
     document.getElementById('ctName').style.cursor=tool.isBk?'pointer':'';
+    // ponytail: add visible "tap to expand" badge next to BK tool name
     document.getElementById('ctName').onclick=tool.isBk?()=>{
         const bk=BK_TOOLS.find(t=>t.name===tool.name);
         if(bk)showBkToolModal(bk);
     }:null;
+    // Expand hint badge
+    const expandHint=document.getElementById('expandHint')||(()=>{
+        const e=document.createElement('span');e.id='expandHint';
+        e.style.cssText='display:inline-block;font-size:11px;font-weight:600;color:var(--accent);background:rgba(212,168,83,0.15);padding:2px 10px;border-radius:6px;margin-left:6px;border:1px solid rgba(212,168,83,0.3);animation:expand-pulse 1.5s ease-in-out infinite;vertical-align:middle;';
+        document.getElementById('ctName').after(e);
+        return e;
+    })();
+    if(tool.isBk){
+        expandHint.textContent='👆 Tap to learn';
+        expandHint.style.display='inline-block';
+    }else{
+        expandHint.style.display='none';
+    }
     document.getElementById('ctDesc').textContent=tool.desc;
     document.getElementById('skipBtn').style.display='';
     animateCard(tool.name);

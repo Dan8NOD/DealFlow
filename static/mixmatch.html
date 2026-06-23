@@ -1557,6 +1557,7 @@ function renderWheel(){
     const cx=250, cy=250, sectors=6, sectorAngle=360/sectors;
     // ponytail: enlarged radii ~25% from R=210,rMid=145,rInner=108,rCenter=55
     const R=232, rMid=162, rInner=120, rCenter=62;
+    // ponytail: tiny center hub (25px) so labels at 56px sit in the colored ring, not under the black dot
 
     let svg = `<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" style="cursor:grab;touch-action:none;">
         <style>
@@ -1598,7 +1599,7 @@ function renderWheel(){
         // ponytail: Only primary labels on the wheel — secondary + tertiary
         // caused text overlap in narrow sectors. Tap for detail panel or
         // "Show all words" for the full legend.
-        const lr=rCenter*0.7;
+        const lr=(rCenter+rInner)/2;
         const[lx,ly]=pt(lr,midA);
         const r1=midA>90&&midA<270?midA+180:midA;
         svg+=`<text x="${lx}" y="${ly}" transform="rotate(${r1},${lx},${ly})" class="wheel-label wheel-label-primary">${em.name}</text>`;
@@ -1610,8 +1611,8 @@ function renderWheel(){
         svg+=`<circle cx="${dx2}" cy="${dy2}" r="1.5" fill="#fff" opacity="0.12" class="wheel-rim-dot"/>`;
     });
 
-    // Center hub
-    svg+=`<circle cx="${cx}" cy="${cy}" r="${rCenter-2}" fill="#1a1a2e" stroke="rgba(212,168,83,0.25)" stroke-width="1.5"/>`;
+    // ponytail: tiny center hub (25px) so labels at ~56px sit in the colored ring
+    svg+=`<circle cx="${cx}" cy="${cy}" r="25" fill="#1a1a2e" stroke="rgba(212,168,83,0.25)" stroke-width="1.5"/>`;
 
     svg+=`</g></svg>`;
     container.innerHTML = svg;

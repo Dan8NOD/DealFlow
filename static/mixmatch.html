@@ -1649,8 +1649,10 @@ function getNextTool(){
         return e;
     })();
     if(tool.isBk){
-        expandHint.textContent='👆 Tap to learn';
-        expandHint.style.display='inline-block';
+        expandHint.innerHTML='🔴<span style="font-size:10px;margin-left:4px;opacity:0.8;">tap</span>';
+        expandHint.style.display='inline-flex';
+        expandHint.style.alignItems='center';
+        expandHint.style.cssText='display:inline-flex;align-items:center;font-size:14px;background:none;border:none;padding:0;margin-left:6px;animation:expand-pulse 1.2s ease-in-out infinite;vertical-align:middle;filter:drop-shadow(0 0 8px rgba(229,57,53,0.7));';
     }else{
         expandHint.style.display='none';
     }

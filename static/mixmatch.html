@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0">
-    <title>NOD-ify — MixMatch FV4</title>
+    <title>NOD-ify — MixMatch FV5</title>
     <!-- ponytail: issue #30 — GA4 placeholder, replace G-XXXXXXXXXX with real ID -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
     <script>
@@ -13,7 +13,7 @@
         gtag('config', 'G-XXXXXXXXXX');
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Press+Start+2P&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --bg: #1a1a2e;
@@ -129,6 +129,96 @@
         }
         .view-container.active { display: block; }
         @keyframes fade-up { 0%{opacity:0;transform:translateY(12px)} 100%{opacity:1;transform:translateY(0)} }
+
+        /* ─── 90's Mode Effects ─── */
+        #modeTransition {
+            position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+            display: none; align-items: center; justify-content: center; background: #000;
+        }
+        #modeTransition.active { display: flex; animation: mtfade 1.2s ease forwards; }
+        @keyframes mtfade { 0%{opacity:1} 80%{opacity:1} 100%{opacity:0} }
+        #modeTransition .mtc {
+            text-align: center; font-family: 'Press Start 2P', monospace;
+            color: var(--accent); text-shadow: 4px 4px 0 #000, 0 0 30px var(--accent-glow);
+            animation: mtzoom 1.2s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        #modeTransition .mtc .mt-title { font-size: 32px; letter-spacing: 2px; margin-bottom: 16px; }
+        #modeTransition .mtc .mt-sub { font-size: 11px; color: #fff; opacity: 0.7; letter-spacing: 4px; }
+        #modeTransition .mtc .mt-player { font-size: 9px; color: var(--green); margin-top: 22px; animation: blink 0.6s infinite; }
+        @keyframes mtzoom { 0%{transform:scale(0.2) rotate(-15deg);opacity:0} 40%{transform:scale(1.15) rotate(2deg);opacity:1} 60%{transform:scale(1) rotate(0)} 100%{transform:scale(1)} }
+        @keyframes blink { 50%{opacity:0} }
+
+        .table-surface[data-feel="arcade"]::after {
+            content:''; position:absolute; inset:0; pointer-events:none;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 3px);
+            mix-blend-mode: multiply; z-index: 2;
+        }
+        .table-surface[data-feel="arcade"] { animation: crtFlicker 0.15s infinite; }
+        @keyframes crtFlicker { 50%{background:radial-gradient(ellipse at center,#1f5f3c 0%,#14452c 100%)} }
+
+        .mode-wrap { width: 100%; max-width: 1100px; padding: 10px 0; }
+        .mode-header { text-align:center; margin-bottom: 22px; }
+        .mode-header h2 {
+            font-family: 'Press Start 2P', monospace; color: #fff;
+            font-size: 22px; letter-spacing: 2px;
+            text-shadow: 3px 3px 0 #000, 0 0 20px currentColor;
+            margin-bottom: 10px;
+        }
+        .mode-header p { color: rgba(255,255,255,0.6); font-size: 13px; max-width: 640px; margin: 0 auto; }
+        .mode-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 14px; perspective: 1200px;
+        }
+        .mode-card {
+            background: var(--card-bg); border-radius: 14px;
+            padding: 18px 16px; position: relative; overflow: hidden;
+            box-shadow: 0 4px 14px var(--card-shadow);
+            cursor: pointer; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s;
+            border-top: 4px solid var(--accent);
+            animation: card-deal 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+        .mode-card:hover {
+            transform: translateY(-6px) scale(1.04);
+            box-shadow: 0 12px 30px var(--card-shadow), 0 0 20px var(--accent-glow);
+        }
+        .mode-card .mc-tag {
+            font-size: 9px; padding: 2px 8px; border-radius: 10px;
+            background: rgba(0,0,0,0.08); font-weight: 700;
+            letter-spacing: 1px; text-transform: uppercase; display: inline-block; margin-bottom: 8px;
+        }
+        .mode-card .mc-name { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
+        .mode-card .mc-desc { font-size: 12px; color: var(--text-dim); line-height: 1.55; }
+        .mode-card .mc-hint { font-size: 10px; margin-top: 10px; color: var(--accent); font-weight: 600; font-style: italic; }
+
+        .table-surface[data-feel="haggle"] { background: radial-gradient(ellipse at center, #4a1d3a 0%, #1a0a1a 100%); }
+        .table-surface[data-feel="haggle"] .mode-header h2 { color: #ff5ea8; text-shadow: 3px 3px 0 #000, 0 0 25px #ff5ea8; }
+        .table-surface[data-feel="haggle"] .mode-card { border-top-color: #ff5ea8; }
+
+        .table-surface[data-feel="friend"] { background: radial-gradient(ellipse at center, #2a5a3a 0%, #14352a 100%); }
+        .table-surface[data-feel="friend"] .mode-header h2 { color: #ffd93d; text-shadow: 3px 3px 0 #000, 0 0 25px #ffd93d; }
+        .table-surface[data-feel="friend"] .mode-card { border-top-color: #66bb6a; }
+
+        .table-surface[data-feel="boss"] { background: radial-gradient(ellipse at center, #3a1a1a 0%, #0a0505 100%); }
+        .table-surface[data-feel="boss"] .mode-header h2 { color: #ff3b3b; text-shadow: 3px 3px 0 #000, 0 0 30px #ff3b3b; }
+        .table-surface[data-feel="boss"] .mode-card { border-top-color: #d4a853; }
+
+        .mode-toolbar { display: flex; gap: 8px; justify-content: center; margin: 18px 0; flex-wrap: wrap; }
+        .mode-toolbar .btn {
+            padding: 8px 18px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);
+            font-family: 'Press Start 2P', monospace; font-size: 10px; cursor: pointer;
+            background: rgba(0,0,0,0.4); color: #fff; transition: all 0.2s;
+        }
+        .mode-toolbar .btn:hover { transform: translateY(-2px); background: var(--accent); color: #1a1a2e; }
+
+        .mode-scenario {
+            margin: 14px auto; max-width: 760px; padding: 14px 18px;
+            background: rgba(0,0,0,0.4); border-radius: 12px;
+            border: 1px dashed rgba(255,255,255,0.25); color: #fff;
+            font-family: 'Press Start 2P', monospace; font-size: 10px; line-height: 1.8;
+            text-align: center; display: none;
+        }
+        .mode-scenario.open { display: block; animation: fade-up 0.35s ease; }
+        .mode-scenario .ms-label { color: var(--accent); font-size: 8px; letter-spacing: 2px; display: block; margin-bottom: 6px; }
 
         /* ─── Cards (Tools view) ─── */
         .cards-area {
@@ -591,38 +681,6 @@
                     0%,100% { filter: brightness(1.4) drop-shadow(0 0 12px rgba(255,255,255,0.3)); }
                     50% { filter: brightness(1.7) drop-shadow(0 0 24px rgba(255,255,255,0.6)); }
                 }
-
-                /* Emotion Focus mode — deep purple backdrop, gold glow */
-                .emotion-focus { position:relative; }
-                .emotion-focus::before {
-                    content:''; position:fixed; inset:0; z-index:50;
-                    background:radial-gradient(ellipse at center, rgba(30,10,60,0.85) 0%, rgba(15,5,30,0.95) 100%);
-                    pointer-events:none;
-                }
-                .emotion-focus .view-wheel,
-                .emotion-focus .view-wheel * { pointer-events:auto; }
-                .emotion-focus .view-container.active { position:relative; z-index:60; }
-                .emotion-focus .view-wheel .wheel-header h2 { color:var(--accent) !important; text-shadow:0 0 20px rgba(212,168,83,0.4); }
-                .emotion-focus .view-wheel .wheel-header p { color:rgba(255,255,255,0.6) !important; }
-                .emotion-focus .wheel-emotion-slice:not(.active-slice) { opacity:0.08 !important; filter:grayscale(1) !important; }
-                .emotion-focus .wheel-emotion-slice.active-slice {
-                    filter: brightness(1.8) drop-shadow(0 0 30px rgba(212,168,83,0.8)) !important;
-                    animation: slice-pulse 1.5s ease-in-out infinite;
-                }
-                .emotion-focus .wheel-label:not(.active-label) { opacity:0.06 !important; }
-                .emotion-focus .wheel-label.active-label {
-                    fill:var(--accent) !important; font-size:20px !important;
-                    filter:drop-shadow(0 0 12px rgba(212,168,83,0.8));
-                }
-                .emotion-focus .wheel-rotate-bar { opacity:0.5; }
-                .emotion-focus .emotion-detail {
-                    z-index:70; position:relative;
-                    box-shadow:0 0 40px rgba(212,168,83,0.3), 0 4px 20px rgba(0,0,0,0.5);
-                    border:1px solid rgba(212,168,83,0.2);
-                }
-                .emotion-focus .wheel-legend,
-                .emotion-focus #focusBtn { position:relative; z-index:60; }
-                .emotion-focus #focusBtn { color:var(--accent) !important; border-color:var(--accent) !important; }
                 #wheelGroup {
                     transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
                 }
@@ -842,80 +900,6 @@
         .detail-content .dc-desc { font-size:14px; line-height:1.7; color:var(--text); }
         .detail-content .dc-close { margin-top:16px; padding:8px 20px; border:none; border-radius:8px; background:var(--accent); color:#1a1a2e; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; }
 
-        /* Bare Knuckle tool modal */
-        .bk-modal {
-            display:none; position:fixed; inset:0;
-            background:rgba(0,0,0,0.8); backdrop-filter:blur(6px);
-            z-index:500; align-items:flex-start; justify-content:center;
-            overflow-y:auto; -webkit-overflow-scrolling:touch;
-            padding:16px 12px;
-        }
-        .bk-modal.open { display:flex; }
-        .bk-modal-content {
-            background:var(--card-bg); border-radius:16px;
-            padding:28px 22px; width:100%; max-width:520px;
-            margin:auto; position:relative; animation:fade-up 0.3s;
-        }
-        .bk-close {
-            position:absolute; top:12px; right:14px;
-            background:none; border:none; font-size:22px;
-            cursor:pointer; padding:6px 8px; color:#666; line-height:1;
-        }
-        .bk-name { font-size:24px; font-weight:800; margin-bottom:14px; padding-right:30px; }
-        .bk-section { font-size:14px; line-height:1.65; margin-bottom:10px; color:var(--text); }
-        .bk-section strong { display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-dim); margin-bottom:2px; }
-        .bk-section ul { margin:4px 0 0 16px; }
-        .bk-section li { margin-bottom:4px; font-size:13px; line-height:1.5; }
-        .bk-example { padding:6px 10px; margin:3px 0; background:rgba(0,0,0,0.035); border-radius:6px; font-size:13px; border-left:3px solid var(--green); }
-        .bk-reminder {
-            margin-top:14px; padding:12px 14px;
-            background:rgba(212,168,83,0.1); border-radius:8px;
-            border-left:4px solid var(--accent);
-            font-size:14px; font-weight:600; color:#1a1a2e;
-        }
-        @media(max-width:480px){
-            .bk-modal-content { padding:20px 16px; border-radius:12px; }
-            .bk-name { font-size:20px; }
-            .bk-section { font-size:13px; }
-        }
-
-        /* Bare Knuckle mode — boxing ring green translucent overlay */
-        .bk-mode .table-surface {
-            background: radial-gradient(ellipse at center, #0d3320 0%, #091f14 100%) !important;
-            box-shadow: inset 0 0 120px rgba(0,0,0,0.6);
-        }
-        .bk-mode .nav-tab.active { background:rgba(30,90,58,0.5); }
-        .bk-mode #bkBtn {
-            animation: bk-pulse 1.2s ease-in-out infinite;
-            border-color: var(--red) !important;
-        }
-        @keyframes bk-pulse {
-            0%,100% { box-shadow: 0 0 6px rgba(229,57,53,0.3); }
-            50% { box-shadow: 0 0 20px rgba(229,57,53,0.7), 0 0 40px rgba(229,57,53,0.3); }
-        }
-        /* Card wiggle attention-grabber for BK mode */
-        .bk-mode .tool-card[data-tool] {
-            animation: card-attention 2s ease-in-out infinite;
-            animation-delay: calc(var(--card-i,0) * 0.1s);
-        }
-        .bk-mode .tool-card[data-tool]:hover { animation: none; }
-        @keyframes card-attention {
-            0%,100% { transform: translateY(0); }
-            5% { transform: translateY(-3px) scale(1.02); box-shadow: 0 0 12px rgba(212,168,83,0.3); }
-            10% { transform: translateY(0); }
-        }
-        .bk-mode .cat-badge span[style*="float:right"] { animation: wiggle 2s ease-in-out infinite; display:inline-block; }
-        @keyframes wiggle {
-            0%,100% { transform: rotate(0deg); }
-            25% { transform: rotate(-8deg) scale(1.2); }
-            50% { transform: rotate(5deg) scale(1.1); }
-            75% { transform: rotate(-3deg); }
-        }
-        @keyframes expand-pulse {
-            0%,100% { box-shadow: 0 0 4px rgba(212,168,83,0.2); transform: scale(1); }
-            50% { box-shadow: 0 0 14px rgba(212,168,83,0.5); transform: scale(1.04); }
-        }
-
         @keyframes pulse-danger { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
         @media (max-width: 768px) {
@@ -1001,7 +985,7 @@
             <div class="logo-icon">N</div>
             <div>
                 <h1>NOD-ify</h1>
-                <span>MixMatch · FV4</span>
+                <span>MixMatch · FV5</span>
             </div>
         </div>
         <div class="header-controls">
@@ -1016,6 +1000,9 @@
         <button class="nav-tab active" onclick="switchView('tools',this)">&#127183; Tool Deck <span class="badge" id="toolCountBadge">23</span></button>
         <button class="nav-tab" onclick="switchView('stair',this)">&#127970; Change Stair</button>
         <button class="nav-tab" onclick="switchView('wheel',this)">&#127804; Emotion Wheel</button>
+        <button class="nav-tab" onclick="switchView('haggle',this)" style="color:#ff5ea8;">&#128176; Haggle</button>
+        <button class="nav-tab" onclick="switchView('friend',this)" style="color:#66bb6a;">&#129309; Friend</button>
+        <button class="nav-tab" onclick="switchView('boss',this)" style="color:#ff3b3b;">&#128081; Boss</button>
     </div>
 
     <!-- ██ VIEW: Tools ██ -->
@@ -1028,12 +1015,10 @@
         </div>
         <div class="category-filters" id="categoryFilters"></div>
         <div class="toolbar">
-                    <button class="btn btn-ghost btn-sm" id="bkBtn" onclick="toggleBareKnuckles()" style="font-size:10px;">🥊 BK OFF</button>
                     <button class="btn btn-primary" id="startBtn" onclick="startSession()">▶ Start</button>
                     <button class="btn btn-ghost" id="nextBtn" onclick="getNextTool()" disabled>→ Next</button>
                     <button class="btn btn-ghost btn-sm" id="skipBtn" onclick="skipTool()" style="display:none;">⏭ Skip</button>
                     <button class="btn btn-ghost btn-sm" id="stopBtn" onclick="stopSession()" style="display:none;color:var(--red);">⏹ Stop</button>
-                    <button class="btn btn-ghost btn-sm" id="pauseBtn" onclick="togglePauseSession()" style="display:none;">⏸ Pause</button>
                     <button class="btn btn-ghost btn-sm" onclick="resetSession()">↺ Reset</button>
                     <button class="btn btn-ghost btn-sm" onclick="shuffleTools()">🔀 Shuffle</button>
             <div class="timer-display">
@@ -1050,15 +1035,6 @@
             <div class="ct-actions">
                 <button class="btn btn-primary btn-sm" onclick="getNextTool()">Next &#10145;</button>
                 <button class="btn btn-ghost btn-sm" onclick="hideBanner()">Dismiss</button>
-            </div>
-        </div>
-        <!-- ponytail: Session mini-wheel — appears between current tool and cards -->
-        <div class="session-wheel" id="sessionWheel" style="display:none;width:100%;max-width:500px;margin:6px auto 0;">
-            <div class="wheel-header">
-                <h2 style="color:#fff;font-size:16px;font-weight:700;margin-bottom:1px;">&#127804; Emotions</h2>
-            </div>
-            <div class="wheel-layout" style="flex-direction:column;gap:2px;">
-                <div class="wheel-canvas-wrap" id="sessionWheelCanvas" style="position:relative;width:100%;max-width:300px;margin:0 auto;"></div>
             </div>
         </div>
         <div class="session-panel" id="sessionPanel">
@@ -1102,14 +1078,10 @@
                        oninput="sliderRotate(this.value)">
                 <span class="rotate-val" id="rotateVal">0&deg;</span>
             </div>
-            <button class="btn btn-ghost btn-sm" onclick="toggleAutoRotate()" id="autoRotateBtn" style="margin-top: 4px;">🔄 Spin</button>
-            <button class="btn btn-ghost btn-sm" onclick="toggleLegend()" style="margin-top: 4px;">&#128196; Show all words</button>
-            <button class="btn btn-ghost btn-sm" onclick="toggleFocus()" id="focusBtn" style="margin-top: 4px;">&#128065; Focus</button>
-            <button class="btn btn-ghost btn-sm" onclick="buildMyLabel()" id="labelBtn" style="margin-top: 4px;border-color:#c0c0c0;color:#c0c0c0;text-shadow:0 0 8px rgba(192,192,192,0.3);">🖨️ Label Maker</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleLegend()" style="margin-top: 8px;">&#128196; Show all words</button>
+            <button class="btn btn-ghost btn-sm" id="focusBtn" onclick="toggleFocus()" style="margin-top: 8px; margin-left: 4px;">&#128065; Focus</button>
             <div class="wheel-legend" id="wheelLegend"></div>
             <div class="emotion-detail" id="emotionDetail"></div>
-            <!-- ponytail: Label builder output -->
-            <div class="label-output" id="labelOutput" style="display:none;width:100%;max-width:500px;margin:8px auto 0;padding:12px 16px;background:var(--card-bg);border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);"></div>
 
             <!-- Emotion Accordion with depth dial -->
             <div class="emo-accordion" id="emoAccordion">
@@ -1120,6 +1092,63 @@
                     <span class="depth-val" id="emoDepthLabel">Names only</span>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- ██ VIEW: Haggle Mode ██ -->
+    <div class="view-container" id="view-haggle">
+        <div class="mode-wrap">
+            <div class="mode-header">
+                <h2>💰 HAGGLE MODE</h2>
+                <p>Price wars, leverage, anchor drops. Tap a card for a scenario.</p>
+            </div>
+            <div class="mode-toolbar">
+                <button class="btn" onclick="renderModeCards('haggle')">⇄ SHUFFLE</button>
+                <button class="btn" onclick="document.querySelectorAll('.mode-scenario').forEach(s=>s.classList.remove('open'))">✕ CLEAR</button>
+            </div>
+            <div class="mode-scenario" id="scenario-haggle"></div>
+            <div class="mode-grid" id="grid-haggle"></div>
+        </div>
+    </div>
+
+    <!-- ██ VIEW: Friend Mode ██ -->
+    <div class="view-container" id="view-friend">
+        <div class="mode-wrap">
+            <div class="mode-header">
+                <h2>🤝 FRIEND MODE</h2>
+                <p>Build rapport fast. Mirror, label, validate. Tap a card for a scenario.</p>
+            </div>
+            <div class="mode-toolbar">
+                <button class="btn" onclick="renderModeCards('friend')">⇄ SHUFFLE</button>
+                <button class="btn" onclick="document.querySelectorAll('.mode-scenario').forEach(s=>s.classList.remove('open'))">✕ CLEAR</button>
+            </div>
+            <div class="mode-scenario" id="scenario-friend"></div>
+            <div class="mode-grid" id="grid-friend"></div>
+        </div>
+    </div>
+
+    <!-- ██ VIEW: Boss Mode ██ -->
+    <div class="view-container" id="view-boss">
+        <div class="mode-wrap">
+            <div class="mode-header">
+                <h2>👔 BOSS MODE</h2>
+                <p>Command the room. Frame, anchor, close. Tap a card for a scenario.</p>
+            </div>
+            <div class="mode-toolbar">
+                <button class="btn" onclick="renderModeCards('boss')">⇄ SHUFFLE</button>
+                <button class="btn" onclick="document.querySelectorAll('.mode-scenario').forEach(s=>s.classList.remove('open'))">✕ CLEAR</button>
+            </div>
+            <div class="mode-scenario" id="scenario-boss"></div>
+            <div class="mode-grid" id="grid-boss"></div>
+        </div>
+    </div>
+
+    <!-- ██ Mode Transition Overlay ██ -->
+    <div id="modeTransition">
+        <div class="mtc">
+            <div class="mt-title" id="mtTitle"></div>
+            <div class="mt-sub" id="mtSub"></div>
+            <div class="mt-player">PRESS START</div>
         </div>
     </div>
 
@@ -1171,19 +1200,6 @@
         <button class="dc-close" onclick="closeDetail()">Close</button>
     </div>
 </div>
-
-<!-- ponytail: Bare Knuckle tool detail modal — full-screen on mobile, rich content -->
-<div class="bk-modal" id="bkModal">
-    <div class="bk-modal-content">
-        <button class="bk-close" onclick="closeBkModal()">✕</button>
-        <div class="bk-name" id="bkName"></div>
-        <div class="bk-section"><strong>What is it?</strong> <span id="bkDesc"></span></div>
-        <div class="bk-section"><strong>Why it works</strong> <span id="bkWhy"></span></div>
-        <div class="bk-section" id="bkExamplesWrap"><strong>Examples</strong> <div id="bkExamples"></div></div>
-        <div class="bk-section" id="bkMistakesWrap"><strong>Common Mistakes</strong> <ul id="bkMistakes"></ul></div>
-        <div class="bk-reminder" id="bkReminder"></div>
-    </div>
-</div>
 <script>
 // ═══════════════════════════════════════════════════════════════════════
 // TOOLS DATA
@@ -1191,7 +1207,7 @@
 const CAT_COLORS = {
     Rapport:['#43a047','#2e7d32'], Information:['#1e88e5','#1565c0'],
     Emotion:['#e53935','#c62828'], Strategy:['#8e24aa','#6a1b9a'],
-    Closure:['#d4a853','#b8860b'], Custom:['#00897b','#00695c'],
+    Closure:['#fb8c00','#ef6c00'], Custom:['#00897b','#00695c'],
 };
 
 const BASE_TOOLS = [
@@ -1277,117 +1293,35 @@ const STAIR_STEPS = [
 // ═══════════════════════════════════════════════════════════════════════
 const EMOTIONS = [
     {
-        name:'ANGER', simple:'😤 Frustrated, mad, annoyed',
-        color:'#4A78B8',
+        name:'ANGER', color:'#4A78B8',
         secondary: ['Hurt','Threatened','Hateful','Mad'],
         tertiary: { 'Hurt':['Devastated','Embarrassed'], 'Threatened':['Hurt','Insecure','Jealous','Resentful','Violated'], 'Hateful':['Mad','Aggressive','Frustrated','Distant','Critical'], 'Mad':['Enraged','Furious'] },
     },
     {
-        name:'DISGUST', simple:'🤢 Grossed out, disapproving, sickened',
-        color:'#6DBB75',
+        name:'DISGUST', color:'#6DBB75',
         secondary: ['Disapproving','Disappointed','Awful','Avoidance','Guilty'],
         tertiary: { 'Disapproving':['Judgmental','Loathing','Revolted'], 'Disappointed':['Repugnant','Awful'], 'Awful':['Detestable'], 'Avoidance':['Aversion','Hesitant'], 'Guilty':['Remorseful','Ashamed'] },
     },
     {
-        name:'SAD', simple:'😢 Lonely, hurt, depressed, empty',
-        color:'#5DA9D6',
+        name:'SAD', color:'#5DA9D6',
         secondary: ['Abandoned','Despair','Depressed','Lonely','Bored'],
         tertiary: { 'Abandoned':['Ignored','Victimized'], 'Despair':['Powerless','Vulnerable'], 'Depressed':['Inferior','Empty'], 'Lonely':['Abandoned','Isolated'], 'Bored':['Apathetic','Indifferent'] },
     },
     {
-        name:'HAPPY', simple:'😊 Joyful, excited, peaceful, loved',
-        color:'#3FB8E5',
+        name:'HAPPY', color:'#3FB8E5',
         secondary: ['Optimistic','Intimate','Peaceful','Powerful','Accepted','Proud','Interested','Joyful'],
         tertiary: { 'Optimistic':['Inspired','Open'], 'Intimate':['Playful','Sensitive'], 'Peaceful':['Hopeful','Loving'], 'Powerful':['Provocative','Courageous'], 'Accepted':['Fulfilled','Respected'], 'Proud':['Confident','Important'], 'Interested':['Inquisitive','Curious'], 'Joyful':['Amazed','Excited'] },
     },
     {
-        name:'SURPRISE', simple:'😲 Shocked, amazed, confused',
-        color:'#F4D03F',
+        name:'SURPRISE', color:'#F4D03F',
         secondary: ['Startled','Confused','Amazed','Excited'],
         tertiary: { 'Startled':['Shocked','Dismayed'], 'Confused':['Disillusioned','Perplexed'], 'Amazed':['Astonished'], 'Excited':['Eager','Energetic'] },
     },
     {
-        name:'FEAR', simple:'😨 Scared, anxious, worried, unsafe',
-        color:'#F39C34',
+        name:'FEAR', color:'#F39C34',
         secondary: ['Humiliated','Rejected','Submissive','Insecure','Anxious','Scared'],
         tertiary: { 'Humiliated':['Ridiculed','Disrespected'], 'Rejected':['Alienated','Inadequate'], 'Submissive':['Insignificant','Worthless'], 'Insecure':['Inferior','Incompetent'], 'Anxious':['Worried','Overwhelmed'], 'Scared':['Frightened','Terrified'] },
     },
-];
-
-// ponytail: Bare Knuckle 10 core tools — structured for training, not random
-const BK_TOOLS = [
-    {name:'Labels',desc:'Identify emotions, concerns, beliefs, or perceptions.',
-     why:'Naming emotions diffuses them and builds rapport. It shows you are listening on a deeper level.',
-     examples:['"It sounds like…"','"It seems like…"','"It looks like…"','"It feels like…"','"It appears that…"','"It sounds frustrating…"','"It sounds important…"','"It sounds like you\'re concerned…"','"It seems like that\'s been difficult…"'],
-     mistakes:['Do not say "I understand"','Focus on identifying emotions, not fixing them','Don\'t guess — observe and name what you hear'],
-     reminder:'Stay curious. Name the emotion. Then be quiet. Let them confirm.',
-     cat:'Rapport',count:2},
-    {name:'Vision Labels',desc:'Labels aimed at future concerns, goals, fears, or outcomes.',
-     why:'Future-focused labels address unspoken worries before they become objections.',
-     examples:['"It sounds like reliability is important to you."','"It seems like you\'re trying to avoid surprises."','"It sounds like you want confidence before moving forward."','"It sounds like timing matters here."','"I get the sense that certainty is key for you."'],
-     mistakes:['Don\'t make assumptions — listen first','Tonality matters: calm, curious, non-judgmental','Avoid leading the witness'],
-     reminder:'Label what they want NEXT, not what\'s happening NOW.',
-     cat:'Rapport',count:2},
-    {name:'Mirrors',desc:'Repeat the last 1–3 important words your counterpart says.',
-     why:'Mirroring encourages elaboration. People naturally want to fill the silence after hearing their own words echoed back.',
-     examples:['Them: "The biggest issue is the timeline."  You: "The timeline?"','Them: "We\'ve had bad experiences before."  You: "Bad experiences?"','Them: "This feels risky for our team."  You: "Risky?"'],
-     mistakes:['Don\'t mirror everything — pick key words','Don\'t parrot — repeat only the meaningful phrase','Don\'t break the silence afterward'],
-     reminder:'Mirror → silence. Let them fill the gap.',
-     cat:'Rapport',count:3},
-    {name:'Trigger',desc:'Use words that provoke a reaction — fear, shock, urgency, or past bad experiences.',expand:false,
-     why:'Triggers break patterned thinking. A well-placed trigger jolts someone out of their script and opens room for real negotiation.',
-     examples:['"Have you considered what happens if this falls apart?"','"Other people in your position have been burned by that."','"I know this might be uncomfortable to hear…"','"What\'s the worst that could happen?"'],
-     mistakes:['Don\'t overuse — one trigger per conversation is enough','Don\'t sound threatening — stay calm and curious','Don\'t trigger without a follow-up (label or question)'],
-     reminder:'One trigger. Then label or ask. Don\'t pile on.',
-     cat:'Emotion',count:2},
-    {name:'Minimal Encouragers',desc:'Small responses that encourage the other person to continue talking.',
-     why:'People reveal more when they feel heard. Minimal encouragers keep them talking without interrupting their flow.',
-     examples:['"Hmm."','"Interesting."','"Go on."','"Tell me more."','"I see."','"Really?"','"And?"','"What happened next?"'],
-     mistakes:['Don\'t overuse — one word is enough','Don\'t make it sound sarcastic','Don\'t interrupt — place between their sentences'],
-     reminder:'Less is more. One word. Then quiet.',
-     cat:'Rapport',count:1},
-    {name:'Calibrated Questions',desc:'Questions that start with What or How — designed to create collaboration.',
-     why:'Calibrated questions give the other person a sense of control while steering the conversation. What/How questions avoid defensiveness.',
-     examples:[{q:'"What makes this important to you?"'},{q:'"What would an ideal outcome look like?"'},{q:'"What concerns you most?"'},{q:'"How am I supposed to do that?"'},{q:'"How would that work?"'},{q:'"How can we solve this together?"'}],
-     mistakes:['Avoid Why questions — they trigger defensiveness','Don\'t ask leading questions','Don\'t ask more than one at a time'],
-     reminder:'What/How only. No Why. No leading.',
-     cat:'Information',count:4},
-    {name:'No-Oriented Questions',desc:'Questions designed to make the other person feel safe by inviting a "no."',
-     why:'People feel safer saying no than yes. A "no" protects their autonomy and opens real dialogue.',
-     examples:['OPEN-ENDED (preferred):','"Would it be ridiculous to explore another option?"','"Is now a bad time to talk?"','"Would it be unreasonable to discuss this?"','"Is it a bad idea to look at alternatives?"','','CLOSED-ENDED (use sparingly):','"Are you against moving forward?"','"Is this not a priority right now?"'],
-     mistakes:['Focus on OPEN-ENDED no-questions — they invite explanation','Closed-ended can feel manipulative','Don\'t sound pushy — genuine curiosity only'],
-     reminder:'Give them a safe "no." Then ask what they CAN say yes to.',
-     cat:'Information',count:3},
-    {name:'Accusation Audit',desc:'List negative thoughts they may have before they say them.',
-     why:'Bringing negatives into the open early defuses them. If you name their fear, they don\'t have to raise it — and they trust you more.',
-     examples:['"You probably think I\'m wasting your time."','"It may seem like I\'m pushing too hard."','"You might feel this is too expensive."','"You may think this isn\'t a good fit."','"It probably seems like I don\'t understand your situation."'],
-     mistakes:['Don\'t skip the real fears — go for the hardest one','Don\'t apologize for the accusation — just name it','Don\'t try to rebut it immediately'],
-     reminder:'Name the elephant in the room first. Then silence. Let them respond.',
-     cat:'Information',count:5},
-    {name:'Summaries',desc:'Summaries demonstrate understanding and help move conversations forward.',
-     why:'A good summary shows you\'ve truly heard them. It builds trust and clarifies next steps. Only deploy twice — once mid-session, once near the end.',
-     examples:['"So far you\'ve told me that timing is important, you\'re concerned about cost, and you\'ve had bad experiences. Because of that, it sounds like you\'re feeling cautious."'],
-     mistakes:['Don\'t summarize more than TWICE per session','Don\'t add your own opinions — just reflect back','Don\'t skip the emotional layer: Facts + Concerns + Emotions'],
-     reminder:'Formula: Facts + Concerns + Emotions. Once mid-session, once near end.',
-     cat:'Closure',count:2},
-    {name:'Tactical Empathy',desc:'Demonstrate understanding without agreeing.',
-     why:'Understanding lowers defenses. People negotiate differently with someone who "gets it." You don\'t have to agree to understand.',
-     examples:['"It sounds like that\'s been frustrating."','"It seems like you\'ve been dealing with this for a while."','"It sounds like you\'ve put a lot of thought into this."'],
-     mistakes:['Don\'t confuse empathy with agreement','Don\'t fake it — genuine curiosity matters','Don\'t follow empathy with a solution — just sit in it'],
-     reminder:'Understand their world. You don\'t have to agree.',
-     cat:'Rapport',count:2},
-    {name:'Dynamic Silence',desc:'After a mirror, label, calibrated question, or summary — remain silent.',
-     why:'Silence creates pressure. The other person will fill it — often with the information you need.',
-     examples:['Mirror → Silence','Label → Silence','Calibrated Question → Silence','Summary → Silence'],
-     mistakes:['Don\'t rush to fill the silence','Don\'t fidget or look away — maintain eye contact','Don\'t cave — 3+ seconds feels long but works'],
-     reminder:'Speak last. The one who talks least wins.',
-     cat:'Rapport',count:2},
-    {name:'Three Ways of Saying No',desc:'Three powerful ways to say no — from soft to hard. Start with grace, escalate only if needed.',expand:false,
-     why:'Great negotiators rarely start with a hard no. They guide the conversation toward a no before saying it directly. This gives you three levels of refusal.',
-     examples:['"I\'M AFRAID WE CAN\'T DO THAT"  —  "Your offer is generous, but I\'m afraid we can\'t do that."  (Firm boundary, maintains rapport)','"THAT DOESN\'T WORK FOR US"  —  "I appreciate the effort, but that doesn\'t work for us."  (Rejects proposal without conflict)','"NO"  —  "No."  (Final boundary when necessary)'],
-     mistakes:['Don\'t jump straight to "No" — start with the softer options','Don\'t apologize — these are statements, not apologies','Don\'t over-explain — a clear no is better than a confused maybe'],
-     reminder:'Start with "I\'m afraid…" → "That doesn\'t work…" → "No." Only escalate when needed.',
-     cat:'Closure',count:2},
 ];
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1397,7 +1331,6 @@ let state = {
     tools: JSON.parse(JSON.stringify(BASE_TOOLS)),
     currentDeck: [],
     usedTools: [],
-    usedNames: [],
     skippedTools: [],
     currentTool: null,
     timer: null,
@@ -1410,108 +1343,9 @@ let state = {
     sessionLogOpen: false,
     currentView: 'tools',
     lastUsedEmotion: null,
-    bareKnuckles: false,
-    sessionPaused: false,
-    pauseRemaining: 0,
-    toolCounts: {},
 };
 
 function freshId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
-
-// ponytail: Bare Knuckles mode — 10 random tools + mini emotion wheel
-function toggleBareKnuckles(){
-    state.bareKnuckles=!state.bareKnuckles;
-    const btn=document.getElementById('bkBtn');
-    if(btn)btn.textContent=state.bareKnuckles?'🥊 BK ON':'🥊 BK OFF';
-    if(btn)btn.style.color=state.bareKnuckles?'var(--red)':'';
-    // Green ring overlay + reset
-    document.body.classList.toggle('bk-mode',state.bareKnuckles);
-    if(state.bareKnuckles){
-        resetSession();
-        const total=BK_TOOLS.reduce((s,t)=>s+(t.count||1),0);
-        toast('🥊 Bare Knuckle — '+BK_TOOLS.length+' tools · '+total+' cards · Tap any card to learn');
-        // Shove BK info into stats bar
-        const sb=document.getElementById('statsBar');
-        if(sb) sb.innerHTML+=`<div class="stat-item" style="color:var(--red);">🥊 BK: <strong style="color:var(--accent);">${BK_TOOLS.length} tools</strong></div>`;
-    }else{
-        const sb=document.getElementById('statsBar');
-        if(sb){const el=sb.querySelector('.stat-item:last-child');if(el&&el.textContent.includes('BK:'))el.remove();}
-    }
-    renderCards();
-}
-function buildDeck(){
-    if(state.bareKnuckles){
-        state.toolCounts={};
-        BK_TOOLS.forEach(t=>state.toolCounts[t.name]=0);
-        state.currentDeck=[];
-        BK_TOOLS.forEach(t=>{for(let i=0;i<(t.count||1);i++)state.currentDeck.push({...t,isBk:true});});
-        shuffleArray(state.currentDeck);
-    }else{
-        let pool=state.tools;
-        state.currentDeck=[];
-        pool.forEach(t=>{for(let i=0;i<(t.count||1);i++)state.currentDeck.push({...t});});
-        shuffleArray(state.currentDeck);
-    }
-    renderToolsView();
-}
-function renderSessionWheel(){
-    const container=document.getElementById('sessionWheelCanvas');
-    if(!container)return;
-    const cx=125,cy=125,sectors=6,sectorAngle=360/sectors,R=110,rMid=75,rInner=55,rCenter=30;
-    let svg=`<svg viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg" style="cursor:grab;touch-action:none;width:100%;height:auto;">
-        <style>.sl{fill:#fff;text-anchor:middle;dominant-baseline:central;pointer-events:none;font-weight:700;font-size:11px;paint-order:stroke;stroke:rgba(0,0,0,0.3);stroke-width:0.4px;}</style>
-        <g id="sessionWheelGroup">`;
-    const rad=d=>d*Math.PI/180;
-    const pt=(ri,a)=>[cx+ri*Math.cos(rad(a)),cy+ri*Math.sin(rad(a))];
-    const arcPath=(r1,r2,a1,a2)=>{
-        const[x1,y1]=pt(r2,a1),[x2,y2]=pt(r2,a2);
-        const[x3,y3]=pt(r1,a2),[x4,y4]=pt(r1,a1);
-        return 'M'+x1+','+y1+' A'+r2+','+r2+' 0 0 1 '+x2+','+y2+' L'+x3+','+y3+' A'+r1+','+r1+' 0 0 0 '+x4+','+y4+' Z';
-    };
-    EMOTIONS.forEach((em,idx)=>{
-        const startA=idx*sectorAngle,endA=(idx+1)*sectorAngle,midA=startA+sectorAngle/2;
-        svg+=`<path d="${arcPath(rCenter,R,startA,endA)}" fill="${em.color}" opacity="0.7" onclick="selectEmotion(${idx})"/>`;
-        const lr=(rCenter+R)/2;
-        const[lx,ly]=pt(lr,midA);
-        const r1=midA>90&&midA<270?midA+180:midA;
-        svg+=`<text x="${lx}" y="${ly}" transform="rotate(${r1},${lx},${ly})" class="sl">${em.name}</text>`;
-    });
-    svg+=`<circle cx="${cx}" cy="${cy}" r="16" fill="#1a1a2e" stroke="rgba(212,168,83,0.25)" stroke-width="1"/>`;
-    svg+=`</g></svg>`;
-    container.innerHTML=svg;
-    // ponytail: vertical scroll → wheel spin. Captures touch/mouse wheel events.
-    const swg=container.querySelector('svg');
-    if(swg){
-        let lastY=0,swiping=false;
-        swg.addEventListener('touchstart',e=>{lastY=e.touches[0].clientY;swiping=true;},{passive:true});
-        swg.addEventListener('touchmove',e=>{
-            if(!swiping)return;
-            const dy=lastY-e.touches[0].clientY;
-            if(Math.abs(dy)>5){
-                const g=document.getElementById('sessionWheelGroup');
-                if(g){
-                    let r=parseFloat(g.getAttribute('data-rot')||'0');
-                    r+=dy*0.5;
-                    g.setAttribute('data-rot',r);
-                    g.setAttribute('transform',`rotate(${r},125,125)`);
-                }
-                lastY=e.touches[0].clientY;
-            }
-        },{passive:true});
-        swg.addEventListener('touchend',()=>{swiping=false;},{passive:true});
-        // Mouse wheel support
-        swg.addEventListener('wheel',e=>{
-            e.preventDefault();
-            const g=document.getElementById('sessionWheelGroup');
-            if(g){
-                let r=parseFloat(g.getAttribute('data-rot')||'0');
-                r+=e.deltaY*0.3;
-                g.setAttribute('data-rot',r);
-                g.setAttribute('transform',`rotate(${r},125,125)`);
-            }
-        },{passive:false});
-    }
-}
 
 // ═══════════════════════════════════════════════════════════════════════
 // VIEW SWITCHING
@@ -1524,8 +1358,70 @@ function switchView(name,btn){
     document.getElementById('view-'+name).classList.add('active');
     document.getElementById('toolCountBadge').textContent = state.tools.length;
 
+    // ponytail: 90s mode feel — swap background, trigger arcade overlay
+    const surface = document.querySelector('.table-surface');
+    const feels = {haggle:'haggle',friend:'friend',boss:'boss'};
+    if(feels[name]){ surface.setAttribute('data-feel', feels[name]); triggerModeTransition(name); }
+    else { surface.removeAttribute('data-feel'); }
+
     if(name==='stair') renderStair();
     if(name==='wheel'){ renderWheel(); buildEmoAccordion(); }
+    if(feels[name]) renderModeCards(name);
+}
+
+function triggerModeTransition(mode){
+    const titles = {
+        haggle:['HAGGLE MODE','💰 PRICE WAR'],
+        friend:['FRIEND MODE','🤝 BUILD THE BOND'],
+        boss:['BOSS MODE','👔 COMMAND THE ROOM']
+    };
+    const ov = document.getElementById('modeTransition');
+    const t = titles[mode]; if(!t) return;
+    document.getElementById('mtTitle').textContent = t[0];
+    document.getElementById('mtSub').textContent = t[1];
+    ov.classList.remove('active'); void ov.offsetWidth; ov.classList.add('active');
+    setTimeout(()=>ov.classList.remove('active'), 1300);
+}
+
+// ─── Mode Cards & Scenarios ───
+// ponytail: 90s arcade negotiation scenarios per mode
+const MODE_CARDS = {
+    haggle: [
+        {tag:'LANDLORD', name:'The Rent Hike', desc:'Tenant wants out. You raise rent $200. Flinch + Anchor.', hint:'💡 "I understand $200 feels like a lot. Let me show you the comps..."'},
+        {tag:'TENANT', name:'The Move-Out Bluff', desc:'Tenant threatens to leave. You know they have no deposit budget.', hint:'💡 "How would you handle a $3k move-out with your current savings?"'},
+        {tag:'BUYER AGENT', name:'The Inspection Walk-Back', desc:'Buyer wants $10k credit. Repairs are $2k. Anchor + Fairness Frame.', hint:'💡 "I want this fair. Here are the actual quotes from licensed contractors."'},
+        {tag:'SELLER', name:'The Net Sheet Shock', desc:'Seller sees the net and demands $50k more. Label + "That\'s Right".', hint:'💡 "It sounds like you feel the house is worth more than the comps."'}
+    ],
+    friend: [
+        {tag:'NEW LEAD', name:'The First Call', desc:'Cold Zillow lead talking to 3 agents. Mirror their fear of being rushed.', hint:'💡 "It sounds like you\'ve had bad experiences with agents pushing you."'},
+        {tag:'TENANT', name:'The Maintenance Complaint', desc:'Tenant furious about slow repair. Fix the feeling, not the plumbing.', hint:'💡 "It seems like you feel ignored. I want to make this right with you."'},
+        {tag:'CO-BROKER', name:'The Showing Friction', desc:'Other agent is difficult about showing times. Build the bond first.', hint:'💡 "I want to make your life easy. What does your schedule look like?"'}
+    ],
+    boss: [
+        {tag:'LISTING PRESENTATION', name:'The Room Takeover', desc:'3 sellers interviewing you. 15 minutes. Start with their pain, not your creds.', hint:'💡 "Before I talk about me — what\'s keeping you up at night about this move?"'},
+        {tag:'OFFER NEGOTIATION', name:'The Multi-Offer Leverage', desc:'5 offers. Pick the strongest, anchor high, make the others compete.', hint:'💡 "We have a strong offer at $X. Beat it by Y and you have the house."'},
+        {tag:'EXPIRED LISTING', name:'The Second Chance', desc:'Seller gave up with another agent. You have one shot to re-frame the market.', hint:'💡 "What did they miss? Let me show you where the strategy broke down."'}
+    ]
+};
+
+function renderModeCards(mode){
+    const grid = document.getElementById('grid-'+mode);
+    const cards = MODE_CARDS[mode] || [];
+    grid.innerHTML = cards.map((c,i) => `
+        <div class="mode-card" onclick="showModeScenario('${mode}',${i})" style="animation-delay:${i*0.08}s;">
+            <span class="mc-tag">${c.tag}</span>
+            <div class="mc-name">${c.name}</div>
+            <div class="mc-desc">${c.desc}</div>
+            <div class="mc-hint">TAP FOR SCRIPT →</div>
+        </div>
+    `).join('');
+}
+
+function showModeScenario(mode, idx){
+    const box = document.getElementById('scenario-'+mode);
+    const c = (MODE_CARDS[mode]||[])[idx]; if(!c) return;
+    box.innerHTML = `<span class="ms-label">${c.tag} :: ${c.name}</span>${c.hint}`;
+    box.classList.remove('open'); void box.offsetWidth; box.classList.add('open');
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1546,8 +1442,7 @@ function renderToolsView(){
 }
 
 function renderCategoryFilters(){
-    const source = state.bareKnuckles ? BK_TOOLS : state.tools;
-    const cats = ['All',...new Set(source.map(t=>t.cat))];
+    const cats = ['All',...new Set(state.tools.map(t=>t.cat))];
     document.getElementById('categoryFilters').innerHTML =
         cats.map(c=>`<button class="cat-pill ${c===state.activeFilter?'active':''}" onclick="setFilter('${c}')">${c}</button>`).join('');
 }
@@ -1555,8 +1450,7 @@ function setFilter(cat){state.activeFilter=cat; renderCards();}
 
 function renderCards(){
     const area = document.getElementById('cardsArea');
-    const source = state.bareKnuckles ? BK_TOOLS : state.tools;
-    const filtered = state.activeFilter==='All' ? source : source.filter(t=>t.cat===state.activeFilter);
+    const filtered = state.activeFilter==='All' ? state.tools : state.tools.filter(t=>t.cat===state.activeFilter);
     if(!filtered.length){
         area.innerHTML='<div class="empty-state"><div style="font-size:48px;opacity:0.3;margin-bottom:10px;">&#128220;</div><h3>No tools in this category</h3></div>';
         area._cache = null;
@@ -1573,8 +1467,8 @@ function renderCards(){
         area.innerHTML = filtered.map(tool => {
             const colors = CAT_COLORS[tool.cat]||['#666','#444'];
             return `<div class="tool-card" data-tool="${tool.name.replace(/"/g,'&quot;')}" style="border-top:3px solid ${colors[0]};">
-                <span class="cat-badge" style="color:${colors[0]};">${tool.cat}${state.bareKnuckles && tool.expand!==false?' <span style="float:right;font-size:10px;opacity:0.5;">👆</span>':''}</span>
-                <div class="card-name">${tool.name}${state.bareKnuckles && tool.expand!==false?' <span style="font-size:10px;opacity:0.3;float:right;">ⓘ</span>':''}</div>
+                <span class="cat-badge" style="color:${colors[0]};">${tool.cat}</span>
+                <div class="card-name">${tool.name}</div>
                 <div class="card-desc">${tool.desc}</div>
                 <div class="card-count"></div>
                 <div class="card-check">&#10003;</div>
@@ -1638,13 +1532,16 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// ponytail: buildDeck moved up near Bare Knuckles logic — this is the replacement
+function buildDeck(){
+    state.currentDeck=[];
+    state.tools.forEach(t=>{for(let i=0;i<t.count;i++)state.currentDeck.push({...t})});
+    shuffleArray(state.currentDeck);
+}
 // ═══════════════════════════════════════════════════════════════════════
 // SESSION
 // ═══════════════════════════════════════════════════════════════════════
 function startSession(){
     if(state.sessionActive) return;
-    state.sessionPaused=false;
     const dur=parseInt(document.getElementById('durationInput').value)||10;
     state.endTime=Date.now()+dur*60*1000;
     state.sessionStartTime=Date.now();
@@ -1656,18 +1553,13 @@ function startSession(){
     state.timer=setInterval(tick,1000);
     hideBanner();
     renderToolsView(); renderLog();
-    const bkBtn=document.getElementById('bkBtn');
-    if(bkBtn) bkBtn.textContent=state.bareKnuckles?'🥊 BK ON':`🥊 ${state.currentDeck.length}`;
-    document.getElementById('pauseBtn').style.display='';
-    renderSessionWheel();
-    document.getElementById('sessionWheel').style.display='block';
     document.getElementById('currentBanner').classList.add('show');
     document.getElementById('ctName').textContent='Session Started!';
     document.getElementById('ctDesc').textContent=`${dur} min · ${state.currentDeck.length} tools loaded. Press Next to draw.`;
 }
 
 function getNextTool(){
-    if(!state.sessionActive || state.sessionPaused) return;
+    if(!state.sessionActive) return;
     if(Date.now()>state.endTime){endSession();return;}
     if(!state.currentDeck.length){
         if(state.usedTools.length||state.skippedTools.length){buildDeck();state.round++;}
@@ -1676,36 +1568,8 @@ function getNextTool(){
     const tool=state.currentDeck.pop();
     state.currentTool=tool;
     state.usedTools.push(tool);
-    if(state.bareKnuckles && tool.name && state.toolCounts[tool.name]!==undefined){
-        state.toolCounts[tool.name]=(state.toolCounts[tool.name]||0)+1;
-        state.usedNames.push(tool.name);
-    }
     document.getElementById('currentBanner').classList.add('show');
-    document.getElementById('ctName').textContent=tool.name+' ';
-    document.getElementById('ctName').style.cursor=tool.isBk?'pointer':'';
-    // ponytail: add visible "tap to expand" badge next to BK tool name
-    document.getElementById('ctName').onclick=tool.isBk?()=>{
-        const bk=BK_TOOLS.find(t=>t.name===tool.name);
-        if(bk)showBkToolModal(bk);
-    }:null;
-    // Expand hint badge
-    const expandHint=document.getElementById('expandHint')||(()=>{
-        const e=document.createElement('span');e.id='expandHint';
-        e.style.cssText='display:inline-block;font-size:11px;font-weight:600;color:var(--accent);background:rgba(212,168,83,0.15);padding:2px 10px;border-radius:6px;margin-left:6px;border:1px solid rgba(212,168,83,0.3);animation:expand-pulse 1.5s ease-in-out infinite;vertical-align:middle;';
-        document.getElementById('ctName').after(e);
-        return e;
-    })();
-    if(tool.isBk && tool.expand!==false){
-        expandHint.innerHTML='<span style="display:inline-flex;align-items:center;gap:3px;cursor:pointer;"><span style="font-size:16px;line-height:1;filter:drop-shadow(0 0 10px rgba(212,168,83,0.7));">⬆️</span><span style="font-size:9px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:0.8px;">expand</span></span>';
-        expandHint.style.display='inline-flex';
-        expandHint.style.cssText='display:inline-flex;align-items:center;font-size:13px;background:none;border:none;padding:0;margin-left:6px;animation:expand-pulse 1.2s ease-in-out infinite;vertical-align:middle;cursor:pointer;';
-        expandHint.onclick=tool.isBk?()=>{
-            const bk=BK_TOOLS.find(t=>t.name===tool.name);
-            if(bk)showBkToolModal(bk);
-        }:null;
-    }else{
-        expandHint.style.display='none';
-    }
+    document.getElementById('ctName').textContent=tool.name;
     document.getElementById('ctDesc').textContent=tool.desc;
     document.getElementById('skipBtn').style.display='';
     animateCard(tool.name);
@@ -1728,31 +1592,9 @@ function stopSession(){
     cleanupSession();
 }
 
-function togglePauseSession(){
-    if(!state.sessionActive)return;
-    state.sessionPaused=!state.sessionPaused;
-    const btn=document.getElementById('pauseBtn');
-    if(state.sessionPaused){
-        // Adjust endTime so timer freezes
-        state.pauseRemaining=state.endTime-Date.now();
-        btn.textContent='▶ Resume';
-        btn.style.color='var(--green)';
-    }else{
-        // Adjust endTime forward by the paused duration
-        state.endTime=Date.now()+state.pauseRemaining;
-        btn.textContent='⏸ Pause';
-        btn.style.color='';
-    }
-}
-
 function cleanupSession(){
     if(state.timer) clearInterval(state.timer);
     state.sessionActive=false; state.timer=null; state.currentTool=null;
-    state.sessionPaused=false;
-    document.getElementById('sessionWheel').style.display='none';
-    document.getElementById('pauseBtn').style.display='none';
-    document.getElementById('pauseBtn').textContent='⏸ Pause';
-    document.getElementById('pauseBtn').style.color='';
     renderToolsView();
 }
 
@@ -1766,9 +1608,6 @@ function endSession(){
 }
 
 function showSessionSummary(){
-    // Hide expand hint if visible
-    const eh=document.getElementById('expandHint');
-    if(eh)eh.style.display='none';
     const totalMs = Date.now() - (state.sessionStartTime||Date.now());
     const totalSec = Math.floor(totalMs/1000);
     const mins = Math.floor(totalSec/60); const secs = totalSec%60;
@@ -1782,31 +1621,8 @@ function showSessionSummary(){
             🎯 <strong>Last emotion:</strong> ${state.lastUsedEmotion}
         </div>` : '';
 
-    // ponytail: BK coaching stats
-    let bkStats='';
-    if(state.bareKnuckles && state.toolCounts){
-        const counts=state.toolCounts;
-        const entries=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-        const used=entries.filter(e=>e[1]>0);
-        if(used.length){
-            const most=used[0]; const least=used[used.length-1];
-            bkStats=`
-                <div style="margin-top:10px;padding:8px 10px;background:rgba(67,160,71,0.08);border-radius:8px;border-left:3px solid var(--green);">
-                    <strong style="color:var(--accent);font-size:11px;text-transform:uppercase;">📊 Coaching Report</strong>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px;font-size:12px;">
-                        ${entries.map(([name,cnt])=>`<div>${name}: <strong style="color:var(--accent);">${cnt}</strong></div>`).join('')}
-                    </div>
-                    <div style="font-size:11px;margin-top:6px;color:rgba(255,255,255,0.6);">
-                        🔥 Most used: <strong style="color:var(--accent);">${most[0]}</strong> (${most[1]}×) ·
-                        🧊 Least used: <strong>${least[0]}</strong> (${least[1]}×) ·
-                        <br>🎯 Practice: <strong>${least[0]}</strong>
-                    </div>
-                </div>`;
-        }
-    }
-
     document.getElementById('currentBanner').classList.add('show');
-    document.getElementById('ctName').innerHTML = '<img src="/double-dragon-victory.png" style="width:36px;height:36px;image-rendering:pixelated;vertical-align:middle;margin-right:6px;border-radius:4px;"> 🏁 <span style="color:var(--accent);">Session Summary</span>';
+    document.getElementById('ctName').innerHTML = '🏁 <span style="color:var(--accent);">Session Summary</span>';
     document.getElementById('ctDesc').innerHTML = `
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0;">
             <div><strong style="color:var(--accent);">${completed.length}</strong><br><small>tools drawn</small></div>
@@ -1818,7 +1634,6 @@ function showSessionSummary(){
             Rounds: ${state.round+1} · Categories: ${categories.join(', ')}
         </div>
         ${emotionHint}
-        ${bkStats}
         ${completed.length ? `<div style="margin-top:6px;font-size:10px;color:rgba(255,255,255,0.3);max-height:60px;overflow-y:auto;">${completed.map(t=>t.name).join(' → ')}</div>` : ''}
     `;
     document.getElementById('stopBtn').style.display='none';
@@ -1854,10 +1669,6 @@ function animateCard(name){
 }
 
 function tick(){
-    if(state.sessionPaused){
-        updateTimerDisplay(state.pauseRemaining);
-        return;
-    }
     const left=state.endTime-Date.now();
     if(left<=0){endSession();document.getElementById('timerDisplay').textContent='00:00';return;}
     updateTimerDisplay(left);
@@ -1873,40 +1684,12 @@ function updateTimerDisplay(ms){
 function onCardClick(name){
     const tool=state.tools.find(t=>t.name===name);
     if(!tool) return;
-    if(state.bareKnuckles){
-        const bk=BK_TOOLS.find(t=>t.name===name);
-        if(bk){showBkToolModal(bk);return;}
-    }
     document.getElementById('dcName').textContent=tool.name;
     document.getElementById('dcCat').textContent=tool.cat;
     document.getElementById('dcDesc').textContent=tool.desc;
     document.getElementById('detailPopover').classList.add('open');
 }
 function closeDetail(){document.getElementById('detailPopover').classList.remove('open');}
-
-// ponytail: BK tool detail modal — full educational popup
-function showBkToolModal(tool){
-    document.getElementById('bkName').textContent=tool.name;
-    document.getElementById('bkName').style.color=tool.cat==='Rapport'?'var(--green)':'var(--blue)';
-    document.getElementById('bkDesc').textContent=tool.desc;
-    document.getElementById('bkWhy').textContent=tool.why;
-    // Examples
-    const exDiv=document.getElementById('bkExamples');
-    exDiv.innerHTML=tool.examples.map(ex=>{
-        const text=typeof ex==='string'?ex:(ex.q||'');
-        return `<div class="bk-example">${text}</div>`;
-    }).join('');
-    // Mistakes
-    const misUl=document.getElementById('bkMistakes');
-    misUl.innerHTML=tool.mistakes.map(m=>`<li>${m}</li>`).join('');
-    // Reminder
-    document.getElementById('bkReminder').innerHTML='💡 '+tool.reminder;
-    document.getElementById('bkModal').classList.add('open');
-}
-function closeBkModal(){document.getElementById('bkModal').classList.remove('open');}
-// ponytail: simple toast notification
-const toastEl=document.createElement('div');toastEl.style.cssText='position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.1);';document.body.appendChild(toastEl);let toastTimer=null;
-function toast(m){toastEl.textContent=m;toastEl.style.opacity='1';clearTimeout(toastTimer);toastTimer=setTimeout(()=>{toastEl.style.opacity='0';},3000);}
 
 // Custom tools
 function showAddToolModal(){document.getElementById('addToolModal').classList.add('open');}
@@ -1976,24 +1759,14 @@ function toggleStage(i){
 let wheelRotation = 0;
 let isDragging = false;
 let dragStartX = 0;
-let dragVelocity = 0;
-let momentumId = null;
-let autoRotateId = null;
 
 function renderWheel(){
     const container = document.getElementById('wheelCanvas');
     const cx=250, cy=250, sectors=6, sectorAngle=360/sectors;
     // ponytail: enlarged radii ~25% from R=210,rMid=145,rInner=108,rCenter=55
     const R=232, rMid=162, rInner=120, rCenter=62;
-    // ponytail: tiny center hub (25px) so labels at 56px sit in the colored ring, not under the black dot
 
     let svg = `<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" style="cursor:grab;touch-action:none;">
-        <style>
-            #wheelGroup { transition: transform 0.6s cubic-bezier(0.34, 1.1, 0.64, 1); transform-origin: 250px 250px; }
-            #wheelGroup.dragging { transition: none; }
-            .wheel-emotion-slice { transition: filter 0.4s, opacity 0.4s; }
-            .wheel-label { transition: opacity 0.3s; }
-        </style>
         <g id="wheelGroup" transform="rotate(${wheelRotation},250,250)">`;
 
     // Gold outer rim
@@ -2026,11 +1799,11 @@ function renderWheel(){
 
         // ponytail: Only primary labels on the wheel — secondary + tertiary
         // caused text overlap in narrow sectors. Tap for detail panel or
-        // "Show all words" for the full legend.
-        const lr=(rCenter+rInner)/2;
-        const[lx,ly]=pt(lr,midA);
-        const r1=midA>90&&midA<270?midA+180:midA;
-        svg+=`<text x="${lx}" y="${ly}" transform="rotate(${r1},${lx},${ly})" class="wheel-label wheel-label-primary">${em.name}</text>`;
+        // Draw emotion label in first ring
+        const lr = (rCenter + rInner) / 2; // ponytail: labels in first ring, not under hub
+        const [lx, ly] = pt(lr, midA);
+        const r1 = midA > 90 && midA < 270 ? midA + 180 : midA;
+        svg += `<text x="${lx}" y="${ly}" transform="rotate(${r1},${lx},${ly})" class="wheel-label wheel-label-primary">${em.name}</text>`;
 
         // Gold rim dot
         const[dx,dy]=pt(R+6,startA);
@@ -2039,8 +1812,8 @@ function renderWheel(){
         svg+=`<circle cx="${dx2}" cy="${dy2}" r="1.5" fill="#fff" opacity="0.12" class="wheel-rim-dot"/>`;
     });
 
-    // ponytail: tiny center hub (25px) so labels at ~56px sit in the colored ring
-    svg+=`<circle cx="${cx}" cy="${cy}" r="25" fill="#1a1a2e" stroke="rgba(212,168,83,0.25)" stroke-width="1.5"/>`;
+    // Center hub
+    svg+=`<circle cx="${cx}" cy="${cy}" r="${rCenter-2}" fill="#1a1a2e" stroke="rgba(212,168,83,0.25)" stroke-width="1.5"/>`;
 
     svg+=`</g></svg>`;
     container.innerHTML = svg;
@@ -2069,60 +1842,14 @@ function renderWheel(){
     if(slider) slider.value=Math.max(-180,Math.min(180,wheelRotation));
 }
 
-function startDrag(e){isDragging=true;dragStartX=e.clientX;dragVelocity=0;cancelMomentum();cancelAutoRotate();const s=document.querySelector('#wheelCanvas svg');if(s)s.style.cursor='grabbing';const g=document.querySelector('#wheelGroup');if(g)g.classList.add('dragging');}
-function startDragTouch(e){isDragging=true;dragStartX=e.touches[0].clientX;dragVelocity=0;cancelMomentum();cancelAutoRotate();const g=document.querySelector('#wheelGroup');if(g)g.classList.add('dragging');}
-function onDrag(e){if(!isDragging)return;const dx=e.clientX-dragStartX;if(Math.abs(dx)>3){dragVelocity=dx*0.3;wheelRotation+=dragVelocity;dragStartX=e.clientX;requestAnimationFrame(updateWheelRotation);}else if(Math.abs(dx)<2&&e.type!=='touchmove'){stopDrag();}}
-function onDragTouch(e){if(!isDragging)return;const dx=e.touches[0].clientX-dragStartX;if(Math.abs(dx)>3){dragVelocity=dx*0.3;wheelRotation+=dragVelocity;dragStartX=e.touches[0].clientX;requestAnimationFrame(updateWheelRotation);}}
-function stopDrag(){
-    isDragging=false;
-    const s=document.querySelector('#wheelCanvas svg');
-    if(s)s.style.cursor='grab';
-    const g=document.querySelector('#wheelGroup');
-    if(g)g.classList.remove('dragging');
-    // Start momentum if velocity is significant
-    if(Math.abs(dragVelocity)>2) startMomentum();
-}
-function startMomentum(){
-    cancelMomentum();
-    function step(){
-        dragVelocity*=0.96; // Decay
-        if(Math.abs(dragVelocity)<0.3){cancelMomentum();return;}
-        wheelRotation+=dragVelocity;
-        updateWheelRotation();
-        momentumId=requestAnimationFrame(step);
-    }
-    momentumId=requestAnimationFrame(step);
-}
-function cancelMomentum(){if(momentumId){cancelAnimationFrame(momentumId);momentumId=null;}}
-function startAutoRotate(){
-    cancelAutoRotate();
-    cancelMomentum();
-    const btn=document.getElementById('autoRotateBtn');
-    if(btn)btn.textContent='⏸ Pause';
-    const speed=0.15;
-    function step(){
-        wheelRotation=(wheelRotation+speed)%360;
-        updateWheelRotation();
-        autoRotateId=requestAnimationFrame(step);
-    }
-    autoRotateId=requestAnimationFrame(step);
-}
-function cancelAutoRotate(){
-    if(autoRotateId){cancelAnimationFrame(autoRotateId);autoRotateId=null;}
-    const btn=document.getElementById('autoRotateBtn');
-    if(btn)btn.textContent='🔄 Spin';
-}
-function toggleAutoRotate(){
-    if(autoRotateId){cancelAutoRotate();}
-    else{startAutoRotate();}
-}
+function startDrag(e){isDragging=true;dragStartX=e.clientX;const s=document.querySelector('#wheelCanvas svg');if(s)s.style.cursor='grabbing';const g=document.querySelector('#wheelGroup');if(g)g.classList.add('dragging');}
+function startDragTouch(e){isDragging=true;dragStartX=e.touches[0].clientX;const g=document.querySelector('#wheelGroup');if(g)g.classList.add('dragging');}
+function onDrag(e){if(!isDragging)return;const dx=e.clientX-dragStartX;if(Math.abs(dx)>3){wheelRotation+=dx*0.3;dragStartX=e.clientX;requestAnimationFrame(updateWheelRotation);}else if(Math.abs(dx)<2&&e.type!=='touchmove'){stopDrag();}}
+function onDragTouch(e){if(!isDragging)return;const dx=e.touches[0].clientX-dragStartX;if(Math.abs(dx)>3){wheelRotation+=dx*0.3;dragStartX=e.touches[0].clientX;requestAnimationFrame(updateWheelRotation);}}
+function stopDrag(){isDragging=false;const s=document.querySelector('#wheelCanvas svg');if(s)s.style.cursor='grab';const g=document.querySelector('#wheelGroup');if(g)g.classList.remove('dragging');}
 function updateWheelRotation(){
     const g=document.querySelector('#wheelGroup');
-    if(g){
-        // Use CSS transform so the CSS transition applies for smooth animation
-        g.style.transform=`rotate(${wheelRotation}deg)`;
-        g.setAttribute('transform',`rotate(${wheelRotation},250,250)`);
-    }
+    if(g)g.setAttribute('transform',`rotate(${wheelRotation},250,250)`);
     const s=document.getElementById('wheelSlider');
     if(s)s.value=Math.max(-180,Math.min(180,wheelRotation));
     const rv=document.getElementById('rotateVal');
@@ -2188,7 +1915,6 @@ function selectEmotion(idx){
     const d=document.getElementById('emotionDetail');
     d.innerHTML=`
         <div class="ed-name" style="color:${em.color};">${em.name}</div>
-        <div style="font-size:15px;font-weight:600;margin-bottom:8px;color:#555;">${em.simple}</div>
         <div class="ed-intensities">${em.secondary.map(s=>`<span class="ed-int" style="background:${em.color};">${s}</span>`).join('')}</div>
         <div class="ed-combos"><h4>Feelings</h4>${secHtml}</div>
         <button class="ed-close" onclick="closeEmotion()">Close</button>
@@ -2208,120 +1934,12 @@ function toggleFocus(){
     const wg=document.querySelector('#wheelGroup');
     if(!wg) return;
     const btn=document.getElementById('focusBtn');
-    const body=document.body;
-    if(body.classList.contains('emotion-focus')){
-        body.classList.remove('emotion-focus');
+    if(wg.classList.contains('focus-mode')){
         wg.classList.remove('focus-mode');
-        if(btn){btn.textContent='\u{1F441} Focus';btn.style.color='';}
-        // Restore emotion detail
-        if(state.lastUsedEmotion){
-            const idx=EMOTIONS.findIndex(e=>e.name===state.lastUsedEmotion);
-            if(idx>=0)selectEmotion(idx);
-        }
+        if(btn) btn.textContent='\u{1F441} Focus';
     } else {
-        // Require an emotion to be selected first
-        if(!state.lastUsedEmotion){
-            document.getElementById('emotionDetail').innerHTML='<div style="padding:12px;text-align:center;color:#999;">Tap an emotion sector first, then Focus.</div>';
-            document.getElementById('emotionDetail').classList.add('open');
-            return;
-        }
-        body.classList.add('emotion-focus');
         wg.classList.add('focus-mode');
-        if(btn){btn.textContent='\u{1F441} Focus ON';btn.style.color='var(--accent)';}
-        // Re-render emotion detail with expanded focus view
-        const idx=EMOTIONS.findIndex(e=>e.name===state.lastUsedEmotion);
-        if(idx>=0)renderFocusDetail(idx);
-    }
-}
-function renderFocusDetail(idx){
-    const em=EMOTIONS[idx];
-    const d=document.getElementById('emotionDetail');
-    d.classList.add('open');
-    let secHtml='';
-    Object.entries(em.tertiary).forEach(([sec,ters])=>{
-        secHtml+=`<div class="ed-sec"><strong>${sec}</strong>: ${ters.join(', ')}</div>`;
-    });
-    d.innerHTML=`
-        <div class="ed-name" style="color:${em.color};font-size:28px;">${em.name}</div>
-        <div style="font-size:18px;font-weight:600;margin-bottom:6px;color:#555;">${em.simple}</div>
-        <div style="font-size:13px;margin-bottom:10px;color:#888;border-top:1px solid #eee;padding-top:8px;">
-            <strong>What does this feel like?</strong><br>
-            ${em.secondary.map(s=>`<span style="display:inline-block;padding:3px 10px;margin:2px;border-radius:6px;background:${em.color};color:#fff;font-size:12px;">${s}</span>`).join('')}
-        </div>
-        <div style="font-size:13px;color:#888;">
-            <strong>Deeper feelings</strong><br>
-            ${secHtml}
-        </div>
-        <button class="ed-close" onclick="exitFocus()" style="margin-top:12px;padding:10px 24px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;">Exit Focus</button>
-    `;
-}
-function exitFocus(){
-    document.body.classList.remove('emotion-focus');
-    const wg=document.querySelector('#wheelGroup');
-    if(wg)wg.classList.remove('focus-mode');
-    const btn=document.getElementById('focusBtn');
-    if(btn){btn.textContent='\u{1F441} Focus';btn.style.color='';}
-    closeEmotion();
-}
-
-// ponytail: Label Maker — generates surface + deep labels from selected emotion
-let labelLevel=0; // 0=surface, 1=deep
-function buildMyLabel(){
-    const em=EMOTIONS.find(e=>e.name===state.lastUsedEmotion);
-    const out=document.getElementById('labelOutput');
-    if(!em){
-        out.style.display='block';
-        out.innerHTML='<div style="padding:8px;text-align:center;color:#999;">👆 Tap an emotion sector first</div>';
-        return;
-    }
-    // Toggle level on each tap
-    labelLevel=(labelLevel+1)%2;
-    const allWords=[];
-    Object.values(em.tertiary).forEach(arr=>arr.forEach(w=>allWords.push(w)));
-    const pick=(arr)=>arr[Math.floor(Math.random()*arr.length)];
-    const w1=pick(em.secondary), w2=pick(allWords);
-    
-    const surfaceIntros=['It sounds like','It seems like','It feels like','It looks like'];
-    const deepIntros=['I get the sense that','Behind this I hear','Underneath that I wonder if','What I\'m picking up is'];
-    const si=surfaceIntros[Math.floor(Math.random()*surfaceIntros.length)];
-    const di=deepIntros[Math.floor(Math.random()*deepIntros.length)];
-    
-    if(labelLevel===0){
-        // Surface label — simple, direct
-        const phrases=[
-            `${si} you're feeling some <strong>${w1.toLowerCase()}</strong> right now.`,
-            `${si} there's a bit of <strong>${w2.toLowerCase()}</strong> in what you're saying.`,
-        ];
-        out.style.display='block';
-        out.innerHTML=`
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                <span style="font-size:18px;filter:drop-shadow(0 0 6px rgba(192,192,192,0.5));">🖨️</span>
-                <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#c0c0c0;">Label Maker — Surface</span>
-            </div>
-            ${phrases.map(p=>`<div class="bk-example">${p}</div>`).join('')}
-            <div style="font-size:10px;color:var(--text-dim);margin-top:6px;padding-top:6px;border-top:1px solid rgba(0,0,0,0.06);">
-                💡 Say one, then stay silent · <span style="color:var(--red);font-weight:700;">Tap again for deep</span>
-            </div>`;
-    }else{
-        // Deep label — emotional layer, vulnerability, unspoken fears
-        const deepEmotions=['vulnerability','uncertainty','exhaustion','disappointment','betrayal','loss','abandonment','shame','hopelessness'];
-        const de=pick(deepEmotions);
-        const phrases=[
-            `${di} there's some <strong>${w1.toLowerCase()}</strong> here, and maybe even <strong>${de}</strong>.`,
-            `${di} what I'm hearing is that <strong>${de}</strong> is really at the core of this.`,
-        ];
-        out.style.display='block';
-        out.innerHTML=`
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                <span style="font-size:20px;filter:drop-shadow(0 0 8px rgba(192,192,192,0.6));">🖨️</span>
-                <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#c0c0c0;">Label Maker — Deep Emotion</span>
-            </div>
-            ${phrases.map(p=>`<div class="bk-example" style="border-left-color:#c0c0c0;">${p}</div>`).join('')}
-            <div style="margin-top:8px;padding:8px 10px;background:rgba(229,57,53,0.06);border-radius:6px;border-left:3px solid var(--red);font-size:11px;font-weight:600;">
-                ⚡ A negative label is worth <strong style="color:var(--red);">7×</strong> a positive label
-                <span style="display:block;font-weight:400;font-size:10px;color:var(--text-dim);margin-top:2px;">Acknowledging what's hard builds trust faster than praising what's good.</span>
-            </div>
-            <div style="font-size:10px;color:var(--text-dim);margin-top:4px;">💡 Say one, then stay silent · <span style="color:var(--accent);font-weight:700;">Tap again for surface</span></div>`;
+        if(btn) btn.textContent='\u{1F441} Focus ON';
     }
 }
 

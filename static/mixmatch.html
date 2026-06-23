@@ -945,6 +945,15 @@
                 <button class="btn btn-ghost btn-sm" onclick="hideBanner()">Dismiss</button>
             </div>
         </div>
+        <!-- ponytail: Session mini-wheel — appears between current tool and cards -->
+        <div class="session-wheel" id="sessionWheel" style="display:none;width:100%;max-width:500px;margin:6px auto 0;">
+            <div class="wheel-header" style="padding-top:6px;border-top:1px solid rgba(255,255,255,0.06);">
+                <h2 style="color:#fff;font-size:14px;font-weight:700;margin-bottom:2px;">&#127804; Emotions</h2>
+            </div>
+            <div class="wheel-layout" style="flex-direction:column;gap:2px;">
+                <div class="wheel-canvas-wrap" id="sessionWheelCanvas" style="position:relative;width:100%;max-width:320px;margin:0 auto;"></div>
+            </div>
+        </div>
         <div class="session-panel" id="sessionPanel">
             <div class="sp-header">
                 <span class="sp-title">&#128203; Session Log</span>
@@ -953,15 +962,6 @@
             <div class="sp-list" id="sessionLogList"><span class="sp-empty">No tools used yet.</span></div>
         </div>
         <div class="cards-area" id="cardsArea"></div>
-        <!-- ponytail: Session mini-wheel — appears below cards when session starts -->
-        <div class="session-wheel" id="sessionWheel" style="display:none;width:100%;max-width:500px;margin:14px auto 0;">
-            <div class="wheel-header" style="padding-top:8px;border-top:1px solid rgba(255,255,255,0.08);">
-                <h2 style="color:#fff;font-size:16px;font-weight:700;margin-bottom:2px;">&#127804; Emotions</h2>
-            </div>
-            <div class="wheel-layout" style="flex-direction:column;gap:4px;">
-                <div class="wheel-canvas-wrap" id="sessionWheelCanvas" style="position:relative;width:100%;max-width:380px;margin:0 auto;"></div>
-            </div>
-        </div>
     </div>
 
     <!-- ██ VIEW: Behavioral Change Stair ██ -->

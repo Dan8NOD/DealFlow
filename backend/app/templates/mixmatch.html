@@ -1674,20 +1674,22 @@ function triggerModeTransition(mode){
 // ponytail: 90s arcade negotiation scenarios per mode
 const MODE_CARDS = {
     haggle: [
-        {tag:'LANDLORD', name:'The Rent Hike', desc:'Tenant wants out. You raise rent $200. Flinch + Anchor.', hint:'💡 "I understand $200 feels like a lot. Let me show you the comps..."'},
-        {tag:'TENANT', name:'The Move-Out Bluff', desc:'Tenant threatens to leave. You know they have no deposit budget.', hint:'💡 "How would you handle a $3k move-out with your current savings?"'},
-        {tag:'BUYER AGENT', name:'The Inspection Walk-Back', desc:'Buyer wants $10k credit. Repairs are $2k. Anchor + Fairness Frame.', hint:'💡 "I want this fair. Here are the actual quotes from licensed contractors."'},
-        {tag:'SELLER', name:'The Net Sheet Shock', desc:'Seller sees the net and demands $50k more. Label + "That\'s Right".', hint:'💡 "It sounds like you feel the house is worth more than the comps."'}
+        {tag:'CAR DEALER', name:'The Used Car Hustle', desc:"They're asking $15k. You know it's worth $11k. Flinch + Walk Away.", hint:'💡 "I was thinking more in the $10k range — help me understand how you got to $15k."'},
+        {tag:'BOSS', name:'The Raise Request', desc:'You want a $10k raise. They offer 3%. Anchor high, negotiate from there.', hint:'💡 "I appreciate the 3%, but based on my impact I was hoping for something closer to $10k. Can we talk about what it would take to get there?"'},
+        {tag:'NEIGHBOR', name:'The Fence Dispute', desc:'New fence is 2ft onto your property. They want you to pay half. Calibrated + No.', hint:'💡 "I understand you want to split it, but this is on your side. How would you want me to handle it if the roles were reversed?"'},
+        {tag:'MECHANIC', name:'The Mystery Quote', desc:'$2,500 for a "diagnostic" that should be $150. Accusation Audit + Label.', hint:'💡 "It seems like this quote is a lot higher than I was expecting. Can you walk me through what justified the $2,500?"'}
     ],
     friend: [
-        {tag:'NEW LEAD', name:'The First Call', desc:'Cold Zillow lead talking to 3 agents. Mirror their fear of being rushed.', hint:'💡 "It sounds like you\'ve had bad experiences with agents pushing you."'},
-        {tag:'TENANT', name:'The Maintenance Complaint', desc:'Tenant furious about slow repair. Fix the feeling, not the plumbing.', hint:'💡 "It seems like you feel ignored. I want to make this right with you."'},
-        {tag:'CO-BROKER', name:'The Showing Friction', desc:'Other agent is difficult about showing times. Build the bond first.', hint:'💡 "I want to make your life easy. What does your schedule look like?"'}
+        {tag:'FRIEND', name:'The Late Repayment', desc:"They owe you $500 from 3 months ago. You need it but don't want to damage the friendship.", hint:'💡 "Hey, I know things have been tight — I was wondering if there\'s a good time for you to pay back that $500?"'},
+        {tag:'ROOMMATE', name:'The Chores Problem', desc:"They never do dishes. You're tired of asking. Label + Calibrated Question.", hint:'💡 "It seems like you\'ve been busy and chores keep falling on me. How can we make this fair for both of us?"'},
+        {tag:'PARTNER', name:'The Weekend Plans', desc:'They want to visit family all weekend. You need downtime. Mirror + Empathy.', hint:'💡 "It sounds like seeing your family is really important to you. I also need some downtime this weekend — how can we split it so we both get what we need?"'},
+        {tag:'STRANGER', name:'The Return Without Receipt', desc:"Store says no returns without receipt. It's $80. You're polite but firm.", hint:'💡 "I understand the policy, but this was a gift and I don\'t have the receipt. Is there anything you can do as a one-time courtesy?"'}
     ],
     boss: [
-        {tag:'LISTING PRESENTATION', name:'The Room Takeover', desc:'3 sellers interviewing you. 15 minutes. Start with their pain, not your creds.', hint:'💡 "Before I talk about me — what\'s keeping you up at night about this move?"'},
-        {tag:'OFFER NEGOTIATION', name:'The Multi-Offer Leverage', desc:'5 offers. Pick the strongest, anchor high, make the others compete.', hint:'💡 "We have a strong offer at $X. Beat it by Y and you have the house."'},
-        {tag:'EXPIRED LISTING', name:'The Second Chance', desc:'Seller gave up with another agent. You have one shot to re-frame the market.', hint:'💡 "What did they miss? Let me show you where the strategy broke down."'}
+        {tag:'JOB INTERVIEW', name:'The Salary Question', desc:'"What are your salary expectations?" First one to name a number loses. Mirror + Flip It.', hint:'💡 "I\'d love to hear what range you\'ve budgeted for this role first, so I can make sure we\'re aligned."'},
+        {tag:'CONTRACTOR', name:'The Renovation Overrun', desc:'They quoted $5k, now it\'s $8k. Work is half done. Hold them to the original.', hint:'💡 "I understand things came up, but we agreed on $5k. How do you typically handle it when a quote comes in under the actual work?"'},
+        {tag:'CUSTOMER SERVICE', name:'The Airline Nightmare', desc:'Flight cancelled. No compensation offered. You want a full refund + voucher.', hint:'💡 "I get that cancellations happen, but I\'ve been stuck here for 6 hours with no hotel. What can you do to make this right beyond the standard policy?"'},
+        {tag:'CAR INSURANCE', name:'The Claim Lowball', desc:'They\'re offering $2k for $5k in damage. You have photos + receipts.', hint:'💡 "I appreciate the offer, but my repair estimate from a licensed shop is $5k. Can you walk me through how you arrived at $2k?"'}
     ]
 };
 

@@ -8,6 +8,7 @@ Called by:
 
 import asyncio
 import json
+import os
 from datetime import datetime, timezone
 from typing import Optional
 from sqlalchemy.orm import Session
@@ -27,6 +28,37 @@ from app.integrations.microsoft_graph import (
 from app.integrations.email_parser import (
     classify_email, extract_property, detect_handler,
 )
+
+
+# ponytail: office bounce properties — not personal inventory, skip in property lists
+BOUNCE_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "bounce_properties.json")
+
+
+def load_bounce_properties():
+    """Load office properties available for bounce matching."""
+    try:
+        with open(BOUNCE_PATH) as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+
+def match_bounce_properties(monthly_income: float, rent_threshold: float = 500):
+    """Find office bounce properties within rent_threshold of lead's budget (income/3).
+    
+    Returns a formatted string for the bounce_to field, or None.
+    """
+    if not monthly_income or monthly_income <= 0:
+        return None
+    budget = monthly_income / 3  # standard qualifier: rent x 3
+    matches = []
+    for bp in load_bounce_properties():
+        r = bp.get("rent")
+        if r and abs(r - budget) <= rent_threshold:
+            matches.append(f"{bp['address']} — ${r}/mo (+/${r - budget:.0f} from budget)")
+    if not matches:
+        return None
+    return "Office bounce candidates: " + "; ".join(matches[:5])  # ponytail: max 5 suggestions
 
 
 async def sync_account(account_id: int) -> dict:
@@ -90,7 +122,7 @@ async def sync_account(account_id: int) -> dict:
             new_count += 1
             # Apply to domain tables based on kind
             if classified["matched_kind"] == "lead":
-                _create_or_update_lead(db, account.org_id, prop, parsed, classified)
+                _create_or_update_lead(db, account.org_id, prop, parsed, classified, classified.get("monthly_income"))
                 lead_count += 1
             elif classified["matched_kind"] == "application":
                 _create_or_update_application(db, account.org_id, prop, parsed, classified)
@@ -138,7 +170,7 @@ def find_property(db: Session, org_id: int, addr: str, unit: Optional[str]) -> O
     return None
 
 
-def _create_or_update_lead(db, org_id, prop, parsed, classified):
+def _create_or_update_lead(db, org_id, prop, parsed, classified, monthly_income=None):
     """Insert a new lead (idempotent by email+subject)."""
     existing = db.query(Lead).filter(
         Lead.org_id == org_id,
@@ -147,6 +179,8 @@ def _create_or_update_lead(db, org_id, prop, parsed, classified):
     ).first()
     if existing:
         return existing
+    # ponytail: office bounce suggestions if we have income data
+    bounce = match_bounce_properties(monthly_income) if monthly_income else None
     lead = Lead(
         org_id=org_id,
         property_id=prop.id if prop else None,
@@ -158,6 +192,8 @@ def _create_or_update_lead(db, org_id, prop, parsed, classified):
         subject=parsed["subject"],
         received_at=parsed["received_at"] or datetime.now(timezone.utc),
         raw_email_id=parsed["external_id"],
+        monthly_income=monthly_income,
+        bounce_to=bounce,
     )
     db.add(lead)
 

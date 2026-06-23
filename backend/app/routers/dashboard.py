@@ -582,6 +582,74 @@ async def patch_application(
     return {"ok": True, "id": app_id}
 
 
+@router.delete("/api/leads/{lead_id}")
+async def delete_lead(
+    lead_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    lead = db.query(Lead).filter(Lead.id == lead_id, Lead.org_id == user.org_id).first()
+    if not lead:
+        return JSONResponse({"error": "not found"}, status_code=404)
+    db.delete(lead)
+    db.commit()
+    return {"ok": True, "deleted": lead_id}
+
+
+@router.post("/api/leads/purge")
+async def purge_leads(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Hard-delete 660 Clyde leads + anything >45d old with no application."""
+    org_id = user.org_id
+    cutoff = datetime.now(timezone.utc) - timedelta(days=45)
+
+    # IDs with an application — never delete
+    protected = set(
+        r[0] for r in db.query(Lead.id)
+        .join(Application, Application.applicant_name == Lead.name, isouter=True)
+        .filter(Lead.org_id == org_id, Application.id != None).all()
+    )
+
+    deleted = 0
+
+    # 1. Kill all 660 Clyde leads (building already rented, unbounceable)
+    clyde = db.query(Lead).filter(
+        Lead.org_id == org_id,
+        Lead.property_id == db.query(Property.id)
+            .filter(Property.org_id == org_id, Property.address.ilike("%660%clyde%"))
+            .scalar_subquery()
+    ).all()
+    # also catch leads with no FK but 660 Clyde in subject line
+    clyde2 = db.query(Lead).filter(
+        Lead.org_id == org_id,
+        Lead.property_id == None,
+        Lead.subject.ilike("%660%clyde%"),
+    ).all()
+    for l in clyde + clyde2:
+        if l.id not in protected:
+            db.delete(l)
+            deleted += 1
+
+    db.flush()
+
+    # 2. Delete stale (>45d) non-protected leads with dead/no-action statuses
+    stale = db.query(Lead).filter(
+        Lead.org_id == org_id,
+        Lead.status.in_(["NEW", "COLD", "CONTACTED", "LOST"]),
+        Lead.received_at < cutoff,
+    ).all()
+    for l in stale:
+        if l.id not in protected:
+            db.delete(l)
+            deleted += 1
+
+    db.commit()
+    remaining = db.query(func.count(Lead.id)).filter(Lead.org_id == org_id).scalar()
+    return {"deleted": deleted, "remaining": remaining}
+
+
 @router.patch("/api/leads/{lead_id}")
 async def patch_lead(
     lead_id: int,

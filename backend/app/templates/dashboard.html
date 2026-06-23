@@ -151,6 +151,7 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
   <select id="statusFilter" onchange="renderView()"><option value="">All</option></select>
   <span id="rowCount" style="font-size:11px;color:var(--gray)"></span>
   <button class="btn-sm green" onclick="refreshAll()">↻ Refresh</button>
+  <button class="btn-sm" style="background:#fed7d7;color:#c53030" onclick="purgeLeads()">🧹 Purge</button>
 </div>
 
 <!-- KANBAN -->
@@ -600,8 +601,24 @@ async function openPanel(type,id){
 
   if(type==='lead'){
     title=data.name||'Lead';
-    body=r('Phone',data.phone)+r('Email',data.email)+r('Property',data.property)+r('Source',data.source)+r('Status',data.status)+r('Budget',data.monthly_income?'$'+Number(data.monthly_income).toLocaleString()+'/mo':'')+r('Notes',data.notes);
-    body+=`<div class="p-actions">${data.phone?`<a href="tel:${data.phone}" class="pa-call">📞 Call</a>`:''}${data.email?`<a href="mailto:${data.email}" class="pa-email">✉️ Email</a>`:''}</div>`;
+    body=`
+      <form id="editLeadForm" onsubmit="saveLeadEdit(event,${id})" style="display:flex;flex-direction:column;gap:8px">
+        <input name="name" value="${data.name||''}" placeholder="Name" style="padding:8px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px">
+        <input name="phone" value="${data.phone||''}" placeholder="Phone" style="padding:8px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px">
+        <input name="email" value="${data.email||''}" placeholder="Email" style="padding:8px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px">
+        <input name="monthly_income" type="number" value="${data.monthly_income||''}" placeholder="Monthly income ($)" style="padding:8px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px">
+        <select name="status" style="padding:8px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px">
+          ${['NEW','CONTACTED','QUALIFIED','LOST','COLD'].map(s=>`<option value="${s}"${data.status===s?' selected':''}>${s}</option>`).join('')}
+        </select>
+        <textarea name="notes" placeholder="Notes" rows="3" style="padding:8px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px">${data.notes||''}</textarea>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button type="submit" class="btn-sm green" style="flex:1;padding:10px">💾 Save</button>
+          <button type="button" onclick="deleteLead(${id})" style="padding:10px 14px;background:#fee2e2;border:none;border-radius:6px;color:#c53030;cursor:pointer;font-size:13px">🗑 Delete</button>
+        </div>
+      </form>
+      <div style="margin-top:10px;font-size:12px;color:var(--gray)">${data.source||''} · ${data.property||''} · ${data.days_old||0}d old</div>
+      <div class="p-actions">${data.phone?`<a href="tel:${data.phone}" class="pa-call">📞 Call</a>`:''}${data.email?`<a href="mailto:${data.email}" class="pa-email">✉️ Email</a>`:''}</div>`;
+
   }else if(type==='deal'){
     title=data.address||'Deal';
     body=r('Status',(data.status||'').replace(/_/g,' '))+r('Idle',(data.days_idle||0)+' days')+r('Events',data.event_count||0)+r('Price',data.list_price?'$'+Number(data.list_price).toLocaleString():'');
@@ -675,6 +692,34 @@ function switchTab(tab){
 function sortBy(col){sortCol===col?sortDir*=-1:(sortCol=col,sortDir=1);renderTabView(currentTab)}
 function refreshAll(){loadAll();toast('✓ Refreshed')}
 function syncObsidian(){toast('Syncing vault...');fetch('/api/enrich-leads',{method:'POST'}).then(()=>{toast('✓ Enriched');loadAll()})}
+
+async function saveLeadEdit(e,id){
+  e.preventDefault();
+  const f=e.target;
+  const body={
+    name:f.name.value,phone:f.phone.value,email:f.email.value,
+    status:f.status.value,notes:f.notes.value,
+    monthly_income:f.monthly_income.value?parseFloat(f.monthly_income.value):null
+  };
+  const r=await fetch('/api/leads/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(r.ok){toast('✓ Saved');closePanel();loadAll();}else toast('✗ Save failed');
+}
+
+async function deleteLead(id){
+  if(!confirm('Delete this lead? This cannot be undone.'))return;
+  const r=await fetch('/api/leads/'+id,{method:'DELETE'});
+  if(r.ok){toast('🗑 Deleted');closePanel();loadAll();}else toast('✗ Delete failed');
+}
+
+async function purgeLeads(){
+  if(!confirm('Purge 660 Clyde leads + all leads older than 45 days (no applications)?\nThis cannot be undone.'))return;
+  toast('Purging...');
+  const r=await fetch('/api/leads/purge',{method:'POST'});
+  const j=await r.json();
+  toast(`🧹 Purged ${j.deleted}, ${j.remaining} remain`);
+  loadAll();
+}
+
 function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2000)}
 function fmt(n){return n>=1000?(n/1000).toFixed(1)+'k':String(n)}
 

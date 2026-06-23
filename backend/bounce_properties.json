@@ -1,0 +1,18 @@
+[
+  {"address": "915 Spiros Ct - 101", "city": "Dekalb", "rent": 1495, "beds": 4, "baths": 2, "desc": "New rehab, available now"},
+  {"address": "915 Spiros Ct - 206", "city": "Dekalb", "rent": 1495, "beds": 4, "baths": 2, "desc": "New rehab, available now"},
+  {"address": "1104 Isabel Drive", "city": "Algonquin", "rent": 2000, "beds": 3, "baths": 1, "desc": "Ranch on private road, July 1"},
+  {"address": "920 Jenkins Ct - 4E", "city": "Wheeling", "rent": 3700, "beds": 3, "baths": 2, "desc": "Townhome with 2-car garage, Jun 27"},
+  {"address": "923 W Plainfield Rd", "city": "La Grange", "rent": 3400, "beds": 4, "baths": 2, "desc": "Large yard, updated, Jul 1"},
+  {"address": "1622 N 40th Ave - 1", "city": "Stone Park", "rent": null, "beds": 2, "baths": 1, "desc": "No price listed, available now"},
+  {"address": "4833 Montana - 1", "city": "Chicago", "rent": 1570, "beds": 2, "baths": 1, "desc": "Belmont Cragin, Jul 1"},
+  {"address": "3249 N Keeler - 2E", "city": "Chicago", "rent": 1650, "beds": 1, "baths": 1, "desc": "Fully renovated, Aug 1"},
+  {"address": "2551 N Avers - 2C", "city": "Chicago", "rent": 2050, "beds": 2, "baths": 1, "desc": "Logan Square, Jul 1"},
+  {"address": "3821 W Wrightwood - G", "city": "Chicago", "rent": 1895, "beds": 2, "baths": 1, "desc": "Logan Square, Jul 1"},
+  {"address": "3638 W North Ave - #2", "city": "Chicago", "rent": 2250, "beds": 3, "baths": 1, "desc": "Humboldt Park, Aug 7"},
+  {"address": "946 N Drake Ave - 1", "city": "Chicago", "rent": 2100, "beds": 3, "baths": 1, "desc": "Humboldt Park, available now"},
+  {"address": "3543 N Lawndale Ave - 1", "city": "Chicago", "rent": 3000, "beds": 3, "baths": 2, "desc": "Avondale duplex down, Aug 1"},
+  {"address": "1546 N Homan - 3", "city": "Chicago", "rent": 2750, "beds": 3, "baths": 2, "desc": "Humboldt Park, Jul 1"},
+  {"address": "3012 W. Warren Blvd - 2F", "city": "Chicago", "rent": 1560, "beds": 2, "baths": 1, "desc": "E. Garfield Park"},
+  {"address": "2753 n whipple ave - unit 2", "city": "Chicago", "rent": 2500, "beds": 2, "baths": 1, "desc": "Logan Square, Jul 1"}
+]

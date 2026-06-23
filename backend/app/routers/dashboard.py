@@ -7,7 +7,7 @@ from sqlalchemy import desc, func
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from app.db import get_db
-from app.auth import get_current_user
+from app.auth import get_current_user, require_user
 from app.models import (
     User, Property, Lead, Application, ApplicationEvent, UserRole,
     SalesDeal, CmaRequest, PropertyFile, Organization, Comment, EmailMessage,
@@ -20,7 +20,7 @@ templates = Jinja2Templates(directory=Path(__file__).parent.parent / "templates"
 @router.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(
     request: Request,
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_user),
     db: Session = Depends(get_db),
 ):
     org = user.organization

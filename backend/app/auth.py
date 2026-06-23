@@ -60,5 +60,24 @@ def get_current_user(
     return user
 
 
+def require_user(
+    request: Request,
+    db: Session = Depends(get_db),
+    session_token: Optional[str] = Cookie(None),
+) -> "User":
+    # ponytail: browser dep that redirects to /login instead of raising 401 JSON
+    from fastapi.responses import RedirectResponse
+    token = session_token or request.headers.get("Authorization", "")[7:]
+    if not token:
+        raise HTTPException(status_code=307, headers={"Location": "/login"})
+    payload = decode_token(token)
+    if not payload:
+        raise HTTPException(status_code=307, headers={"Location": "/login"})
+    user = db.query(User).filter(User.id == payload.get("sub"), User.is_active == True).first()
+    if not user:
+        raise HTTPException(status_code=307, headers={"Location": "/login"})
+    return user
+
+
 def get_current_org(user: User = Depends(get_current_user)) -> Organization:
     return user.organization

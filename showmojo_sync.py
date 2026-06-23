@@ -123,16 +123,22 @@ def portal_create_lead(token, lead):
         return False
 
 def portal_get_existing_emails(token):
-    """Fetch existing lead emails/phones for dedup."""
-    req = urllib.request.Request(f"{PORTAL_URL}/api/leads?limit=500", headers={"Cookie": f"session_token={token}"})
-    try:
-        with urllib.request.urlopen(req, timeout=30) as r:
-            leads = json.loads(r.read())
-            emails = {l.get("email","").lower() for l in leads if l.get("email")}
-            phones = {re.sub(r"\D","",l.get("phone","")) for l in leads if l.get("phone")}
-            return emails, phones
-    except:
-        return set(), set()
+    """Fetch existing lead emails/phones for dedup — all statuses."""
+    # ponytail: fetch all statuses so COLD/LOST leads don't get re-inserted
+    all_emails, all_phones = set(), set()
+    for status in ["NEW", "CONTACTED", "QUALIFIED", "COLD", "LOST"]:
+        req = urllib.request.Request(
+            f"{PORTAL_URL}/api/leads?limit=2000&status={status}",
+            headers={"Cookie": f"session_token={token}"}
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                leads = json.loads(r.read())
+                all_emails |= {l.get("email","").lower() for l in leads if l.get("email")}
+                all_phones |= {re.sub(r"\D","",l.get("phone","")) for l in leads if l.get("phone")}
+        except:
+            pass
+    return all_emails, all_phones
 
 class NoRedirectHandler(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):

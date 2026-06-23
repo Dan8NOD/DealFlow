@@ -650,6 +650,43 @@ async def purge_leads(
     return {"deleted": deleted, "remaining": remaining}
 
 
+@router.post("/api/leads/dedup")
+async def dedup_leads(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Keep only the newest lead per email (and per phone). Hard-delete others."""
+    org_id = user.org_id
+    removed = 0
+
+    # Group by email — keep highest id (newest insert), delete rest
+    from sqlalchemy import text
+    dupes = db.execute(text(
+        "SELECT email, COUNT(*) c, MAX(id) keep_id FROM leads "
+        "WHERE org_id=:org AND email IS NOT NULL AND email != '' "
+        "GROUP BY email HAVING c > 1"
+    ), {"org": org_id}).fetchall()
+
+    for row in dupes:
+        old = db.query(Lead).filter(
+            Lead.org_id == org_id,
+            Lead.email == row.email,
+            Lead.id != row.keep_id,
+        ).all()
+        # Only delete if the kept lead has no application
+        protected = db.query(Application).filter(
+            Application.applicant_name == db.query(Lead.name).filter(Lead.id == row.keep_id).scalar()
+        ).first()
+        for l in old:
+            if not protected:
+                db.delete(l)
+                removed += 1
+
+    db.commit()
+    remaining = db.query(func.count(Lead.id)).filter(Lead.org_id == org_id).scalar()
+    return {"deduped": removed, "remaining": remaining}
+
+
 @router.patch("/api/leads/{lead_id}")
 async def patch_lead(
     lead_id: int,

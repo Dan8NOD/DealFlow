@@ -354,7 +354,7 @@ async def api_leads(
     db: Session = Depends(get_db),
     status: str = Query(None),
     property_id: int = Query(None),
-    limit: int = Query(150, le=200),
+    limit: int = Query(150, le=500),
 ):
     q = db.query(Lead).filter(Lead.org_id == user.org_id)
     if status:

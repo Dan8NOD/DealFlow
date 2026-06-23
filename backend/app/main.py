@@ -129,6 +129,23 @@ def _ensure_columns(engine):
             """))
             conn.commit()
 
+    # ponytail: property_updates — weekly reports attached to a property (date-keyed)
+    if 'property_updates' not in insp.get_table_names():
+        with engine.connect() as conn:
+            conn.execute(text("""
+                CREATE TABLE property_updates (
+                    id SERIAL PRIMARY KEY,
+                    org_id INTEGER NOT NULL REFERENCES organizations(id),
+                    property_id INTEGER REFERENCES properties(id),
+                    week_of DATE NOT NULL,
+                    summary VARCHAR(200),
+                    content TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT NOW()
+                )
+            """))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_pupdates_property ON property_updates(property_id, week_of DESC)"))
+            conn.commit()
+
 
 app.include_router(auth.router)
 app.include_router(dashboard.router)

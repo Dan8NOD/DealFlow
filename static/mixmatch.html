@@ -1054,11 +1054,11 @@
         </div>
         <!-- ponytail: Session mini-wheel — appears between current tool and cards -->
         <div class="session-wheel" id="sessionWheel" style="display:none;width:100%;max-width:500px;margin:6px auto 0;">
-            <div class="wheel-header" style="padding-top:6px;border-top:1px solid rgba(255,255,255,0.06);">
-                <h2 style="color:#fff;font-size:14px;font-weight:700;margin-bottom:2px;">&#127804; Emotions</h2>
+            <div class="wheel-header">
+                <h2 style="color:#fff;font-size:16px;font-weight:700;margin-bottom:1px;">&#127804; Emotions</h2>
             </div>
             <div class="wheel-layout" style="flex-direction:column;gap:2px;">
-                <div class="wheel-canvas-wrap" id="sessionWheelCanvas" style="position:relative;width:100%;max-width:320px;margin:0 auto;"></div>
+                <div class="wheel-canvas-wrap" id="sessionWheelCanvas" style="position:relative;width:100%;max-width:300px;margin:0 auto;"></div>
             </div>
         </div>
         <div class="session-panel" id="sessionPanel">
@@ -2291,7 +2291,6 @@ function buildMyLabel(){
         const phrases=[
             `${si} you're feeling some <strong>${w1.toLowerCase()}</strong> right now.`,
             `${si} there's a bit of <strong>${w2.toLowerCase()}</strong> in what you're saying.`,
-            `${si} this is bringing up feelings of <strong>${pick(allWords).toLowerCase()}</strong>.`,
         ];
         out.style.display='block';
         out.innerHTML=`
@@ -2309,7 +2308,6 @@ function buildMyLabel(){
         const de=pick(deepEmotions);
         const phrases=[
             `${di} there's some <strong>${w1.toLowerCase()}</strong> here, and maybe even <strong>${de}</strong>.`,
-            `${di} behind the ${w1.toLowerCase()}, there's a deeper feeling of <strong>${pick(allWords).toLowerCase()}</strong>.`,
             `${di} what I'm hearing is that <strong>${de}</strong> is really at the core of this.`,
         ];
         out.style.display='block';

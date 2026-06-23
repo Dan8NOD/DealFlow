@@ -1293,7 +1293,7 @@ const BK_TOOLS = [
      mistakes:['Don\'t mirror everything — pick key words','Don\'t parrot — repeat only the meaningful phrase','Don\'t break the silence afterward'],
      reminder:'Mirror → silence. Let them fill the gap.',
      cat:'Rapport',count:3},
-    {name:'Trigger',desc:'Use words that provoke a reaction — fear, shock, urgency, or past bad experiences.',
+    {name:'Trigger',desc:'Use words that provoke a reaction — fear, shock, urgency, or past bad experiences.',expand:false,
      why:'Triggers break patterned thinking. A well-placed trigger jolts someone out of their script and opens room for real negotiation.',
      examples:['"Have you considered what happens if this falls apart?"','"Other people in your position have been burned by that."','"I know this might be uncomfortable to hear…"','"What\'s the worst that could happen?"'],
      mistakes:['Don\'t overuse — one trigger per conversation is enough','Don\'t sound threatening — stay calm and curious','Don\'t trigger without a follow-up (label or question)'],
@@ -1526,8 +1526,8 @@ function renderCards(){
         area.innerHTML = filtered.map(tool => {
             const colors = CAT_COLORS[tool.cat]||['#666','#444'];
             return `<div class="tool-card" data-tool="${tool.name.replace(/"/g,'&quot;')}" style="border-top:3px solid ${colors[0]};">
-                <span class="cat-badge" style="color:${colors[0]};">${tool.cat}${state.bareKnuckles?' <span style="float:right;font-size:10px;opacity:0.5;">👆</span>':''}</span>
-                <div class="card-name">${tool.name}${state.bareKnuckles?' <span style="font-size:10px;opacity:0.3;float:right;">ⓘ</span>':''}</div>
+                <span class="cat-badge" style="color:${colors[0]};">${tool.cat}${state.bareKnuckles && tool.expand!==false?' <span style="float:right;font-size:10px;opacity:0.5;">👆</span>':''}</span>
+                <div class="card-name">${tool.name}${state.bareKnuckles && tool.expand!==false?' <span style="font-size:10px;opacity:0.3;float:right;">ⓘ</span>':''}</div>
                 <div class="card-desc">${tool.desc}</div>
                 <div class="card-count"></div>
                 <div class="card-check">&#10003;</div>
@@ -1648,7 +1648,7 @@ function getNextTool(){
         document.getElementById('ctName').after(e);
         return e;
     })();
-    if(tool.isBk){
+    if(tool.isBk && tool.expand!==false){
         expandHint.innerHTML='🔴<span style="font-size:10px;margin-left:4px;opacity:0.8;">tap</span>';
         expandHint.style.display='inline-flex';
         expandHint.style.alignItems='center';

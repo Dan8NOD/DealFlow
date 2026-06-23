@@ -1719,6 +1719,9 @@ function endSession(){
 }
 
 function showSessionSummary(){
+    // Hide expand hint if visible
+    const eh=document.getElementById('expandHint');
+    if(eh)eh.style.display='none';
     const totalMs = Date.now() - (state.sessionStartTime||Date.now());
     const totalSec = Math.floor(totalMs/1000);
     const mins = Math.floor(totalSec/60); const secs = totalSec%60;
@@ -1756,7 +1759,7 @@ function showSessionSummary(){
     }
 
     document.getElementById('currentBanner').classList.add('show');
-    document.getElementById('ctName').innerHTML = '🏁 <span style="color:var(--accent);">Session Summary</span>';
+    document.getElementById('ctName').innerHTML = '<img src="/double-dragon-victory.png" style="width:36px;height:36px;image-rendering:pixelated;vertical-align:middle;margin-right:6px;border-radius:4px;"> 🏁 <span style="color:var(--accent);">Session Summary</span>';
     document.getElementById('ctDesc').innerHTML = `
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0;">
             <div><strong style="color:var(--accent);">${completed.length}</strong><br><small>tools drawn</small></div>

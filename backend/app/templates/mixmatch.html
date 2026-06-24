@@ -945,6 +945,11 @@
             0%,100% { box-shadow: 0 0 4px rgba(212,168,83,0.2); transform: scale(1); }
             50% { box-shadow: 0 0 14px rgba(212,168,83,0.5); transform: scale(1.04); }
         }
+        @keyframes gold-glow {
+            0% { box-shadow: 0 0 0px rgba(212,168,83,0); border-color: rgba(212,168,83,0.1); }
+            40% { box-shadow: 0 0 24px rgba(212,168,83,0.55); border-color: rgba(212,168,83,0.6); }
+            100% { box-shadow: 0 0 8px rgba(212,168,83,0.15); border-color: rgba(212,168,83,0.2); }
+        }
 
 /* Mode cards — scenario-based coaching */
 .mode-wrap{width:100%}.mode-header{text-align:center;margin-bottom:8px}.mode-header h2{color:#fff;font-size:18px;font-weight:700}.mode-header p{color:rgba(255,255,255,0.4);font-size:11px}
@@ -1121,7 +1126,7 @@
             <div class="wheel-layout" style="flex-direction:column;gap:2px;">
                 <div class="wheel-canvas-wrap" id="sessionWheelCanvas" style="position:relative;width:100%;max-width:300px;margin:0 auto;"></div>
             </div>
-            <button class="btn btn-ghost btn-sm" onclick="buildSessionLabel()" id="sessionLabelBtn" style="margin-top:4px;border-color:#c0c0c0;color:#c0c0c0;font-size:11px;text-shadow:0 0 8px rgba(192,192,192,0.3);">🖨️ Label Maker</button>
+            <button class="btn btn-ghost btn-sm" onclick="printSessionLabel()" id="sessionLabelBtn" style="margin-top:4px;border-color:#c0c0c0;color:#c0c0c0;font-size:11px;text-shadow:0 0 8px rgba(192,192,192,0.3);">🖨️ Label Maker</button>
             <div class="label-output" id="sessionLabelOutput" style="display:none;width:100%;margin:4px 0 0;padding:8px 10px;background:var(--card-bg);border-radius:8px;"></div>
         </div>
         <div class="session-panel" id="sessionPanel">
@@ -1168,7 +1173,17 @@
             <button class="btn btn-ghost btn-sm" onclick="toggleAutoRotate()" id="autoRotateBtn" style="margin-top: 4px;">🔄 Spin</button>
             <button class="btn btn-ghost btn-sm" onclick="toggleLegend()" style="margin-top: 4px;">&#128196; Show all words</button>
             <button class="btn btn-ghost btn-sm" onclick="toggleFocus()" id="focusBtn" style="margin-top: 4px;">&#128065; Focus</button>
-            <button class="btn btn-ghost btn-sm" onclick="buildMyLabel()" id="labelBtn" style="margin-top: 4px;border-color:#c0c0c0;color:#c0c0c0;text-shadow:0 0 8px rgba(192,192,192,0.3);">🖨️ Label Maker</button>
+            <!-- Label Maker: intuitive UX — glows gold, no setup needed -->
+            <div id="labelMakerWrap" style="width:100%;max-width:500px;margin:10px auto 0;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                    <span style="font-size:18px;filter:drop-shadow(0 0 8px rgba(192,192,192,0.5));">🖨️</span>
+                    <span style="font-size:11px;color:#c0c0c0;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Label Maker</span>
+                    <span style="font-size:10px;color:rgba(255,255,255,0.3);flex:1;">— say this out loud</span>
+                    <button onclick="buildMyLabel()" style="background:rgba(212,168,83,0.15);border:1px solid rgba(212,168,83,0.3);border-radius:6px;padding:3px 10px;color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">Print ▶</button>
+                </div>
+                <div id="labelOutput" style="padding:12px 14px;background:var(--card-bg);border-radius:10px;box-shadow:0 0 20px rgba(212,168,83,0.25);border:1px solid rgba(212,168,83,0.2);min-height:44px;animation:gold-glow 2s ease-in-out;" onclick="buildMyLabel()" title="Tap to generate next label"></div>
+                <div style="font-size:10px;color:rgba(255,255,255,0.25);text-align:center;margin-top:3px;">Tap the label or Print ▶ for the next one</div>
+            </div>
             <div class="wheel-legend" id="wheelLegend"></div>
             <div class="emotion-detail" id="emotionDetail"></div>
             <!-- ponytail: Label builder output -->
@@ -1652,7 +1667,7 @@ function switchView(name,btn){
     else { surface.removeAttribute('data-feel'); }
 
     if(name==='stair') renderStair();
-    if(name==='wheel'){ renderWheel(); buildEmoAccordion(); }
+    if(name==='wheel'){ renderWheel(); buildEmoAccordion(); mainLabelIdx=-1; buildMyLabel(); }
     if(feels[name]){ renderModeCards(name); if(name==='haggle')haggRenderStage(); }
 }
 
@@ -1866,6 +1881,8 @@ function startSession(){
     document.getElementById('pauseBtn').style.display='';
     renderSessionWheel();
     document.getElementById('sessionWheel').style.display='block';
+    // ponytail: pre-load gold label on start
+    sessionLabelIdx = -1; printSessionLabel();
     // ponytail: BK start flash — 90s arcade boxer + BARE KNUCKLE label
     if(state.bareKnuckles){
         const ov=document.createElement('div');ov.id='bkOverlay';
@@ -2124,37 +2141,28 @@ function showBkToolModal(tool){
 }
 function closeBkModal(){document.getElementById('bkModal').classList.remove('open');}
 
-// ponytail: session label maker — same as buildMyLabel but routes to sessionLabelOutput
-let slLabelLevel=0;
-function buildSessionLabel(){
-    const em=EMOTIONS.find(e=>e.name===state.lastUsedEmotion);
-    const out=document.getElementById('sessionLabelOutput');
-    if(!em){
-        out.style.display='block'; out.innerHTML='<div style="padding:6px;text-align:center;color:#999;font-size:12px;">👆 Tap an emotion sector on the wheel first</div>'; return;
-    }
-    slLabelLevel=(slLabelLevel+1)%2;
-    const allWords=[]; Object.values(em.tertiary).forEach(arr=>arr.forEach(w=>allWords.push(w)));
-    const pick=(arr)=>arr[Math.floor(Math.random()*arr.length)];
-    const w1=pick(em.secondary), w2=pick(allWords);
-    const intros=['It sounds like','It seems like','It feels like','It looks like'];
-    const deep=['I get the sense that','Behind this I hear','Underneath that I wonder if'];
-    const si=intros[Math.floor(Math.random()*intros.length)];
-    const di=deep[Math.floor(Math.random()*deep.length)];
-    const de=pick(['vulnerability','uncertainty','exhaustion','disappointment','betrayal','loss','hopelessness']);
-    if(slLabelLevel===0){
-        out.style.display='block'; out.innerHTML=`
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#c0c0c0;margin-bottom:3px;">🖨️ Label Maker — Surface</div>
-            <div class="bk-example" style="font-size:12px;">${si} you\u2019re feeling some <strong>${w1.toLowerCase()}</strong>.</div>
-            <div class="bk-example" style="font-size:12px;">${si} there\u2019s some <strong>${w2.toLowerCase()}</strong> here.</div>
-            <div style="font-size:9px;color:var(--text-dim);margin-top:4px;">💡 Say one, stay silent · <span style="color:var(--red);font-weight:700;">Tap again for deep</span></div>`;
-    }else{
-        out.style.display='block'; out.innerHTML=`
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#c0c0c0;margin-bottom:3px;">🖨️ Label Maker — Deep</div>
-            <div class="bk-example" style="font-size:12px;border-left-color:#c0c0c0;">${di} there\u2019s some <strong>${w1.toLowerCase()}</strong> here, and maybe even <strong>${de}</strong>.</div>
-            <div class="bk-example" style="font-size:12px;border-left-color:#c0c0c0;">${di} what I\u2019m hearing is <strong>${de}</strong> is at the core of this.</div>
-            <div style="margin-top:4px;padding:4px 8px;background:rgba(229,57,53,0.06);border-radius:4px;border-left:3px solid var(--red);font-size:10px;font-weight:600;">\u26a1 Negative label = <strong style="color:var(--red);">7\u00d7</strong> positive. Acknowledge the hard stuff.</div>
-            <div style="font-size:9px;color:var(--text-dim);margin-top:4px;">💡 Say one, stay silent · <span style="color:var(--accent);font-weight:700;">Tap again for surface</span></div>`;
-    }
+// ponytail: everyday labels — no emotion wheel needed, works from session start
+const EVERYDAY_LABELS = [
+    {l:'"It sounds like you\'ve got a lot on your plate right now."', w:'Busy, overwhelmed, stretched thin'},
+    {l:'"It seems like trust is really important here."', w:'Cautious, protective, burned before'},
+    {l:'"It sounds like you\'re looking for something fair."', w:'Reasonable, grounded, skeptical'},
+    {l:'"It feels like you\'ve thought about this a lot."', w:'Prepared, deliberate, invested'},
+    {l:'"It seems like timing is a factor for you."', w:'Urgent, pressured, impatient'},
+    {l:'"It sounds like you\'ve been disappointed before."', w:'Hesitant, guarded, let down'},
+    {l:'"It seems like you want control over the outcome."', w:'Independent, decisive, cautious'},
+    {l:'"It sounds like this matters more than you\'re letting on."', w:'Invested, nervous, hopeful'},
+];
+let sessionLabelIdx = -1;
+function printSessionLabel(){
+    const out = document.getElementById('sessionLabelOutput');
+    sessionLabelIdx = (sessionLabelIdx + 1) % EVERYDAY_LABELS.length;
+    const lbl = EVERYDAY_LABELS[sessionLabelIdx];
+    // ponytail: gold glow on first load to mimic printing
+    const glow = sessionLabelIdx === 0 ? 'animation:bk-label-fade 2s ease-out 3;' : '';
+    out.style.display = 'block';
+    out.innerHTML = `<div style="font-size:11px;color:#c0c0c0;margin-bottom:2px;">🖨️ <span style="text-transform:uppercase;letter-spacing:0.5px;">Label Maker</span></div>
+        <div class="bk-example" style="font-size:14px;font-weight:600;border-left-color:var(--accent);box-shadow:0 0 12px rgba(212,168,83,0.3);${glow}">${lbl.l}</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">${lbl.w} · <span style="color:var(--accent);font-weight:600;">Tap 🖨️ for another</span></div>`;
 }
 // ponytail: simple toast notification
 const toastEl=document.createElement('div');toastEl.style.cssText='position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.1);';document.body.appendChild(toastEl);let toastTimer=null;
@@ -2516,65 +2524,41 @@ function exitFocus(){
     closeEmotion();
 }
 
-// ponytail: Label Maker — generates surface + deep labels from selected emotion
-let labelLevel=0; // 0=surface, 1=deep
+// ponytail: Label Maker — always pre-loads a gold label, cycles everyday + emotion-based labels
+let labelLevel=0, mainLabelIdx=-1;
 function buildMyLabel(){
-    const em=EMOTIONS.find(e=>e.name===state.lastUsedEmotion);
     const out=document.getElementById('labelOutput');
-    if(!em){
-        out.style.display='block';
-        out.innerHTML='<div style="padding:8px;text-align:center;color:#999;">👆 Tap an emotion sector first</div>';
-        return;
-    }
-    // Toggle level on each tap
-    labelLevel=(labelLevel+1)%2;
-    const allWords=[];
-    Object.values(em.tertiary).forEach(arr=>arr.forEach(w=>allWords.push(w)));
+    mainLabelIdx=(mainLabelIdx+1) % (EVERYDAY_LABELS.length*2);
+    const em=EMOTIONS.find(e=>e.name===state.lastUsedEmotion);
+    const allWords=[]; if(em)Object.values(em.tertiary).forEach(arr=>arr.forEach(w=>allWords.push(w)));
     const pick=(arr)=>arr[Math.floor(Math.random()*arr.length)];
-    const w1=pick(em.secondary), w2=pick(allWords);
-    
-    const surfaceIntros=['It sounds like','It seems like','It feels like','It looks like'];
-    const deepIntros=['I get the sense that','Behind this I hear','Underneath that I wonder if','What I\'m picking up is'];
-    const si=surfaceIntros[Math.floor(Math.random()*surfaceIntros.length)];
-    const di=deepIntros[Math.floor(Math.random()*deepIntros.length)];
-    
-    if(labelLevel===0){
-        // Surface label — simple, direct
-        const phrases=[
-            `${si} you're feeling some <strong>${w1.toLowerCase()}</strong> right now.`,
-            `${si} there's a bit of <strong>${w2.toLowerCase()}</strong> in what you're saying.`,
-        ];
-        out.style.display='block';
-        out.innerHTML=`
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                <span style="font-size:18px;filter:drop-shadow(0 0 6px rgba(192,192,192,0.5));">🖨️</span>
-                <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#c0c0c0;">Label Maker — Surface</span>
-            </div>
-            ${phrases.map(p=>`<div class="bk-example">${p}</div>`).join('')}
-            <div style="font-size:10px;color:var(--text-dim);margin-top:6px;padding-top:6px;border-top:1px solid rgba(0,0,0,0.06);">
-                💡 Say one, then stay silent · <span style="color:var(--red);font-weight:700;">Tap again for deep</span>
-            </div>`;
-    }else{
-        // Deep label — emotional layer, vulnerability, unspoken fears
-        const deepEmotions=['vulnerability','uncertainty','exhaustion','disappointment','betrayal','loss','abandonment','shame','hopelessness'];
-        const de=pick(deepEmotions);
-        const phrases=[
-            `${di} there's some <strong>${w1.toLowerCase()}</strong> here, and maybe even <strong>${de}</strong>.`,
-            `${di} what I'm hearing is that <strong>${de}</strong> is really at the core of this.`,
-        ];
-        out.style.display='block';
-        out.innerHTML=`
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                <span style="font-size:20px;filter:drop-shadow(0 0 8px rgba(192,192,192,0.6));">🖨️</span>
-                <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#c0c0c0;">Label Maker — Deep Emotion</span>
-            </div>
-            ${phrases.map(p=>`<div class="bk-example" style="border-left-color:#c0c0c0;">${p}</div>`).join('')}
-            <div style="margin-top:8px;padding:8px 10px;background:rgba(229,57,53,0.06);border-radius:6px;border-left:3px solid var(--red);font-size:11px;font-weight:600;">
-                ⚡ A negative label is worth <strong style="color:var(--red);">7×</strong> a positive label
-                <span style="display:block;font-weight:400;font-size:10px;color:var(--text-dim);margin-top:2px;">Acknowledging what's hard builds trust faster than praising what's good.</span>
-            </div>
-            <div style="font-size:10px;color:var(--text-dim);margin-top:4px;">💡 Say one, then stay silent · <span style="color:var(--accent);font-weight:700;">Tap again for surface</span></div>`;
+    const intros=['It sounds like','It seems like','It feels like','It looks like'];
+    const si=pick(intros);
+
+    // Alternate between everyday + emotion-based
+    let phrase, sub;
+    if(mainLabelIdx < EVERYDAY_LABELS.length){
+        const lbl=EVERYDAY_LABELS[mainLabelIdx];
+        phrase=lbl.l; sub=lbl.w;
+    } else if(em){
+        labelLevel=(labelLevel+1)%2;
+        if(labelLevel===0){
+            const w1=pick(em.secondary);
+            phrase=`"${si} you're feeling some <strong>${w1.toLowerCase()}</strong> right now."`;
+            sub='Say this, then go silent.';
+        } else {
+            const w1=pick(em.secondary);
+            const de=pick(['vulnerability','uncertainty','exhaustion','disappointment','betrayal','loss']);
+            phrase=`"I get the sense there's some <strong>${w1.toLowerCase()}</strong> here — maybe even <strong>${de}</strong>."`;
+            sub='⚡ Negative label = 7× more powerful. Acknowledge the hard stuff.';
+        }
+    } else {
+        const lbl=EVERYDAY_LABELS[mainLabelIdx % EVERYDAY_LABELS.length];
+        phrase=lbl.l; sub=lbl.w;
     }
+    // Gold glow animation on each print
+    out.style.animation='none'; void out.offsetWidth; out.style.animation='gold-glow 1.5s ease-out';
+    out.innerHTML=`<div style="font-size:15px;font-weight:600;color:#1a1a1a;line-height:1.5;">${phrase}</div><div style="font-size:10px;color:#999;margin-top:4px;">${sub}</div>`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════

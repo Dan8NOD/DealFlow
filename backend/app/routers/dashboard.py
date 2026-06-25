@@ -95,28 +95,19 @@ async def debug_dashboard(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Debug: test each query individually to find which crashes."""
-    import traceback
+    """Debug: show raw DB counts."""
     org_id = user.org_id
-    results = {}
-    tests = [
-        ("in_pipeline", lambda: db.query(Application).filter(Application.org_id == org_id, Application.status.in_(["APPLICATION_RECEIVED", "OFFER_SENT", "APPROVED"])).count()),
-        ("active_sales", lambda: db.query(SalesDeal).filter(SalesDeal.org_id == org_id, SalesDeal.status.in_(["UNDER_CONTRACT", "ACTIVE_LISTING", "IN_ESCROW", "CONTRACT_SIGNED", "OFFER_RECEIVED"])).count()),
-        ("pending_cmas", lambda: db.query(CmaRequest).filter(CmaRequest.org_id == org_id, CmaRequest.status == "pending").count()),
-        ("active_leads", lambda: db.query(Lead).filter(Lead.org_id == org_id, Lead.status.in_(["NEW", "CONTACTED", "QUALIFIED"])).count()),
-        ("new_apps_7d", lambda: db.query(Application).filter(Application.org_id == org_id, Application.created_at >= datetime.now(timezone.utc) - timedelta(days=7)).count()),
-        ("pending_apps_query", lambda: db.query(Application).filter(Application.org_id == org_id, Application.status.in_(["APPLICATION_RECEIVED", "OFFER_SENT", "WELCOME_SENT", "APPROVED"])).order_by(desc(Application.days_in_pipeline)).limit(50).all()),
-        ("status_dist", lambda: db.query(Application.status, func.count(Application.id).label('cnt')).filter(Application.org_id == org_id).group_by(Application.status).all()),
-        ("all_apps_no_filter", lambda: db.query(Application).filter(Application.org_id == org_id).order_by(desc(Application.last_update)).limit(5).all()),
-        ("all_apps_count", lambda: db.query(Application).filter(Application.org_id == org_id).count()),
-    ]
-    for name, fn in tests:
-        try:
-            val = fn()
-            results[name] = str(type(val).__name__)
-        except Exception as e:
-            results[name] = f"CRASH: {type(e).__name__}: {str(e)[:200]}"
-    return results
+    return {
+        "org_id": org_id,
+        "user_email": user.email,
+        "total_props": db.query(Property).filter(Property.org_id == org_id).count(),
+        "total_leads": db.query(Lead).filter(Lead.org_id == org_id).count(),
+        "total_apps": db.query(Application).filter(Application.org_id == org_id).count(),
+        "total_deals": db.query(SalesDeal).filter(SalesDeal.org_id == org_id).count(),
+        "active_leads": db.query(Lead).filter(Lead.org_id == org_id, Lead.status.in_(["NEW", "CONTACTED"])).count(),
+        "in_pipeline": db.query(Application).filter(Application.org_id == org_id, Application.status.in_(["APPLICATION_RECEIVED", "OFFER_SENT", "APPROVED"])).count(),
+        "active_sales": db.query(SalesDeal).filter(SalesDeal.org_id == org_id, SalesDeal.status != "CLOSED").count(),
+    }
 
 
 @router.post("/api/enrich-leads")

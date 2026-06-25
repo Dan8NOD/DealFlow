@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.db import engine, Base
 from app.routers import auth, dashboard, microsoft, showings, tenant, files, obsidian, bounce, trainer
+import os
 
 settings = get_settings()
 app = FastAPI(
@@ -12,6 +13,11 @@ app = FastAPI(
     version="0.1.0",
     debug=settings.debug,
 )
+
+# ponytail: serve static files (PDF for nodify graphics tab)
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+os.makedirs(static_dir, exist_ok=True)
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 app.add_middleware(
     CORSMiddleware,

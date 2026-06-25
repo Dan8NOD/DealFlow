@@ -135,6 +135,7 @@ async def debug_dashboard(
         "active_leads": db.query(Lead).filter(Lead.org_id == org_id, Lead.status.in_(["NEW", "CONTACTED"])).count(),
         "in_pipeline": db.query(Application).filter(Application.org_id == org_id, Application.status.in_(["APPLICATION_RECEIVED", "OFFER_SENT", "APPROVED"])).count(),
         "active_sales": db.query(SalesDeal).filter(SalesDeal.org_id == org_id, SalesDeal.status != "CLOSED").count(),
+        "sample_lead": db.query(Lead).filter(Lead.org_id == org_id).first().__dict__ if db.query(Lead).filter(Lead.org_id == org_id).first() else None,
     }
 
 

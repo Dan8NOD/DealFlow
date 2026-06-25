@@ -25,10 +25,10 @@ async def dashboard(
 ):
     org = user.organization
     org_id = org.id
-    # ponytail: auto-seed empty orgs on first dashboard load
+    # ponytail: seed empty orgs inline (idempotent — upsert by email)
+    from datetime import datetime, timedelta, timezone
+    now = datetime.now(timezone.utc)
     if db.query(Property).filter(Property.org_id == org_id).count() == 0:
-        from datetime import datetime, timedelta, timezone
-        now = datetime.now(timezone.utc)
         props = [
             Property(org_id=org_id, address="3363 S Racine Ave", unit="#1F", city="Chicago", state="IL", rent=1200, bedrooms=2, bathrooms=1, status="AVAILABLE"),
             Property(org_id=org_id, address="4340 Wilson Ave", unit="#2", city="Downers Grove", state="IL", rent=1500, bedrooms=2, bathrooms=1.5, status="AVAILABLE"),
@@ -37,9 +37,9 @@ async def dashboard(
         db.add_all(props)
         db.flush()
         leads = [
-            Lead(org_id=org_id, property_id=props[0].id, name="Maria Garcia", email="maria@example.com", phone="312-555-0101", source="ShowMojo", status="NEW", received_at=now - timedelta(days=1), monthly_income=4200),
-            Lead(org_id=org_id, property_id=props[0].id, name="James Liu", email="james@example.com", phone="312-555-0102", source="Zillow", status="CONTACTED", received_at=now - timedelta(days=3), monthly_income=3800),
-            Lead(org_id=org_id, property_id=props[1].id, name="Sarah Ahmed", email="sarah@example.com", phone="312-555-0103", source="Manual", status="NEW", received_at=now - timedelta(hours=6)),
+            Lead(org_id=org_id, property_id=props[0].id, name="Maria Garcia", email="maria.garcia.123@example.com", phone="312-555-0101", source="ShowMojo", status="NEW", received_at=now - timedelta(days=1), monthly_income=4200),
+            Lead(org_id=org_id, property_id=props[0].id, name="James Liu", email="james.liu.456@example.com", phone="312-555-0102", source="Zillow", status="CONTACTED", received_at=now - timedelta(days=3), monthly_income=3800),
+            Lead(org_id=org_id, property_id=props[1].id, name="Sarah Ahmed", email="sarah.ahmed.789@example.com", phone="312-555-0103", source="Manual", status="NEW", received_at=now - timedelta(hours=6)),
         ]
         db.add_all(leads)
         db.flush()

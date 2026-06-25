@@ -209,20 +209,19 @@ async function loadAll(){
       fetch('/api/sales?limit=50'),
       fetch('/api/applications?limit=200'),
       fetch('/api/properties?limit=300'),
-      fetch('/api/email-opportunities?hours=24'),
     ]);
     // ponytail: if any API returns 401 the session is dead — redirect to login
     for(const r of resps){
       if(r.status===401){location.href='/login';return}
       if(!r.ok)throw new Error('API '+r.status);
     }
-    const[lr,dr,ar,pr,or]=await Promise.all(resps.map(r=>r.json()));
+    const[lr,dr,ar,pr]=await Promise.all(resps.map(r=>r.json()));
     // ponytail: guard against non-array responses
     allLeads=Array.isArray(lr)?lr:[];
     allDeals=Array.isArray(dr)?dr:[];
     allApps=Array.isArray(ar)?ar:[];
     allProps=Array.isArray(pr)?pr:[];
-    allOpportunities=Array.isArray(or)?or:[];
+    allOpportunities=[];
     allDeals.forEach(d=>d.next_action=NEXT_TIPS[d.status]||'');
     // ponytail: if all empty, trigger seed once and retry
     if(allLeads.length===0&&allProps.length===0&&allApps.length===0&&!window._seeded){

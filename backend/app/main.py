@@ -27,6 +27,69 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def _seed_demo_data_if_empty(engine):
+    """ponytail: Seed demo data if org has no properties/leads. Makes new accounts useful immediately."""
+    from sqlalchemy.orm import sessionmaker
+    from datetime import datetime, timedelta, timezone
+    from app.models import Organization, User, Property, Lead, Application, SalesDeal
+    
+    SessionLocal = sessionmaker(bind=engine)
+    session = SessionLocal()
+    
+    try:
+        # Find the first org (typically created at signup)
+        org = session.query(Organization).first()
+        if not org:
+            return  # No org, skip
+        
+        # Check if org already has data
+        prop_count = session.query(Property).filter(Property.org_id == org.id).count()
+        if prop_count > 0:
+            return  # Already has data
+        
+        # Seed demo data
+        now = datetime.now(timezone.utc)
+        
+        # Demo properties
+        props = [
+            Property(org_id=org.id, address="3363 S Racine Ave", unit="#1F", city="Chicago", state="IL", rent=1200, bedrooms=2, bathrooms=1, status="AVAILABLE"),
+            Property(org_id=org.id, address="4340 Wilson Ave", unit="#2", city="Downers Grove", state="IL", rent=1500, bedrooms=2, bathrooms=1.5, status="AVAILABLE"),
+            Property(org_id=org.id, address="1465 E 69th St", unit="#C1", city="Chicago", state="IL", rent=950, bedrooms=1, bathrooms=1, status="RENTED"),
+        ]
+        session.add_all(props)
+        session.flush()
+        
+        # Demo leads
+        leads = [
+            Lead(org_id=org.id, property_id=props[0].id, name="Maria Garcia", email="maria@example.com", phone="312-555-0101", source="ShowMojo", status="NEW", received_at=now - timedelta(days=1), monthly_income=4200),
+            Lead(org_id=org.id, property_id=props[0].id, name="James Liu", email="james@example.com", phone="312-555-0102", source="Zillow", status="CONTACTED", received_at=now - timedelta(days=3), monthly_income=3800),
+            Lead(org_id=org.id, property_id=props[1].id, name="Sarah Ahmed", email="sarah@example.com", phone="312-555-0103", source="Manual", status="NEW", received_at=now - timedelta(hours=6)),
+        ]
+        session.add_all(leads)
+        session.flush()
+        
+        # Demo applications
+        apps = [
+            Application(org_id=org.id, property_id=props[2].id, unit="#C1", applicant_name="Robert Kim", status="OFFER_SENT", handler="Dan", first_seen=now - timedelta(days=10), last_update=now - timedelta(days=1), days_in_pipeline=9),
+        ]
+        session.add_all(apps)
+        session.flush()
+        
+        # Demo sales deals
+        deals = [
+            SalesDeal(org_id=org.id, property_address="6550 S Drexel Ave", status="ACTIVE_LISTING", list_price=425000, transaction_coordinator="Dan", first_seen=now - timedelta(days=15), last_update=now - timedelta(days=2), days_idle=2),
+        ]
+        session.add_all(deals)
+        
+        session.commit()
+        print("✓ Demo data seeded")
+    except Exception as e:
+        session.rollback()
+        print(f"! Demo seed failed (non-fatal): {e}")
+    finally:
+        session.close()
+
+
 # Create tables on startup
 @app.on_event("startup")
 def on_startup():
@@ -46,6 +109,7 @@ def on_startup():
         pass  # already exists or not supported — safe to ignore
     _ensure_columns(engine)
     _fix_lowercase_enums(engine)
+    _seed_demo_data_if_empty(engine)
 
 
 def _fix_lowercase_enums(engine):

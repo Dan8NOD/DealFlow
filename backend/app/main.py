@@ -246,6 +246,13 @@ async def health():
     return {"status": "ok", "env": settings.environment}
 
 
+@app.get("/api/seed-demo")
+async def seed_demo():
+    """ponytail: Manual trigger to seed demo data (idempotent)."""
+    _seed_demo_data_if_empty(engine)
+    return {"status": "seeded"}
+
+
 # Serve static frontend (built SPA) in production
 try:
     app.mount("/", StaticFiles(directory="static", html=True), name="static")

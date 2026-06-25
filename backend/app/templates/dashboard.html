@@ -223,13 +223,7 @@ async function loadAll(){
     allProps=Array.isArray(pr)?pr:[];
     allOpportunities=[];
     allDeals.forEach(d=>d.next_action=NEXT_TIPS[d.status]||'');
-    // ponytail: if all empty, trigger seed once and retry
-    if(allLeads.length===0&&allProps.length===0&&allApps.length===0&&!window._seeded){
-      window._seeded=true;
-      await fetch('/api/seed-demo');
-      await new Promise(r=>setTimeout(r,500));
-      return loadAll();
-    }
+    console.log('loadAll: leads='+allLeads.length+' apps='+allApps.length+' deals='+allDeals.length+' props='+allProps.length);
   }catch(e){console.error('loadAll:',e)}
   renderAll();
 }

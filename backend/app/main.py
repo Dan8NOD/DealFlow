@@ -228,6 +228,17 @@ def _ensure_columns(engine):
             """))
             conn.execute(text("CREATE INDEX IF NOT EXISTS ix_pupdates_property ON property_updates(property_id, week_of DESC)"))
             conn.commit()
+    
+    # ponytail: indexes on hot path queries
+    with engine.connect() as conn:
+        for idx in [
+            "CREATE INDEX IF NOT EXISTS ix_leads_org_status ON leads(org_id, status)",
+            "CREATE INDEX IF NOT EXISTS ix_applications_org_status ON applications(org_id, status)",
+            "CREATE INDEX IF NOT EXISTS ix_properties_org_id ON properties(org_id)",
+            "CREATE INDEX IF NOT EXISTS ix_leads_property ON leads(property_id)",
+        ]:
+            conn.execute(text(idx))
+        conn.commit()
 
 
 app.include_router(auth.router)

@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
-OBSIDIAN_VAULT    = Path.home() / "Documents" / "Real Estate Deals"
+OBSIDIAN_VAULT    = Path.home() / "Library" / "Mobile Documents" / "iCloud~md~obsidian" / "Documents" / "Real Estate"
 LEASING_DIR       = OBSIDIAN_VAULT / "Real Estate" / "LEASING"
 DB_PATH           = Path(__file__).parent.parent / "renter_portal.db"
 

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Renter — {{ org.name }}{% endblock %}
+{% block title %}{{ org.name }} — Negotiators on Demand{% endblock %}
 {% block extra_css %}
 :root{--navy:#1a365d;--blue:#2b6cb0;--green:#276749;--red:#c53030;--amber:#b7791f;--purple:#6b46c1;--gray:#718096;--bg:#f5f5f5;--card:#fff;--r:10px}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -114,7 +114,7 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
 
 {% block body %}
 <header class="bar">
-  <h1>🏠 Renter</h1>
+  <h1>🤝 NOD Hub</h1>
   <div style="display:flex;gap:6px;align-items:center">
     <a href="#" onclick="syncObsidian();return false">📓</a>
     <a href="#" onclick="refreshAll();return false">↻</a>
@@ -131,6 +131,7 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
   <div class="lhf-card" style="border-left-color:var(--green);cursor:pointer" onclick="switchTab('deals')"><div class="lhf-icon">💰</div><div class="lhf-title">New Sale</div><div class="lhf-sub">Track a sale</div></div>
   <div class="lhf-card" style="border-left-color:var(--amber);cursor:pointer" onclick="switchTab('props')"><div class="lhf-icon">🏠</div><div class="lhf-title">Properties</div><div class="lhf-sub">View inventory</div></div>
   <div class="lhf-card" style="border-left-color:var(--purple);cursor:pointer" onclick="switchTab('apps')"><div class="lhf-icon">📋</div><div class="lhf-title">Applications</div><div class="lhf-sub">Pipeline</div></div>
+  <div class="lhf-card" style="border-left-color:var(--blue);cursor:pointer" onclick="window.open('/contact?source=calendly','_blank')"><div class="lhf-icon">📅</div><div class="lhf-title">Book a Call</div><div class="lhf-sub">Send calendar link</div></div>
 </div>
 
 <!-- STATS -->
@@ -300,13 +301,26 @@ function renderStats(){
   const inPipe=allApps.filter(a=>['APPLICATION_RECEIVED','OFFER_SENT','APPROVED'].includes(a.status)).length;
   const activeDeals=allDeals.filter(d=>!['CLOSED'].includes(d.status)).length;
   const withBudget=allLeads.filter(l=>l.monthly_income).length;
+  // ponytail: NOD inbound — count leads from non-Zillow/non-ShowMojo sources (the marketing channels)
+  const nodChannels=['Calendly','Lemlist','Software','Book','YouTube','Contact Form','Website'];
+  const nodInbound=allLeads.filter(l=>nodChannels.some(c=>(l.source||'').toLowerCase().includes(c.toLowerCase()))).length;
   document.getElementById('statsRow').innerHTML=`
     <div class="stat-card" style="border-top-color:var(--red)" onclick="switchTab('leads')"><div class="sn">${fmt(hotLeads)}</div><div class="sl">Hot Leads</div></div>
     <div class="stat-card" style="border-top-color:var(--green)" onclick="switchTab('apps')"><div class="sn">${fmt(inPipe)}</div><div class="sl">Pipeline</div></div>
     <div class="stat-card" style="border-top-color:var(--purple)" onclick="switchTab('deals')"><div class="sn">${fmt(activeDeals)}</div><div class="sl">Sales</div></div>
     <div class="stat-card" style="border-top-color:var(--amber)" onclick="showBudgetLeads()"><div class="sn">${fmt(withBudget)}</div><div class="sl">Budget</div></div>
     <div class="stat-card" style="border-top-color:var(--blue)" onclick="switchTab('leads')"><div class="sn">${fmt(allLeads.length)}</div><div class="sl">Total</div></div>
+    <div class="stat-card" style="border-top-color:var(--navy)" onclick="filterLeadsBySource(nodChannels)"><div class="sn">${fmt(nodInbound)}</div><div class="sl">NOD Inbound</div></div>
   `;
+  window._nodChannels=nodChannels;
+}
+function filterLeadsBySource(channels){
+  switchTab('leads');
+  document.getElementById('statusFilter').value='';
+  // ponytail: piggyback on existing search input — substring match against source
+  const pat=channels.map(c=>c.toLowerCase()).join('|');
+  document.getElementById('searchInput').value=channels.join(' ');
+  renderTabView('leads');
 }
 
 // ── ADD LEAD MODAL ──

@@ -1389,32 +1389,50 @@ async def seller_landing(request: Request):
 async def buyer_landing(request: Request):
     """Buyer landing page — $400K+ properties."""
     return templates.TemplateResponse("buyer-landing.html", {"request": request})
-
-
 @router.post("/api/leads-from-landing")
 async def create_lead_from_landing(data: dict = Body(...), db: Session = Depends(get_db)):
-    """Unauthenticated lead capture from Facebook ad landing page."""
+    """
+    Unauthenticated lead capture from any inbound channel.
+    Body: { name, phone, email, source, notes, property_address, monthly_income }
+    Source values: 'Facebook Ad', 'Calendly', 'Lemlist', 'Software', 'Book', 'YouTube', 'Contact Form'
+    """
     from app.models import LeadStatus
     org = db.query(Organization).first()  # Get the default org
     if not org:
-        # Fallback: create lead anyway
         return {"ok": True, "msg": "Lead captured (no org yet)"}
     lead = Lead(
         org_id=org.id,
         name=data.get("name", ""),
         phone=data.get("phone", ""),
         email=data.get("email", ""),
-        source=data.get("source", "Facebook Ad"),
+        source=data.get("source", "Contact Form"),
         status=LeadStatus.NEW,
         notes=data.get("notes", ""),
         monthly_income=data.get("monthly_income"),
-        subject=data.get("property_address", ""),
+        subject=data.get("property_address", "") or data.get("subject", ""),
         received_at=datetime.now(timezone.utc),
         days_old=0,
     )
     db.add(lead)
     db.commit()
+    # ponytail: best-effort email forward — fail silently if SMTP not configured
+    try:
+        from app.config import get_settings
+        import smtplib, ssl
+        s = get_settings()
+        if s.environment == "production" and data.get("email"):
+            # ponytail: stub — actual SMTP creds go in env later. Log instead so DB is the source of truth.
+            import logging
+            logging.info(f"[NOD inbound] source={lead.source} name={lead.name} email={lead.email} → negotiatorsondemand@gmail.com")
+    except Exception:
+        pass
     return {"ok": True, "id": lead.id, "message": "Lead captured!"}
+
+
+@router.get("/contact", response_class=HTMLResponse)
+async def contact_form(request: Request, source: str = Query("Contact Form")):
+    """Public contact form — ?source=calendly|lemlist|software|book|youtube tags the lead."""
+    return templates.TemplateResponse("contact.html", {"request": request, "source": source})
 
 
 # ponytail: Agent management — add agents, assign leads

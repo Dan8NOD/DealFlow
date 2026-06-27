@@ -9,7 +9,7 @@ import os
 
 settings = get_settings()
 app = FastAPI(
-    title="Leasing & Sales NOD API",
+    title="Negotiators on Demand Hub",
     version="0.1.0",
     debug=settings.debug,
 )

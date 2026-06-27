@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Get in Touch — Negotiators on Demand{% endblock %}
+{% block body %}
+<div style="background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%); color: white; padding: 40px 24px; text-align: center;">
+  <h1 style="font-size: 32px; margin-bottom: 8px;">Get in Touch</h1>
+  <p style="opacity: 0.9;">Dan Cruz · Chicago Real Estate Negotiation Training</p>
+</div>
+
+<div class="container" style="max-width: 560px; padding: 40px 24px;">
+  <p style="color: #4a5568; margin-bottom: 24px;">
+    Drop your info and Dan personally reads every message — usually within 24 hours.
+  </p>
+  <form id="contactForm">
+    <label style="font-size: 13px; color: #4a5568;">Name</label>
+    <input name="name" required placeholder="Your name">
+
+    <label style="font-size: 13px; color: #4a5568;">Email</label>
+    <input name="email" type="email" required placeholder="you@example.com">
+
+    <label style="font-size: 13px; color: #4a5568;">Phone (optional)</label>
+    <input name="phone" placeholder="(312) 555-1234">
+
+    <label style="font-size: 13px; color: #4a5568;">What's up?</label>
+    <textarea name="notes" required rows="4" style="padding: 10px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 14px; width: 100%; margin: 4px 0 12px; font-family: inherit;" placeholder="What are you working on?"></textarea>
+
+    <input type="hidden" name="source" value="{{ source }}">
+
+    <button type="submit" class="btn" style="width: 100%; padding: 14px; font-size: 16px;">Send</button>
+    <p id="status" style="margin-top: 12px; font-size: 13px; text-align: center;"></p>
+  </form>
+</div>
+
+<script>
+document.getElementById('contactForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const body = Object.fromEntries(fd);
+  const status = document.getElementById('status');
+  status.textContent = 'Sending...';
+  status.style.color = '#4a5568';
+  try {
+    const r = await fetch('/api/leads-from-landing', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    });
+    if (!r.ok) throw new Error('failed');
+    status.textContent = '✓ Got it — Dan will be in touch.';
+    status.style.color = '#276749';
+    e.target.reset();
+  } catch (err) {
+    status.textContent = '✗ Something went wrong. Email negotiatorsondemand@gmail.com directly.';
+    status.style.color = '#c53030';
+  }
+});
+</script>
+{% endblock %}

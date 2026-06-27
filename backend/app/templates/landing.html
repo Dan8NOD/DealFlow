@@ -1,53 +1,45 @@
 {% extends "base.html" %}
-{% block title %}Leasing & Sales NOD — Track leads, applications, and sales deals{% endblock %}
+{% block title %}Negotiators on Demand — Dan Cruz, Real Estate Negotiation Training{% endblock %}
 {% block body %}
-<div style="background: linear-gradient(135deg, #1f4e78 0%, #2c5f8a 100%); color: white; padding: 80px 24px; text-align: center;">
-  <h1 style="font-size: 48px; margin-bottom: 16px;">Leasing & Sales NOD</h1>
+<div style="background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%); color: white; padding: 80px 24px; text-align: center;">
+  <h1 style="font-size: 48px; margin-bottom: 16px;">Negotiators on Demand</h1>
   <p style="font-size: 20px; opacity: 0.9; max-width: 640px; margin: 0 auto 32px;">
-    Track rental leads, applications, sales deals, and CMA requests in one place. Built for property managers and real estate agents.
+    Chicago real estate negotiation training, scripts, and on-call support.
+    Buy tools, book a session, or grab a copy of the playbook.
   </p>
-  <div style="display: flex; gap: 12px; justify-content: center;">
-    <a href="/signup" class="btn" style="background: white; color: #1f4e78;">Start Free</a>
-    <a href="/login" class="btn" style="background: transparent; border: 2px solid white;">Sign In</a>
+  <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+    <a href="https://calendly.com/negotiatorsondemand" class="btn" style="background: white; color: #1a365d;">📅 Book a Call</a>
+    <a href="https://dan8nod.github.io/NOD-ify/MixMatch-FV3.html" class="btn" style="background: transparent; border: 2px solid white;">🎴 Free Tools</a>
+    <a href="/contact" class="btn" style="background: #d4a853; color: #1a365d;">✉️ Get in Touch</a>
   </div>
 </div>
 
-<div class="container" style="padding: 60px 24px;">
-  <h2 style="text-align: center; margin-bottom: 40px; font-size: 32px;">Everything in one dashboard</h2>
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+<div class="container" style="padding: 60px 24px; max-width: 960px;">
+  <h2 style="text-align: center; margin-bottom: 40px; font-size: 28px;">What I help with</h2>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
     <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
-      <h3 style="color: #1f4e78; margin-bottom: 8px;">📥 Leads inbox</h3>
-      <p style="color: #4a5568;">Auto-import from Zillow, Trulia, HotPads, Apartments.com, Realtor.com. Sort by property, age, status.</p>
+      <h3 style="color: #1a365d; margin-bottom: 8px;">🏠 Listing presentations</h3>
+      <p>Scripts and objection handling for winning seller interviews in Chicago.</p>
     </div>
     <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
-      <h3 style="color: #1f4e78; margin-bottom: 8px;">📝 Applications</h3>
-      <p style="color: #4a5568;">Track every application from received → offer → approved → moved-in. See handler, days in pipeline, full timeline.</p>
+      <h3 style="color: #1a365d; margin-bottom: 8px;">💰 Offer negotiations</h3>
+      <p>Repair credits, inspection responses, low-ball counter offers — playbook included.</p>
     </div>
     <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
-      <h3 style="color: #1f4e78; margin-bottom: 8px;">🏠 Sales deals</h3>
-      <p style="color: #4a5568;">CMA requests → listings → under contract → closed. Capture every status update from your inbox.</p>
+      <h3 style="color: #1a365d; margin-bottom: 8px;">🎴 Mix &amp; Match card game</h3>
+      <p>Live negotiation training session with real scenarios from the field. Solo or team.</p>
     </div>
     <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
-      <h3 style="color: #1f4e78; margin-bottom: 8px;">⚠️ Stale lead cleanup</h3>
-      <p style="color: #4a5568;">Find leads >40 days old for rented properties. One-click Mail.app smart mailbox.</p>
-    </div>
-    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
-      <h3 style="color: #1f4e78; margin-bottom: 8px;">📁 File linking</h3>
-      <p style="color: #4a5568;">Connect Google Drive, OneDrive, iCloud folders to properties. Find docs without searching.</p>
-    </div>
-    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
-      <h3 style="color: #1f4e78; margin-bottom: 8px;">📅 Weekly reports</h3>
-      <p style="color: #4a5568;">Auto-generated markdown reports ready to paste into email to leasing directors.</p>
+      <h3 style="color: #1a365d; margin-bottom: 8px;">📓 Custom playbooks</h3>
+      <p>Negotiation scripts tailored to your market, your buyer profile, your hot buttons.</p>
     </div>
   </div>
 
-  <div style="text-align: center; margin-top: 60px; padding: 40px; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
-    <h2 style="font-size: 24px; margin-bottom: 16px;">Pricing</h2>
-    <div style="display: flex; justify-content: center; gap: 32px; flex-wrap: wrap;">
-      <div><strong>Free</strong> — 50 leads/mo, 1 user</div>
-      <div><strong>$49/mo Pro</strong> — Unlimited leads, 3 email accounts</div>
-      <div><strong>$149/mo Team</strong> — Unlimited users, unlimited emails</div>
-    </div>
+  <div style="text-align: center; margin-top: 60px;">
+    <p style="font-size: 14px; color: #718096;">
+      📧 <a href="mailto:negotiatorsondemand@gmail.com" style="color: #2b6cb0;">negotiatorsondemand@gmail.com</a>
+      &nbsp;·&nbsp; <a href="/login" style="color: #718096;">Hub login</a>
+    </p>
   </div>
 </div>
 {% endblock %}

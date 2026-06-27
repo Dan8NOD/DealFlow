@@ -9,7 +9,7 @@ import os
 
 settings = get_settings()
 app = FastAPI(
-    title="Negotiators on Demand Hub",
+    title="Content Creator Portal Hub",
     version="0.1.0",
     debug=settings.debug,
 )

@@ -1318,16 +1318,6 @@ async def get_comments(
     ]
 
 
-@router.get("/api/sync")
-async def api_sync(
-    user: User = Depends(get_current_user),
-):
-    """Trigger email sync for the current org (all connected accounts)."""
-    from app.integrations.sync_engine import sync_org
-    result = await sync_org(user.org_id)
-    return result
-
-
 @router.get("/api/email-opportunities")
 async def email_opportunities(
     user: User = Depends(get_current_user),

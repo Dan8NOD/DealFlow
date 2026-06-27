@@ -38,6 +38,71 @@ class LeadStatus(str, enum.Enum):
     COLD      = "COLD"
 
 
+class NodStudentStatus(str, enum.Enum):
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+    GRADUATED = "GRADUATED"
+    LOST = "LOST"
+
+class NodLevel(str, enum.Enum):
+    LEVEL_1 = "LISTENING"
+    LEVEL_2 = "DIALOGUE"
+    LEVEL_3 = "COLLABORATION"
+
+class NodSessionType(str, enum.Enum):
+    SATURDAY = "saturday"
+    PRIVATE = "private"
+    COACHING = "coaching"
+
+
+class NodStudent(Base):
+    __tablename__ = "nod_students"
+    id = Column(Integer, primary_key=True)
+    org_id = Column(Integer, ForeignKey("organizations.id"), nullable=False, index=True)
+    name = Column(String(200), nullable=False, index=True)
+    email = Column(String(200), index=True)
+    phone = Column(String(50))
+    current_level = Column(Enum(NodLevel), default=NodLevel.LEVEL_1)
+    sessions_completed = Column(Integer, default=0)
+    status = Column(Enum(NodStudentStatus), default=NodStudentStatus.ACTIVE)
+    source = Column(String(100))  # 'saturday_session', 'referral', 'website', 'coaching', etc.
+    notes = Column(Text)
+    created_at = Column(DateTime, server_default=func.now())
+    organization = relationship("Organization")
+    sessions = relationship("NodSession", back_populates="student", cascade="all, delete")
+    coaching = relationship("NodCoaching", back_populates="student", cascade="all, delete")
+
+
+class NodSession(Base):
+    __tablename__ = "nod_sessions"
+    id = Column(Integer, primary_key=True)
+    org_id = Column(Integer, ForeignKey("organizations.id"), nullable=False, index=True)
+    student_id = Column(Integer, ForeignKey("nod_students.id"), nullable=False, index=True)
+    session_type = Column(Enum(NodSessionType), nullable=False)
+    session_date = Column(DateTime, nullable=False, index=True)
+    tools_practiced = Column(Text)  # comma-separated tool names
+    level_focus = Column(Enum(NodLevel))
+    duration_minutes = Column(Integer)
+    notes = Column(Text)
+    created_at = Column(DateTime, server_default=func.now())
+    student = relationship("NodStudent", back_populates="sessions")
+
+
+class NodCoaching(Base):
+    __tablename__ = "nod_coaching"
+    id = Column(Integer, primary_key=True)
+    org_id = Column(Integer, ForeignKey("organizations.id"), nullable=False, index=True)
+    student_id = Column(Integer, ForeignKey("nod_students.id"), nullable=False, index=True)
+    session_date = Column(DateTime, nullable=False, index=True)
+    topic = Column(String(300))
+    amount_cents = Column(Integer)  # price in cents ($25000 = $250)
+    paid = Column(Boolean, default=False)
+    paid_at = Column(DateTime)
+    notes = Column(Text)
+    created_at = Column(DateTime, server_default=func.now())
+    student = relationship("NodStudent", back_populates="coaching")
+
+
 class ApplicationStatus(str, enum.Enum):
     APPLICATION_RECEIVED = "APPLICATION_RECEIVED"
     OFFER_SENT           = "OFFER_SENT"

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOD Products — Live Dashboard</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
+nav { display: flex; align-items: center; gap: 1.5rem; padding: 1rem 2rem; background: #161b22; border-bottom: 1px solid #30363d; }
+nav h1 { font-size: 1.25rem; font-weight: 600; color: #d4a853; letter-spacing: 1px; }
+nav a { color: #8b949e; text-decoration: none; font-size: .875rem; }
+nav a:hover { color: #d4a853; } nav .spacer { flex: 1; }
+nav .user { font-size: .8rem; color: #8b949e; }
+.container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+/* Stats */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.stat { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.25rem; text-align: center; }
+.stat .num { font-size: 1.75rem; font-weight: 700; color: #d4a853; }
+.stat .lbl { font-size: .8rem; color: #8b949e; margin-top: 4px; }
+.stat .sub { font-size: .75rem; color: #3fb950; }
+
+/* Product grid */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.25rem; }
+.card .price { font-size: 1.5rem; font-weight: 700; color: #d4a853; }
+.card .price span { font-size: .8rem; color: #8b949e; font-weight: 400; }
+.card h3 { margin: .5rem 0 .25rem; font-size: 1rem; }
+.card p { color: #8b949e; font-size: .85rem; line-height: 1.4; }
+.card .badge { display: inline-block; margin-top: .5rem; padding: 2px 10px; border-radius: 12px; font-size: .75rem; }
+.badge-done { background: #3fb95033; color: #3fb950; }
+.badge-wip { background: #d2992233; color: #d29922; }
+.badge-todo { background: #1f6feb33; color: #58a6ff; }
+.card .link { display: block; margin-top: .6rem; font-size: .8rem; color: #58a6ff; text-decoration: none; }
+
+/* Panels */
+.panel { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+h2 { color: #d4a853; margin-bottom: .75rem; font-size: 1.1rem; }
+table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+th { text-align: left; padding: .5rem; border-bottom: 1px solid #30363d; color: #8b949e; font-weight: 500; }
+td { padding: .5rem; border-bottom: 1px solid #21262d; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+/* Stripe */
+#stripe-data { display: none; }
+.btn { padding: .5rem 1rem; border-radius: 6px; border: 1px solid #30363d; background: #21262d; color: #e6edf3; font-size: .875rem; cursor: pointer; }
+.btn:hover { background: #30363d; }
+.btn-primary { background: #d4a853; color: #0d1117; border-color: #d4a853; font-weight: 600; }
+.error { color: #f85149; font-size: .875rem; margin-top: .5rem; }
+
+@media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<nav>
+  <h1>NOD Products</h1>
+  <a href="/nod">Dashboard</a>
+  <a href="/products">Products</a>
+  <a href="/trainer">MixMatch</a>
+  <a href="https://calendly.com/negotiatorsondemand" target="_blank">📅 Book</a>
+  <span class="spacer"></span>
+  <span class="user">{{ user.email }}</span>
+  <form action="/auth/logout" method="post" style="display:inline"><button class="btn" style="padding:.3rem .8rem">Logout</button></form>
+</nav>
+
+<div class="container">
+
+  <!-- Live stats -->
+  <div class="stats">
+    <div class="stat"><div class="num">{{ active_students }}</div><div class="lbl">Active Students</div></div>
+    <div class="stat"><div class="num">{{ total_students }}</div><div class="lbl">All Students</div></div>
+    <div class="stat">
+      <div class="num">${{ "{:,.0f}".format(coaching_revenue_cents / 100) if coaching_revenue_cents else 0 }}</div>
+      <div class="lbl">Total Coaching Revenue</div>
+      <div class="sub">${{ "{:,.0f}".format(coaching_revenue_30d_cents / 100) if coaching_revenue_30d_cents else 0 }} last 30d</div>
+    </div>
+    <div class="stat"><div class="num">{{ unpaid_count }}</div><div class="lbl">Unpaid Sessions</div></div>
+    <div class="stat"><div class="num">{{ total_sessions }}</div><div class="lbl">Total Sessions</div></div>
+    <div class="stat"><div class="num">{{ sessions_30d }}</div><div class="lbl">Sessions (30d)</div></div>
+  </div>
+
+  <!-- Product cards -->
+  <h2>📦 Product Ladder</h2>
+  <div class="grid">
+    {% for p in products %}
+    <div class="card">
+      <div class="price">${{ p.price }} {% if p.recurring %}<span>/mo</span>{% endif %}</div>
+      <h3>{{ p.name }}</h3>
+      <p>{{ p.desc }}</p>
+      <span class="badge badge-{{ p.status }}">{{ status_map[p.status] }}</span>
+      {% if p.link %}<a href="{{ p.link }}" class="link" target="_blank">→ Open</a>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="two-col">
+    <!-- Level distribution -->
+    <div class="panel">
+      <h2>📊 Students by Level</h2>
+      <table>
+        <thead><tr><th>Level</th><th>Count</th></tr></thead>
+        <tbody>
+          {% for level, count in level_dist %}
+          <tr><td>{{ level.value }}</td><td>{{ count }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Sessions by type -->
+    <div class="panel">
+      <h2>📋 Sessions by Type</h2>
+      <table>
+        <thead><tr><th>Type</th><th>Count</th></tr></thead>
+        <tbody>
+          {% for stype, count in sessions_by_type %}
+          <tr><td>{{ stype.value }}</td><td>{{ count }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Top tools -->
+  <div class="panel">
+    <h2>🛠 Most Practiced Tools</h2>
+    <table>
+      <thead><tr><th>Tool</th><th>Sessions</th></tr></thead>
+      <tbody>
+        {% for tool, count in top_tools %}
+        <tr><td>{{ tool }}</td><td>{{ count }}</td></tr>
+        {% endfor %}
+        {% if not top_tools %}<tr><td colspan="2" style="color:#8b949e">Log some sessions to see data</td></tr>{% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Stripe -->
+  <div class="panel" id="stripe-section">
+    <h2>💳 Stripe Sales</h2>
+    {% if stripe_configured %}
+    <p style="color:#3fb950;font-size:.875rem;margin-bottom:1rem">✅ Stripe key configured. Loading data...</p>
+    <div id="stripe-data" style="display:block">
+      <div class="stats" id="stripe-stats"></div>
+      <table><thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead>
+      <tbody id="stripe-txns"></tbody></table>
+    </div>
+    <div id="stripe-before-load">
+      <div class="stats" id="stripe-stats-placeholder">
+        <div class="stat"><div class="num" style="font-size:1rem;color:#8b949e">Loading...</div></div>
+      </div>
+    </div>
+    {% else %}
+    <p style="color:#8b949e;font-size:.875rem">No Stripe key set. Add <code>STRIPE_SECRET_KEY</code> to your <code>.env</code> or Render environment variables to see live sales data.</p>
+    {% endif %}
+    <div class="error" id="stripe-error"></div>
+    <div id="stripe-payouts" style="margin-top:1rem;display:none">
+      <h3 style="color:#d4a853;font-size:1rem;margin-bottom:.5rem">Payouts</h3>
+      <table><thead><tr><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+      <tbody id="stripe-payout-body"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<script>
+const stripeConfigured = {{ 'true' if stripe_configured else 'false' }};
+
+{% if stripe_configured %}
+// Fetch Stripe data from server proxy
+Promise.all([
+  fetch('/api/stripe/balance').then(r => r.json()),
+  fetch('/api/stripe/charges?limit=20').then(r => r.json()),
+  fetch('/api/stripe/payouts?limit=10').then(r => r.json()),
+]).then(([balance, charges, payouts]) => {
+  document.getElementById('stripe-before-load')?.remove();
+
+  if (balance.error) {
+    document.getElementById('stripe-error').textContent = balance.error.message;
+    return;
+  }
+  const avail = (balance.available || []).reduce((s, c) => s + c.amount, 0);
+  const pend = (balance.pending || []).reduce((s, c) => s + c.amount, 0);
+  document.getElementById('stripe-stats').innerHTML = `
+    <div class="stat"><div class="num">$${(avail/100).toLocaleString()}</div><div class="lbl">Available</div></div>
+    <div class="stat"><div class="num">$${(pend/100).toLocaleString()}</div><div class="lbl">Pending</div></div>
+    <div class="stat"><div class="num">$${((avail+pend)/100).toLocaleString()}</div><div class="lbl">Total Balance</div></div>
+    <div class="stat"><div class="num">${charges?.data?.length || 0}</div><div class="lbl">Recent Charges</div></div>`;
+
+  if (charges?.data) {
+    const tbody = document.getElementById('stripe-txns');
+    charges.data.forEach(tx => {
+      tbody.innerHTML += `<tr><td>${new Date(tx.created*1000).toLocaleDateString()}</td>
+        <td>${tx.description || tx.payment_method_details?.card?.brand || '—'}</td>
+        <td>$${(tx.amount/100).toFixed(2)}</td>
+        <td>${tx.paid ? '✅ Paid' : '❌ Failed'}</td></tr>`;
+    });
+  }
+
+  if (payouts?.data?.length) {
+    document.getElementById('stripe-payouts').style.display = 'block';
+    const pb = document.getElementById('stripe-payout-body');
+    payouts.data.forEach(p => {
+      pb.innerHTML += `<tr><td>${new Date(p.created*1000).toLocaleDateString()}</td>
+        <td>$${(p.amount/100).toFixed(2)}</td>
+        <td>${p.status}</td></tr>`;
+    });
+  }
+}).catch(e => {
+  document.getElementById('stripe-error').textContent = 'Failed to load Stripe data. Check your key.';
+});
+{% endif %}
+</script>
+</body>
+</html>

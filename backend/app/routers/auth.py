@@ -26,10 +26,8 @@ async def signup(
         raise HTTPException(status_code=400, detail="Email already registered")
     if len(password) < 8:
         raise HTTPException(status_code=400, detail="Password must be 8+ chars")
-    # Default org name from email if not provided
     if not org_name:
         org_name = email.split("@")[0].title() + " Realty"
-    # Create org + user
     org = Organization(name=org_name, plan=PlanTier.FREE)
     db.add(org)
     db.flush()
@@ -43,9 +41,8 @@ async def signup(
     db.add(user)
     db.commit()
     db.refresh(user)
-    # Set cookie + redirect
     token = create_access_token(user.id, user.org_id, user.role.value)
-    response = RedirectResponse(url="/dashboard", status_code=303)
+    response = RedirectResponse(url="/nod", status_code=303)
     response.set_cookie(
         key="session_token",
         value=token,
@@ -73,7 +70,7 @@ async def login(
     user.last_login_at = datetime.now(timezone.utc)
     db.commit()
     token = create_access_token(user.id, user.org_id, user.role.value)
-    response = RedirectResponse(url="/dashboard", status_code=303)
+    response = RedirectResponse(url="/nod", status_code=303)
     response.set_cookie(
         key="session_token",
         value=token,

@@ -1,45 +1,44 @@
 {% extends "base.html" %}
-{% block title %}Negotiators on Demand — Dan Cruz, Real Estate Negotiation Training{% endblock %}
+{% block title %}NOD Academy — Negotiation Training & Real Estate{% endblock %}
 {% block body %}
-<div style="background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%); color: white; padding: 80px 24px; text-align: center;">
-  <h1 style="font-size: 48px; margin-bottom: 16px;">Negotiators on Demand</h1>
+<div style="background: linear-gradient(135deg, #0d1117 0%, #161b22 100%); color: white; padding: 80px 24px; text-align: center;">
+  <h1 style="font-size: 48px; margin-bottom: 16px; color: #d4a853;">NOD Academy</h1>
   <p style="font-size: 20px; opacity: 0.9; max-width: 640px; margin: 0 auto 32px;">
-    Chicago real estate negotiation training, scripts, and on-call support.
-    Buy tools, book a session, or grab a copy of the playbook.
+    Track negotiation students, log coaching sessions, and manage your NOD Academy business — alongside real estate leads and deals.
   </p>
-  <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-    <a href="https://calendly.com/negotiatorsondemand" class="btn" style="background: white; color: #1a365d;">📅 Book a Call</a>
-    <a href="https://dan8nod.github.io/NOD-ify/MixMatch-FV3.html" class="btn" style="background: transparent; border: 2px solid white;">🎴 Free Tools</a>
-    <a href="/contact" class="btn" style="background: #d4a853; color: #1a365d;">✉️ Get in Touch</a>
+  <div style="display: flex; gap: 12px; justify-content: center;">
+    <a href="/signup" class="btn" style="background: #d4a853; color: #0d1117; font-weight: 600;">Get Started</a>
+    <a href="/login" class="btn" style="background: transparent; border: 2px solid #d4a853; color: #d4a853;">Sign In</a>
   </div>
 </div>
 
-<div class="container" style="padding: 60px 24px; max-width: 960px;">
-  <h2 style="text-align: center; margin-bottom: 40px; font-size: 28px;">What I help with</h2>
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
-    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
-      <h3 style="color: #1a365d; margin-bottom: 8px;">🏠 Listing presentations</h3>
-      <p>Scripts and objection handling for winning seller interviews in Chicago.</p>
+<div class="container" style="padding: 60px 24px;">
+  <h2 style="text-align: center; margin-bottom: 40px; font-size: 32px; color: #d4a853;">Two businesses, one dashboard</h2>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+    <div style="background: #161b22; padding: 24px; border-radius: 12px; border: 1px solid #30363d;">
+      <h3 style="color: #d4a853; margin-bottom: 8px;">🎓 NOD Students</h3>
+      <p style="color: #8b949e;">Track active students across 3 levels. Log Saturday sessions, private coaching, and tool progress. Manage revenue.</p>
     </div>
-    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
-      <h3 style="color: #1a365d; margin-bottom: 8px;">💰 Offer negotiations</h3>
-      <p>Repair credits, inspection responses, low-ball counter offers — playbook included.</p>
+    <div style="background: #161b22; padding: 24px; border-radius: 12px; border: 1px solid #30363d;">
+      <h3 style="color: #d4a853; margin-bottom: 8px;">📋 Coaching Revenue</h3>
+      <p style="color: #8b949e;">Log every coaching session with amount, payment status, and topic. See unpaid sessions at a glance.</p>
     </div>
-    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
-      <h3 style="color: #1a365d; margin-bottom: 8px;">🎴 Mix &amp; Match card game</h3>
-      <p>Live negotiation training session with real scenarios from the field. Solo or team.</p>
+    <div style="background: #161b22; padding: 24px; border-radius: 12px; border: 1px solid #30363d;">
+      <h3 style="color: #d4a853; margin-bottom: 8px;">📥 Lead Management</h3>
+      <p style="color: #8b949e;">Auto-import rental leads from Zillow, ShowMojo, and email. Sort by property, age, status. Bounce matching.</p>
     </div>
-    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
-      <h3 style="color: #1a365d; margin-bottom: 8px;">📓 Custom playbooks</h3>
-      <p>Negotiation scripts tailored to your market, your buyer profile, your hot buttons.</p>
+    <div style="background: #161b22; padding: 24px; border-radius: 12px; border: 1px solid #30363d;">
+      <h3 style="color: #d4a853; margin-bottom: 8px;">📝 Applications & Deals</h3>
+      <p style="color: #8b949e;">Track applications from received → moved in. Sales pipeline from CMA → listing → closed.</p>
     </div>
-  </div>
-
-  <div style="text-align: center; margin-top: 60px;">
-    <p style="font-size: 14px; color: #718096;">
-      📧 <a href="mailto:negotiatorsondemand@gmail.com" style="color: #2b6cb0;">negotiatorsondemand@gmail.com</a>
-      &nbsp;·&nbsp; <a href="/login" style="color: #718096;">Hub login</a>
-    </p>
+    <div style="background: #161b22; padding: 24px; border-radius: 12px; border: 1px solid #30363d;">
+      <h3 style="color: #d4a853; margin-bottom: 8px;">🃏 MixMatch Trainer</h3>
+      <p style="color: #8b949e;">Built-in negotiation card game. 23+ tactics in 5 categories. Timed sessions, emotion wheel, Change Stair.</p>
+    </div>
+    <div style="background: #161b22; padding: 24px; border-radius: 12px; border: 1px solid #30363d;">
+      <h3 style="color: #d4a853; margin-bottom: 8px;">🔄 Auto-Sync</h3>
+      <p style="color: #8b949e;">Email, Obsidian, Google Calendar, ShowMojo — all connected. Showings, CMA requests, and updates sync automatically.</p>
+    </div>
   </div>
 </div>
 {% endblock %}

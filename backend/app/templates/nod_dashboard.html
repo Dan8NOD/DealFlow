@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOD Academy — Dashboard</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
+nav { display: flex; align-items: center; gap: 1.5rem; padding: 1rem 2rem; background: #161b22; border-bottom: 1px solid #30363d; }
+nav h1 { font-size: 1.25rem; font-weight: 600; color: #d4a853; letter-spacing: 1px; }
+nav a { color: #8b949e; text-decoration: none; font-size: .875rem; }
+nav a:hover { color: #d4a853; }
+nav .spacer { flex: 1; }
+nav .user { font-size: .8rem; color: #8b949e; }
+.container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.25rem; }
+.stat-card .label { font-size: .8rem; color: #8b949e; margin-bottom: .25rem; }
+.stat-card .value { font-size: 1.75rem; font-weight: 700; color: #d4a853; }
+.stat-card .sub { font-size: .75rem; color: #8b949e; margin-top: .25rem; }
+
+h2 { font-size: 1.1rem; margin-bottom: 1rem; color: #d4a853; }
+.panel { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem; }
+
+table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+th { text-align: left; padding: .6rem .5rem; border-bottom: 1px solid #30363d; color: #8b949e; font-weight: 500; }
+td { padding: .6rem .5rem; border-bottom: 1px solid #21262d; }
+td .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: .75rem; font-weight: 500; }
+.badge-l1 { background: #1f6feb33; color: #58a6ff; }
+.badge-l2 { background: #d2992233; color: #d29922; }
+.badge-l3 { background: #3fb95033; color: #3fb950; }
+.badge-active { background: #3fb95033; color: #3fb950; }
+.badge-unpaid { background: #f8514933; color: #f85149; }
+.actions { display: flex; gap: .5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.btn { padding: .5rem 1rem; border-radius: 6px; border: 1px solid #30363d; background: #21262d; color: #e6edf3; font-size: .875rem; cursor: pointer; }
+.btn:hover { background: #30363d; }
+.btn-primary { background: #d4a853; color: #0d1117; border-color: #d4a853; font-weight: 600; }
+.btn-primary:hover { background: #e3b865; }
+
+/* Quick-add form */
+#quick-add { display: none; margin-bottom: 1.5rem; }
+#quick-add.show { display: block; }
+#quick-add form { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+#quick-add form input, #quick-add form select, #quick-add form textarea { width: 100%; padding: .5rem; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: #e6edf3; font-size: .875rem; }
+#quick-add form .full { grid-column: 1 / -1; }
+</style>
+</head>
+<body>
+<nav>
+  <h1>NOD ACADEMY</h1>
+  <a href="/nod">Dashboard</a>
+  <a href="/products">Products</a>
+  <a href="/dashboard">Real Estate</a>
+  <a href="/trainer">MixMatch</a>
+  <a href="https://calendly.com/negotiatorsondemand" target="_blank">📅 Book Coaching</a>
+  <span class="spacer"></span>
+  <span class="user">{{ user.email }}</span>
+  <form action="/auth/logout" method="post" style="display:inline"><button class="btn" style="padding:.3rem .8rem">Logout</button></form>
+</nav>
+
+<div class="container">
+  <div class="stats">
+    <div class="stat-card">
+      <div class="label">Active Students</div>
+      <div class="value">{{ active_students }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Total Sessions</div>
+      <div class="value">{{ total_sessions }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Coaching Revenue</div>
+      <div class="value">${{ "{:,.0f}".format(total_coaching_revenue / 100) if total_coaching_revenue else 0 }}</div>
+      <div class="sub">{{ unpaid_coaching|length }} unpaid</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Levels</div>
+      <div class="value" style="font-size:.9rem">
+        {% for level, count in level_dist %}
+        <span class="badge badge-{{ 'l1' if level.value == 'LISTENING' else 'l2' if level.value == 'DIALOGUE' else 'l3' }}">{{ level.value }}: {{ count }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" onclick="toggleForm()">+ New Student</button>
+    <button class="btn" onclick="toggleSessionForm()">+ Log Session</button>
+    <button class="btn" onclick="toggleCoachingForm()">+ Log Coaching</button>
+  </div>
+
+  <div id="quick-add">
+    <form id="add-student-form" style="display:none" onsubmit="return addStudent(event)">
+      <input type="text" name="name" placeholder="Full name" required>
+      <input type="email" name="email" placeholder="Email">
+      <input type="tel" name="phone" placeholder="Phone">
+      <select name="source"><option value="">Source</option><option>saturday_session</option><option>coaching</option><option>referral</option><option>website</option><option>other</option></select>
+      <textarea name="notes" placeholder="Notes" class="full" rows="2"></textarea>
+      <button type="submit" class="btn btn-primary full">Save Student</button>
+    </form>
+    <form id="add-session-form" style="display:none" onsubmit="return addSession(event)">
+      <input type="text" name="student_name" placeholder="Student name or ID" required>
+      <select name="session_type"><option value="saturday">Saturday</option><option value="private">Private</option><option value="coaching">Coaching</option></select>
+      <input type="date" name="session_date">
+      <select name="level_focus"><option value="">Level focus</option><option value="LISTENING">Level 1 — Listening</option><option value="DIALOGUE">Level 2 — Dialogue</option><option value="COLLABORATION">Level 3 — Collaboration</option></select>
+      <input type="number" name="duration_minutes" placeholder="Duration (min)">
+      <textarea name="notes" placeholder="Session notes" class="full" rows="2"></textarea>
+      <button type="submit" class="btn btn-primary full">Save Session</button>
+    </form>
+    <form id="add-coaching-form" style="display:none" onsubmit="return addCoaching(event)">
+      <input type="text" name="student_name" placeholder="Student name or ID" required>
+      <input type="date" name="session_date" required>
+      <input type="text" name="topic" placeholder="Topic (e.g. Salary negotiation prep)">
+      <input type="number" name="amount_cents" placeholder="Amount in cents (25000 = $250)" required>
+      <select name="paid"><option value="true">Paid</option><option value="false">Unpaid</option></select>
+      <textarea name="notes" placeholder="Notes" class="full" rows="2"></textarea>
+      <button type="submit" class="btn btn-primary full">Save Coaching</button>
+    </form>
+  </div>
+
+  <h2>Recent Students</h2>
+  <div class="panel">
+    <table>
+      <thead><tr><th>Name</th><th>Level</th><th>Sessions</th><th>Status</th><th>Source</th><th>Added</th></tr></thead>
+      <tbody>
+        {% for s in recent_students %}
+        <tr>
+          <td><strong>{{ s.name }}</strong>{% if s.email %}<br><span style="color:#8b949e;font-size:.8rem">{{ s.email }}</span>{% endif %}</td>
+          <td><span class="badge badge-{{ 'l1' if s.current_level.value == 'LISTENING' else 'l2' if s.current_level.value == 'DIALOGUE' else 'l3' }}">{{ s.current_level.value }}</span></td>
+          <td>{{ s.sessions_completed }}</td>
+          <td><span class="badge badge-active">{{ s.status.value }}</span></td>
+          <td>{{ s.source or '-' }}</td>
+          <td style="color:#8b949e;font-size:.8rem">{{ s.created_at.strftime('%b %d') if s.created_at else '' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+    <div>
+      <h2>Recent Sessions</h2>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Student</th><th>Type</th><th>Tools</th><th>Date</th></tr></thead>
+          <tbody>
+            {% for s in recent_sessions %}
+            <tr>
+              <td>{{ s.student.name if s.student else s.student_id }}</td>
+              <td><span class="badge">{{ s.session_type.value }}</span></td>
+              <td style="font-size:.8rem;color:#8b949e">{{ s.tools_practiced or '-' }}</td>
+              <td style="color:#8b949e;font-size:.8rem">{{ s.session_date.strftime('%b %d') if s.session_date else '' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <h2>Unpaid Coaching</h2>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Student</th><th>Topic</th><th>Amount</th><th>Date</th></tr></thead>
+          <tbody>
+            {% for c in unpaid_coaching %}
+            <tr>
+              <td>{{ c.student.name if c.student else c.student_id }}</td>
+              <td>{{ c.topic or '-' }}</td>
+              <td><span class="badge badge-unpaid">${{ "{:,.0f}".format(c.amount_cents / 100) if c.amount_cents else 0 }}</span></td>
+              <td style="color:#8b949e;font-size:.8rem">{{ c.session_date.strftime('%b %d') if c.session_date else '' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleForm() { document.getElementById('add-student-form').style.display = 'block'; document.getElementById('add-session-form').style.display = 'none'; document.getElementById('add-coaching-form').style.display = 'none'; document.getElementById('quick-add').classList.add('show'); }
+function toggleSessionForm() { document.getElementById('add-student-form').style.display = 'none'; document.getElementById('add-session-form').style.display = 'block'; document.getElementById('add-coaching-form').style.display = 'none'; document.getElementById('quick-add').classList.add('show'); }
+function toggleCoachingForm() { document.getElementById('add-student-form').style.display = 'none'; document.getElementById('add-session-form').style.display = 'none'; document.getElementById('add-coaching-form').style.display = 'block'; document.getElementById('quick-add').classList.add('show'); }
+
+async function addStudent(e) {
+  e.preventDefault(); const f = e.target; const d = new FormData(f);
+  const r = await fetch('/api/nod/students', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:d.get('name'),email:d.get('email'),phone:d.get('phone'),source:d.get('source'),notes:d.get('notes')}) });
+  if(r.ok) location.reload(); else alert('Failed');
+  return false;
+}
+async function addSession(e) {
+  e.preventDefault(); const f = e.target; const d = new FormData(f);
+  const r = await fetch('/api/nod/sessions', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({student_id:Number(d.get('student_name'))||0,student_name:d.get('student_name'),session_type:d.get('session_type'),session_date:d.get('session_date'),level_focus:d.get('level_focus'),duration_minutes:Number(d.get('duration_minutes'))||null,notes:d.get('notes')}) });
+  if(r.ok) location.reload(); else alert('Failed');
+  return false;
+}
+async function addCoaching(e) {
+  e.preventDefault(); const f = e.target; const d = new FormData(f);
+  const r = await fetch('/api/nod/coaching', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({student_id:Number(d.get('student_name'))||0,session_date:d.get('session_date'),topic:d.get('topic'),amount_cents:Number(d.get('amount_cents')),paid:d.get('paid')==='true',notes:d.get('notes')}) });
+  if(r.ok) location.reload(); else alert('Failed');
+  return false;
+}
+</script>
+</body>
+</html>

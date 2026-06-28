@@ -1,11 +1,10 @@
-.DS_Store
-*.db
-*.sqlite3
+# AGENTS.md is a symlink to ~/Desktop/NOD-Workspace/AGENTS.md — breaks Pages builds
+/AGENTS.md
+# Heavy binary assets
+*.psd
+*.pdf
 .venv/
-__pycache__/
-*.pyc
-
-# Environment files with secrets
+*.db
+*.db.bak.*
 .env.prod
-.env.local
-backend/.env.prod
+.DS_Store

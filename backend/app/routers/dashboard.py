@@ -17,8 +17,15 @@ router = APIRouter(tags=["dashboard"])
 templates = Jinja2Templates(directory=Path(__file__).parent.parent / "templates")
 
 
-@router.get("/dashboard", response_class=HTMLResponse)
-async def dashboard(
+from fastapi.responses import RedirectResponse
+
+@router.get("/dashboard")
+async def dashboard():
+    # ponytail: real-estate UI retired; redirect to NOD
+    return RedirectResponse(url="/nod", status_code=302)
+
+@router.get("/dashboard_legacy", response_class=HTMLResponse, include_in_schema=False)
+async def dashboard_legacy(
     request: Request,
     user: User = Depends(require_user),
     db: Session = Depends(get_db),

@@ -160,12 +160,13 @@ async def products_dashboard(
                 tool_counts[t] = tool_counts.get(t, 0) + 1
     top_tools = sorted(tool_counts.items(), key=lambda x: -x[1])[:10]
 
-    # Student growth (monthly)
-    growth_raw = db.execute(sa_text("""
-        SELECT strftime('%Y-%m', created_at) as month, COUNT(*) as cnt
-        FROM nod_students WHERE org_id = :oid
-        GROUP BY month ORDER BY month
-    """), {"oid": org_id}).all()
+    # Student growth (monthly) — ponytail: dialect-agnostic (works on sqlite + pg)
+    bind = db.get_bind()
+    if bind.dialect.name == "postgresql":
+        growth_sql = "SELECT TO_CHAR(created_at, 'YYYY-MM') AS month, COUNT(*) AS cnt FROM nod_students WHERE org_id = :oid GROUP BY month ORDER BY month"
+    else:
+        growth_sql = "SELECT strftime('%Y-%m', created_at) AS month, COUNT(*) AS cnt FROM nod_students WHERE org_id = :oid GROUP BY month ORDER BY month"
+    growth_raw = db.execute(sa_text(growth_sql), {"oid": org_id}).all()
 
     return templates.TemplateResponse("nod_products.html", {
         "request": request, "user": user,

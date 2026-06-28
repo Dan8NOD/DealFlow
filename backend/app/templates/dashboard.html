@@ -127,10 +127,10 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
 
 <!-- QUICK ACTIONS -->
 <div class="lhf-strip" style="padding-top:0" id="quickActions">
-  <div class="lhf-card" style="border-left-color:var(--blue);cursor:pointer" onclick="openAddLeadForm()"><div class="lhf-icon">👤</div><div class="lhf-title">Add Lead</div><div class="lhf-sub">Log new inquiry</div></div>
-  <div class="lhf-card" style="border-left-color:var(--green);cursor:pointer" onclick="switchTab('deals')"><div class="lhf-icon">💰</div><div class="lhf-title">New Sale</div><div class="lhf-sub">Track a sale</div></div>
-  <div class="lhf-card" style="border-left-color:var(--purple);cursor:pointer" onclick="switchTab('apps')"><div class="lhf-icon">📋</div><div class="lhf-title">Applications</div><div class="lhf-sub">Pipeline</div></div>
+  <div class="lhf-card" style="border-left-color:var(--red);cursor:pointer" onclick="openAddLeadForm()"><div class="lhf-icon">🔥</div><div class="lhf-title">Add Fan</div><div class="lhf-sub">Capture a new fanatic</div></div>
   <div class="lhf-card" style="border-left-color:var(--blue);cursor:pointer" onclick="window.open('/contact?source=calendly','_blank')"><div class="lhf-icon">📅</div><div class="lhf-title">Book a Call</div><div class="lhf-sub">Send calendar link</div></div>
+  <div class="lhf-card" style="border-left-color:var(--green);cursor:pointer" onclick="window.open('https://dan8nod.github.io/NOD-ify/','_blank')"><div class="lhf-icon">🎴</div><div class="lhf-title">Free Tools</div><div class="lhf-sub">MixMatch game</div></div>
+  <div class="lhf-card" style="border-left-color:var(--purple);cursor:pointer" onclick="window.open('/contact?source=software','_blank')"><div class="lhf-icon">💻</div><div class="lhf-title">Sell Software</div><div class="lhf-sub">Inquiry form</div></div>
 </div>
 
 <!-- STATS -->
@@ -139,10 +139,8 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
 <!-- TABS -->
 <div class="tabs" id="tabBar">
   <button class="tab active" data-tab="kanban">📋 Funnel</button>
-  <button class="tab" data-tab="leads">📧 Leads<span class="count" id="upsellCount"></span></button>
-  <button class="tab" data-tab="deals">💰 Sales</button>
-  <button class="tab" data-tab="apps">📋 Apps</button>
-  <!-- ponytail: Properties tab hidden — NOD hub is leads + content, no property inventory -->
+  <button class="tab" data-tab="leads">🔥 Fans<span class="count" id="upsellCount"></span></button>
+  <!-- ponytail: Sales + Apps tabs hidden — content creator, not rental manager -->
 </div>
 
 <!-- TOOLBAR -->
@@ -237,33 +235,18 @@ function renderAll(){
 function renderLHF(){
   let cards=[];
   // 1. Hot leads — NEW leads with phone numbers, last 48h
+  // ponytail: hot fans — newest fans with phone + recent
   const hot=allLeads.filter(l=>l.status==='NEW'&&l.phone&&l.days_old<3).slice(0,4);
-  hot.forEach(l=>cards.push({icon:'🔥',title:l.name||'Lead',sub:(l.property||'')+' · '+(l.source||''),type:'lead',id:l.id,cls:'hot'}));
+  hot.forEach(l=>cards.push({icon:'🔥',title:l.name||'Fan',sub:(l.source||''),type:'lead',id:l.id,cls:'hot'}));
 
-  // 2. Good income / credit leads — income >= 3x rent or high absolute income
-  const incomeLeads=allLeads.filter(l=>{
-    if(!l.monthly_income)return false;
-    const prop=l.property_id?allProps.find(p=>p.id===l.property_id):null;
-    if(prop&&prop.rent&&l.monthly_income>=prop.rent*3)return true;
-    return l.monthly_income>=4000;
-  }).slice(0,3);
-  incomeLeads.forEach(l=>{
-    const income='$'+Number(l.monthly_income).toLocaleString()+'/mo';
-    cards.push({icon:'💵',title:l.name||'Qualified lead',sub:income+' · '+(l.property||''),type:'lead',id:l.id,cls:'income'});
-  });
-
-  // 3. NOD inbound — newest leads from non-Zillow sources
+  // 2. NOD inbound — newest leads from NOD channels (replaces income/rent section)
   const _nodChannels=['Calendly','Lemlist','Software','Book','YouTube','Contact Form','Website'];
   const nodNew=allLeads.filter(l=>_nodChannels.some(c=>(l.source||'').toLowerCase().includes(c.toLowerCase()))).sort((a,b)=>(b.received_at||'').localeCompare(a.received_at||'')).slice(0,3);
-  nodNew.forEach(l=>cards.push({icon:'✉️',title:l.name||'Lead',sub:'NOD channel · '+(l.source||''),type:'lead',id:l.id,cls:'email'}));
+  nodNew.forEach(l=>cards.push({icon:'✉️',title:l.name||'Fan',sub:'NOD channel · '+(l.source||''),type:'lead',id:l.id,cls:'email'}));
 
-  // 4. Deals near closing — under contract, recent activity
-  const nearClose=allDeals.filter(d=>['UNDER_CONTRACT','CONTRACT_SIGNED','OFFER_RECEIVED'].includes(d.status)&&d.days_idle<7).slice(0,3);
-  nearClose.forEach(d=>cards.push({icon:'💰',title:d.address.split(',')[0],sub:'Near close · '+(d.status||'').replace(/_/g,' '),type:'deal',id:d.id,cls:'deal'}));
-
-  // 5. Stale deals needing attention
-  const stale=allDeals.filter(d=>d.days_idle>20&&!['CLOSED'].includes(d.status)).slice(0,2);
-  stale.forEach(d=>cards.push({icon:'⚠️',title:d.address.split(',')[0],sub:'Stale · '+(d.days_idle||0)+'d idle',type:'deal',id:d.id,cls:'hot'}));
+  // ponytail: 3. Cold fans — long-time no-contact (replaces sales deals section)
+  const coldFans=allLeads.filter(l=>['NEW','CONTACTED','QUALIFIED'].includes(l.status)&&(l.days_old||0)>=30).sort((a,b)=>(b.days_old||0)-(a.days_old||0)).slice(0,3);
+  coldFans.forEach(l=>cards.push({icon:'❄️',title:l.name||'Fan',sub:(l.days_old||0)+'d silent · '+(l.source||''),type:'lead',id:l.id,cls:'bounce'}));
 
   document.getElementById('lhfStrip').innerHTML=cards.map(c=>
     `<div class="lhf-card ${c.cls}" onclick="openPanel('${c.type}',${c.id})">
@@ -277,19 +260,18 @@ function renderLHF(){
 // ── STATS ──
 function renderStats(){
   const hotLeads=allLeads.filter(l=>['NEW','CONTACTED'].includes(l.status)).length;
-  const inPipe=allApps.filter(a=>['APPLICATION_RECEIVED','OFFER_SENT','APPROVED'].includes(a.status)).length;
-  const activeDeals=allDeals.filter(d=>!['CLOSED'].includes(d.status)).length;
-  const withBudget=allLeads.filter(l=>l.monthly_income).length;
+  // ponytail: engaged = fans in active conversation, not apartment pipeline
+  const inPipe=allLeads.filter(l=>['CONTACTED','QUALIFIED'].includes(l.status)).length;
+  const withBudget=allLeads.filter(l=>l.email).length;
   // ponytail: NOD inbound — count leads from non-Zillow/non-ShowMojo sources (the marketing channels)
   const nodChannels=['Calendly','Lemlist','Software','Book','YouTube','Contact Form','Website'];
   const nodInbound=allLeads.filter(l=>nodChannels.some(c=>(l.source||'').toLowerCase().includes(c.toLowerCase()))).length;
   document.getElementById('statsRow').innerHTML=`
-    <div class="stat-card" style="border-top-color:var(--red)" onclick="switchTab('leads')"><div class="sn">${fmt(hotLeads)}</div><div class="sl">Hot Leads</div></div>
-    <div class="stat-card" style="border-top-color:var(--green)" onclick="switchTab('apps')"><div class="sn">${fmt(inPipe)}</div><div class="sl">Pipeline</div></div>
-    <div class="stat-card" style="border-top-color:var(--purple)" onclick="switchTab('deals')"><div class="sn">${fmt(activeDeals)}</div><div class="sl">Sales</div></div>
-    <div class="stat-card" style="border-top-color:var(--amber)" onclick="showBudgetLeads()"><div class="sn">${fmt(withBudget)}</div><div class="sl">Budget</div></div>
-    <div class="stat-card" style="border-top-color:var(--blue)" onclick="switchTab('leads')"><div class="sn">${fmt(allLeads.length)}</div><div class="sl">Total</div></div>
-    <div class="stat-card" style="border-top-color:var(--navy)" onclick="filterLeadsBySource(nodChannels)"><div class="sn">${fmt(nodInbound)}</div><div class="sl">NOD Inbound</div></div>
+    <div class="stat-card" style="border-top-color:var(--red)" onclick="switchTab('leads')"><div class="sn">${fmt(hotLeads)}</div><div class="sl">Hot Fans</div></div>
+    <div class="stat-card" style="border-top-color:var(--green)" onclick="switchTab('leads')"><div class="sn">${fmt(inPipe)}</div><div class="sl">Engaged</div></div>
+    <div class="stat-card" style="border-top-color:var(--purple)" onclick="filterLeadsBySource(nodChannels)"><div class="sn">${fmt(nodInbound)}</div><div class="sl">NOD Inbound</div></div>
+    <div class="stat-card" style="border-top-color:var(--amber)" onclick="switchTab('leads')"><div class="sn">${fmt(withBudget)}</div><div class="sl">With Email</div></div>
+    <div class="stat-card" style="border-top-color:var(--blue)" onclick="switchTab('leads')"><div class="sn">${fmt(allLeads.length)}</div><div class="sl">Total Fans</div></div>
   `;
   window._nodChannels=nodChannels;
 }
@@ -305,7 +287,7 @@ function filterLeadsBySource(channels){
 // ── ADD LEAD MODAL ──
 function openAddLeadForm(){
   selectedType=null;selectedId=null;
-  document.getElementById('panelTitle').textContent='➕ Add Lead';
+  document.getElementById('panelTitle').textContent='🔥 Add Fan';
   document.getElementById('panel').classList.add('open');
   document.getElementById('overlay').classList.add('open');
   // ponytail: reuse the side-panel as the modal. form status defaults to NEW server-side.

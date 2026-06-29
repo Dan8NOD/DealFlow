@@ -1,4 +1,4 @@
-"""FastAPI entry point — NOD Academy only."""
+"""FastAPI entry point — FatCatAM only."""
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,7 +8,7 @@ from app.routers import auth, dashboard, nod, trainer
 import os
 
 settings = get_settings()
-app = FastAPI(title="NOD Academy API", version="1.0.0", debug=settings.debug)
+app = FastAPI(title="FatCatAM API", version="1.0.0", debug=settings.debug)
 
 # ponytail: serve static files (PDFs, downloads)
 static_dir = os.path.join(os.path.dirname(__file__), "static")

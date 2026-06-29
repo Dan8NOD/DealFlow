@@ -114,7 +114,7 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
 
 {% block body %}
 <header class="bar">
-  <h1>🤝 Content Creator Portal</h1>
+  <h1>🐱 FatCatAM</h1>
   <div style="display:flex;gap:6px;align-items:center">
     <a href="#" onclick="syncObsidian();return false">📓</a>
     <a href="#" onclick="refreshAll();return false">↻</a>
@@ -180,7 +180,8 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
 <div class="tabs" id="tabBar">
   <button class="tab active" data-tab="kanban">📋 Funnel</button>
   <button class="tab" data-tab="leads">🔥 Fans<span class="count" id="upsellCount"></span></button>
-  <!-- ponytail: Sales + Apps tabs hidden — content creator, not rental manager -->
+  <button class="tab" data-tab="gadgets">🔧 Gadgets</button>
+  <!-- ponytail: Sales + Apps tabs hidden — asset management, not rental manager -->
 </div>
 
 <!-- TOOLBAR -->
@@ -200,7 +201,52 @@ header.bar a{color:#fff;text-decoration:none;font-size:12px;background:rgba(255,
 <!-- DESKTOP TABLE -->
 <div class="grid-wrap" id="gridWrap" style="display:none"><table class="grid" id="grid"></table></div>
 
-<!-- PANEL -->
+<!-- GADGETS SECTION -->
+<div id="gadgetsView" style="display:none;padding:16px;max-width:900px;margin:0 auto">
+  <!-- NOD Tool (Digital Gadget) -->
+  <div style="background:linear-gradient(135deg,#0f1729 0%,#1a2540 100%);border-radius:14px;border:1px solid rgba(212,168,83,0.3);padding:24px;margin-bottom:16px;box-shadow:0 4px 20px rgba(0,0,0,0.4);">
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+      <div style="flex:0 0 60px;font-size:48px;text-align:center">⚡</div>
+      <div style="flex:1;min-width:200px">
+        <h2 style="color:#d4a853;font-size:20px;margin:0 0 4px">NOD Tool</h2>
+        <div style="color:rgba(255,255,255,0.6);font-size:12px;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Digital Gadget · Performance Multiplier</div>
+        <p style="color:rgba(255,255,255,0.8);font-size:14px;line-height:1.5;margin:0 0 12px">
+          The friction remover. 40% improvement on day one. No training. No onboarding. 
+          Doubles output without working harder. Built for the lazy person who's sick of being left behind.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a href="https://fatcatcruz.com" target="_blank" style="background:#d4a853;color:#0f1729;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:800;font-size:13px;display:inline-block">🔗 Visit fatcatcruz.com</a>
+          <a href="https://dan8nod.github.io/NOD-ify/" target="_blank" style="background:rgba(255,255,255,0.1);color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px;display:inline-block">🎴 Free MixMatch Tools</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MixMatch Cards (Physical Gadget) -->
+  <div style="background:#fff;border-radius:14px;border:1px solid #e2e8f0;padding:24px;margin-bottom:16px;">
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+      <div style="flex:0 0 60px;font-size:48px;text-align:center">🃏</div>
+      <div style="flex:1;min-width:200px">
+        <h2 style="color:#1a365d;font-size:20px;margin:0 0 4px">MixMatch Negotiation Cards</h2>
+        <div style="color:#718096;font-size:12px;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Physical Product · Print-on-Demand</div>
+        <p style="color:#4a5568;font-size:14px;line-height:1.5;margin:0 0 12px">
+          Business cards that sell themselves. 23+ negotiation tactics, 5 categories. 
+          Front: tactic art. Back: NOD logo + negotiatorsondemand.com QR. 
+          Every deck is a billboard pointing back to your product line.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="background:#edf2f7;color:#4a5568;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;display:inline-block">⏳ Printful template — coming soon</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Coming Soon -->
+  <div style="background:rgba(212,168,83,0.08);border-radius:14px;border:1px dashed rgba(212,168,83,0.4);padding:20px;text-align:center;">
+    <div style="font-size:14px;color:#d4a853;font-weight:700">🔧 More gadgets in the pipeline</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:4px">AI-built physical products · Hardware designs · Next-gen negotiation tools</div>
+  </div>
+</div>
 <div class="overlay" id="overlay"></div>
 <div class="panel" id="panel">
   <button class="p-close" onclick="closePanel()">✕</button>
@@ -265,6 +311,16 @@ async function loadAll(){
 }
 
 function renderAll(){
+  if(currentTab==='gadgets'){
+    document.getElementById('kanbanView').style.display='none';
+    document.getElementById('leadCards').style.display='none';
+    document.getElementById('gridWrap').style.display='none';
+    document.getElementById('gadgetsView').style.display='block';
+    document.getElementById('toolbar').style.display='none';
+    return;
+  }
+  document.getElementById('gadgetsView').style.display='none';
+  document.getElementById('toolbar').style.display='flex';
   renderStats();
   renderLHF();
   if(currentTab==='kanban')renderKanban();

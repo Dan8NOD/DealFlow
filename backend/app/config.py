@@ -5,7 +5,7 @@ import sys
 
 
 class Settings(BaseSettings):
-    database_url: str = "sqlite:///./renter_portal.db"
+    database_url: str = "sqlite:///./fatcatam.db"
     secret_key: str = "dev-secret-change-me"
     access_token_minutes: int = 60 * 8   # 8 hours (was 24 — reduced for security)
     refresh_token_days: int = 30

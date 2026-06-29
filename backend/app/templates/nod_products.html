@@ -89,6 +89,7 @@ td { padding: .5rem; border-bottom: 1px solid #21262d; }
       <h3>{{ p.name }}</h3>
       <p>{{ p.desc }}</p>
       <span class="badge badge-{{ p.status }}">{{ status_map[p.status] }}</span>
+      {% if p.buy_link %}<a href="{{ p.buy_link }}" class="link" target="_blank" style="background:#d4a853;color:#0d1117;padding:.4rem .8rem;border-radius:6px;margin-top:.6rem;display:inline-block;font-weight:600;text-decoration:none">Buy Now</a>{% endif %}
       {% if p.link %}<a href="{{ p.link }}" class="link" target="_blank">→ Open</a>{% endif %}
     </div>
     {% endfor %}

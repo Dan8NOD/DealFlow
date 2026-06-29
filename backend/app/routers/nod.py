@@ -80,6 +80,9 @@ async def nod_dashboard(
 # ── Products Dashboard ──
 
 PRODUCT_LADDER = [
+    {"name": "NOD Academy Book (Amazon)", "price": 10, "status": "done",
+     "desc": "NOD Academy — available on Amazon", "link": "",
+     "buy_link": "https://www.amazon.com/dp/B0H6T2M995"},
     {"name": "PDF Cheat Sheet (50 Labels)", "price": 9, "status": "wip",
      "desc": "50 labeled phrases that make people open up", "link": ""},
     {"name": "Negotiation Flash Cards", "price": 19, "status": "todo",
@@ -89,10 +92,10 @@ PRODUCT_LADDER = [
      "buy_link": "https://buy.stripe.com/7sY5kFcAfe9z19E2NDcIE00"},
     {"name": "Negotiation Field Manual", "price": 49, "status": "done",
      "desc": "Your NOD Academy ebook — 33 chapters", "link": "",
-     "buy_link": "https://buy.stripe.com/4gM14peInfdD3hMfApcIE01"},
+     "buy_link": "https://dancruzpro.gumroad.com/l/bksozf"},
     {"name": "RE Scripts Pack", "price": 99, "status": "done",
      "desc": "Real estate negotiation scripts", "link": "",
-     "buy_link": "https://buy.stripe.com/9B600l0Rx7LbcSm87XcIE02"},
+     "buy_link": "https://dancruzpro.gumroad.com/l/fxgdpc"},
     {"name": "Complete Bundle", "price": 149, "status": "todo",
      "desc": "All digital products in one package", "link": ""},
     {"name": "NOD Membership", "price": 199, "status": "todo",

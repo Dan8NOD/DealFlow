@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MixMatch Asset — Fat Cat AM</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
+nav { display: flex; align-items: center; gap: 1.5rem; padding: 1rem 2rem; background: #161b22; border-bottom: 1px solid #30363d; }
+nav h1 { font-size: 1.25rem; font-weight: 600; color: #d4a853; letter-spacing: 1px; }
+nav a { color: #8b949e; text-decoration: none; font-size: .875rem; }
+nav a:hover { color: #d4a853; } nav .spacer { flex: 1; }
+nav .user { font-size: .8rem; color: #8b949e; }
+.container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.stat { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.25rem; text-align: center; }
+.stat .num { font-size: 1.75rem; font-weight: 700; color: #d4a853; }
+.stat .lbl { font-size: .8rem; color: #8b949e; margin-top: 4px; }
+.stat .sub { font-size: .75rem; color: #3fb950; }
+.panel { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+h2 { color: #d4a853; margin-bottom: .75rem; font-size: 1.1rem; }
+table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+th { text-align: left; padding: .5rem; border-bottom: 1px solid #30363d; color: #8b949e; font-weight: 500; }
+td { padding: .5rem; border-bottom: 1px solid #21262d; }
+.btn { padding: .5rem 1rem; border-radius: 6px; border: 1px solid #30363d; background: #21262d; color: #e6edf3; font-size: .875rem; cursor: pointer; text-decoration: none; display: inline-block; }
+.btn:hover { background: #30363d; }
+.btn-primary { background: #d4a853; color: #0d1117; border-color: #d4a853; font-weight: 600; }
+.btn-yt { background: #ff0000; color: #fff; border-color: #cc0000; font-weight: 600; }
+.btn-amz { background: #ff9900; color: #0d1117; border-color: #ff9900; font-weight: 600; }
+.btn-gum { background: #ff90b3; color: #0d1117; border-color: #ff90b3; font-weight: 600; }
+.tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: .75rem; background: #3fb95033; color: #3fb950; }
+.tag-wip { background: #d2992233; color: #d29922; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<nav>
+  <h1>🎴 MixMatch Asset</h1>
+  <a href="/nod">Dashboard</a>
+  <a href="/products">Products</a>
+  <a href="/nodify">MixMatch</a>
+  <a href="https://calendly.com/negotiatorsondemand" target="_blank">📅 Book</a>
+  <span class="spacer"></span>
+  <span class="user">{{ user.email }}</span>
+  <form action="/auth/logout" method="post" style="display:inline"><button class="btn" style="padding:.3rem .8rem">Logout</button></form>
+</nav>
+
+<div class="container">
+
+  <!-- Asset overview -->
+  <div class="stats">
+    <div class="stat">
+      <div class="num">FV9</div>
+      <div class="lbl">Current Version</div>
+    </div>
+    <div class="stat">
+      <div class="num">35+</div>
+      <div class="lbl">Negotiation Tools</div>
+    </div>
+    <div class="stat">
+      <div class="num">8</div>
+      <div class="lbl">App Tabs</div>
+    </div>
+    <div class="stat">
+      <div class="num">$0</div>
+      <div class="lbl">Free Tier Price</div>
+      <div class="sub">Lead magnet for paid products</div>
+    </div>
+    <div class="stat">
+      <div class="num">GH Pages</div>
+      <div class="lbl">Hosting</div>
+      <div class="sub">Zero hosting cost</div>
+    </div>
+  </div>
+
+  <!-- What MixMatch IS -->
+  <div class="panel">
+    <h2>📋 What Is MixMatch?</h2>
+    <p style="color:#8b949e;font-size:.9rem;line-height:1.6;">
+      NOD-ify MixMatch is a free negotiation training app — the top-of-funnel engagement tool for all 6 business ventures.
+      It lives at <a href="https://dan8nod.github.io/NOD-ify/" target="_blank" style="color:#d4a853;">dan8nod.github.io/NOD-ify</a>
+      and serves as <strong style="color:#e6edf3;">negotiatorsondemand.com</strong>'s central hub.
+      Product links (Amazon book, Gumroad RE Scripts, Calendly coaching, Stripe donations) are embedded directly in the app footer.
+    </p>
+    <p style="margin-top:.75rem;color:#8b949e;font-size:.85rem;">
+      <span class="tag">Lead Magnet</span>
+      <span class="tag" style="margin-left:4px;">IP Asset</span>
+      <span class="tag" style="margin-left:4px;">Content Engine</span>
+    </p>
+  </div>
+
+  <!-- App features inventory -->
+  <div class="panel">
+    <h2>🗂️ App Tabs & Features</h2>
+    <table>
+      <tr><th>Tab</th><th>Purpose</th><th>Status</th></tr>
+      <tr><td>🃏 Tool Deck</td><td>35+ negotiation tactics, timed sessions, random draw</td><td><span class="tag">Live</span></td></tr>
+      <tr><td>🧗 Change Stair</td><td>Machiavelli Behaviour Change model (4 stages)</td><td><span class="tag">Live</span></td></tr>
+      <tr><td>🌼 Emotion Wheel</td><td>6-emotion concentric wheel, 3 rings, drag-to-rotate</td><td><span class="tag">Live</span></td></tr>
+      <tr><td>💰 Haggle</td><td>Money negotiation mode</td><td><span class="tag">Live</span></td></tr>
+      <tr><td>🤝 Friend</td><td>Friendly negotiation mode</td><td><span class="tag">Live</span></td></tr>
+      <tr><td>👑 Boss</td><td>Authority negotiation mode</td><td><span class="tag">Live</span></td></tr>
+      <tr><td>⚖️ Mediator</td><td>Mediation negotiation mode</td><td><span class="tag">Live</span></td></tr>
+      <tr><td>📄 Graphics</td><td>NOD Academy tactical reference cards (Ch 1-4)</td><td><span class="tag">Live</span></td></tr>
+      <tr><td>🎥 YouTube</td><td>@Negotiators channel link</td><td><span class="tag">Live</span></td></tr>
+    </table>
+  </div>
+
+  <!-- Embedded product links -->
+  <div class="panel">
+    <h2>💰 Revenue Links Embedded in App</h2>
+    <table>
+      <tr><th>Product</th><th>Platform</th><th>Price</th><th>Link</th></tr>
+      <tr>
+        <td>NOD Academy Book</td>
+        <td>Amazon KDP</td>
+        <td>$9.99</td>
+        <td><a href="https://www.amazon.com/dp/B0H6T2M995" target="_blank" class="btn btn-amz" style="padding:.3rem .6rem;font-size:.8rem;">Amazon →</a></td>
+      </tr>
+      <tr>
+        <td>RE Scripts Pack</td>
+        <td>Gumroad</td>
+        <td>$47</td>
+        <td><a href="https://dancruzpro.gumroad.com/l/fxgdpc" target="_blank" class="btn btn-gum" style="padding:.3rem .6rem;font-size:.8rem;">Gumroad →</a></td>
+      </tr>
+      <tr>
+        <td>1-on-1 Coaching</td>
+        <td>Calendly</td>
+        <td>$250/hr</td>
+        <td><a href="https://calendly.com/negotiatorsondemand" target="_blank" class="btn btn-primary" style="padding:.3rem .6rem;font-size:.8rem;">Book →</a></td>
+      </tr>
+      <tr>
+        <td>Donation</td>
+        <td>Stripe</td>
+        <td>Any amount</td>
+        <td><span style="color:#8b949e;font-size:.8rem;">Embedded in footer</span></td>
+      </tr>
+      <tr>
+        <td>YouTube Channel</td>
+        <td>YouTube</td>
+        <td>Free</td>
+        <td><a href="https://www.youtube.com/@Negotiators" target="_blank" class="btn btn-yt" style="padding:.3rem .6rem;font-size:.8rem;">YouTube →</a></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Tech stack -->
+  <div class="two-col">
+    <div class="panel">
+      <h2>🔧 Tech Stack</h2>
+      <table>
+        <tr><th>Layer</th><th>Details</th></tr>
+        <tr><td>Frontend</td><td>Single HTML file, no build tools</td></tr>
+        <tr><td>Hosting</td><td>GitHub Pages (free)</td></tr>
+        <tr><td>Repo</td><td><a href="https://github.com/Dan8NOD/NOD-ify" target="_blank" style="color:#58a6ff;">Dan8NOD/NOD-ify</a></td></tr>
+        <tr><td>Deploy</td><td>git push → live in 60s</td></tr>
+        <tr><td>Payments</td><td>Stripe Buy Button (embedded)</td></tr>
+        <tr><td>Analytics</td><td>Not yet (GA4 placeholder)</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <h2>📈 Growth Opportunities</h2>
+      <table>
+        <tr><th>Opportunity</th><th>Effort</th></tr>
+        <tr><td>Add GA4 analytics</td><td>1 line</td></tr>
+        <tr><td>Email capture (ConvertKit)</td><td>1 form</td></tr>
+        <tr><td>Physical card deck (gadget)</td><td>Future</td></tr>
+        <tr><td>Corporate licensing</td><td>Pitch deck</td></tr>
+        <tr><td>NOD News video tab</td><td>Content pipeline</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:2rem;">
+    <a href="https://dan8nod.github.io/NOD-ify/" target="_blank" class="btn btn-primary" style="padding:.75rem 2rem;font-size:1rem;">
+      🎴 Open Live App →
+    </a>
+  </div>
+
+</div>
+</body>
+</html>

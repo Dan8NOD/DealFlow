@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Properties Pipeline — {{ org.name }}</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
+nav { display: flex; align-items: center; gap: 1.5rem; padding: 1rem 2rem; background: #161b22; border-bottom: 1px solid #30363d; }
+nav h1 { font-size: 1.25rem; font-weight: 600; color: #d4a853; letter-spacing: 1px; }
+nav a { color: #8b949e; text-decoration: none; font-size: .875rem; }
+nav a:hover { color: #d4a853; }
+nav a.active { color: #d4a853; font-weight: 600; }
+nav .spacer { flex: 1; }
+
+.container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+/* Dominoes pipeline */
+.domino-strip { display: flex; gap: 0; padding: 1rem 0 1.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch; align-items: flex-end; }
+.domino { flex: 1; min-width: 90px; max-width: 160px; position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+.domino .tile { width: 100%; background: #161b22; border: 1px solid #30363d; border-radius: 8px 8px 5px 5px; padding: 10px 8px 12px; text-align: center; position: relative; transition: all 0.3s ease; transform-origin: bottom center; }
+.domino .tile::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 60%; height: 6px; background: #30363d; border-radius: 0 0 4px 4px; opacity: 0.5; }
+.domino.has-count .tile { border-color: #a08030; box-shadow: 0 2px 8px rgba(212,168,83,0.08); }
+.domino.tipped .tile { transform: rotate(6deg) translateY(-4px); border-color: #d4a853; box-shadow: 0 6px 16px rgba(212,168,83,0.3); }
+.domino .stage-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #8b949e; font-weight: 600; margin-bottom: 4px; line-height: 1.2; }
+.domino.has-count .stage-label { color: #d4a853; }
+.domino .stage-count { font-size: 26px; font-weight: 800; color: #e6edf3; line-height: 1; }
+.domino.has-count .stage-count { color: #d4a853; }
+.domino .stage-sub { font-size: 9px; color: #8b949e; margin-top: 3px; }
+.domino .arrow { position: absolute; right: -7px; top: 40%; transform: translateY(-50%); z-index: 2; color: #30363d; font-size: 16px; font-weight: 700; pointer-events: none; }
+.domino:last-child .arrow { display: none; }
+.domino.final .tile { border-color: #238636; background: rgba(35,134,54,0.08); }
+.domino.final.has-count .stage-count { color: #3fb950; }
+.domino.final.has-count .stage-label { color: #3fb950; }
+
+/* Filter row */
+.filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+.filter-btn { padding: 5px 14px; border-radius: 6px; border: 1px solid #30363d; background: #161b22; color: #8b949e; font-size: 12px; cursor: pointer; transition: all 0.1s; }
+.filter-btn:hover { background: #21262d; color: #e6edf3; }
+.filter-btn.active { background: #d4a853; color: #0d1117; border-color: #d4a853; font-weight: 600; }
+
+/* Property grid */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 12px; }
+.prop-card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; overflow: hidden; transition: border-color 0.15s; }
+.prop-card:hover { border-color: #d4a853; }
+.prop-head { padding: 12px 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #21262d; }
+.status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.available { background: #3fb950; }
+.status-dot.showing { background: #58a6ff; }
+.status-dot.cma { background: #d29922; }
+.status-dot.approval { background: #bc8cff; }
+.status-dot.applicant { background: #bc8cff; }
+.status-dot.lease_signed { background: #3fb950; }
+.status-dot.moved_in { background: #238636; }
+.status-dot.rented { background: #3fb950; }
+.status-dot.default { background: #8b949e; }
+.prop-head .addr { flex: 1; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prop-head .unit { font-size: 12px; color: #d4a853; }
+.prop-head .price { font-size: 15px; font-weight: 700; color: #d4a853; white-space: nowrap; }
+.prop-body { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+.prop-stat { padding: 7px 12px; font-size: 12px; border-bottom: 1px solid #21262d; }
+.prop-stat:nth-child(odd) { border-right: 1px solid #21262d; }
+.prop-stat .label { color: #8b949e; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.prop-stat .value { font-weight: 600; font-size: 13px; margin-top: 2px; }
+.prop-stat .value.lead { color: #58a6ff; }
+.empty-state { text-align: center; padding: 60px 20px; color: #8b949e; }
+
+@media(max-width:768px) {
+  .grid { grid-template-columns: 1fr; }
+  .container { padding: 1rem; }
+  .domino { min-width: 75px; }
+  .domino .stage-count { font-size: 20px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <h1>FATCAT AM</h1>
+  <a href="/nod">NOD Academy</a>
+  <a href="/properties" class="active">Properties</a>
+  <a href="/products">Products</a>
+  <a href="/nodify">MixMatch</a>
+  <span class="spacer"></span>
+</nav>
+
+<div class="container">
+
+<div class="domino-strip" id="domino-strip">
+  {% for d in dominoes %}
+  <div class="domino {% if d.count > 0 %}has-count{% endif %} {% if d.count > 0 and loop.index < dominoes|length and dominoes[loop.index].count > 0 %}tipped{% endif %} {% if d.get('final') %}final{% endif %}"
+       onclick="filterByStatus('{{ d.key }}')">
+    <div class="tile">
+      <div class="stage-label">{{ d.label }}</div>
+      <div class="stage-count">{{ d.count }}</div>
+      <div class="stage-sub">{{ d.sub }}</div>
+    </div>
+    <span class="arrow">▸</span>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="filterByStatus('all')">All</button>
+  <button class="filter-btn" onclick="filterByStatus('AVAILABLE')">Available</button>
+  <button class="filter-btn" onclick="filterByStatus('RENTED')">Rented</button>
+  <button class="filter-btn" onclick="filterByStatus('OCCUPIED')">Occupied</button>
+  <button class="filter-btn" onclick="filterByStatus('OFF_MARKET')">Off Market</button>
+</div>
+
+<div class="grid" id="grid">
+  {% for p in properties %}
+  {% set status = p.status.value if p.status.value is defined else p.status %}
+  <div class="prop-card" data-status="{{ status }}" style="display:none">
+    <div class="prop-head">
+      <span class="status-dot {{ status.lower().replace('_','') if status else 'default' }}"></span>
+      <span class="addr">{{ p.address }}</span>
+      {% if p.unit %}<span class="unit">{{ p.unit }}</span>{% endif %}
+      <span class="price">${{ "{:,.0f}".format(p.rent) if p.rent else '—' }}</span>
+    </div>
+    <div class="prop-body">
+      <div class="prop-stat"><div class="label">Status</div><div class="value">{{ status.replace('_',' ') if status else '—' }}</div></div>
+      <div class="prop-stat"><div class="label">City</div><div class="value">{{ p.city or '—' }}, {{ p.state or '' }}</div></div>
+      <div class="prop-stat"><div class="label">Bed/Bath</div><div class="value">{{ p.bedrooms or '—' }}/{{ p.bathrooms or '—' }}</div></div>
+      <div class="prop-stat"><div class="label">Leads</div><div class="value lead">{{ lead_by_prop.get(p.id, 0) }}</div></div>
+      <div class="prop-stat"><div class="label">Apps</div><div class="value">{{ app_by_prop.get(p.id, 0) }}</div></div>
+      <div class="prop-stat"><div class="label">Tenant</div><div class="value">{{ p.tenant_name or '—' }}</div></div>
+    </div>
+  </div>
+  {% endfor %}
+  <div class="empty-state" id="empty-state" style="display:none">
+    <p>No properties match this filter.</p>
+  </div>
+</div>
+
+</div>
+
+<script>
+const cards = document.querySelectorAll('.prop-card[data-status]');
+
+function filterByStatus(status) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  // Also un-highlight dominoes
+  let visible = 0;
+  cards.forEach(c => {
+    const match = status === 'all' || c.dataset.status === status;
+    c.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  document.getElementById('empty-state').style.display = visible === 0 ? 'block' : 'none';
+  // Highlight active filter button
+  const btn = [...document.querySelectorAll('.filter-btn')].find(b => b.textContent.trim().toLowerCase().includes(status.toLowerCase().replace('_',' ')) || b.onclick.toString().includes(status));
+  if (btn) btn.classList.add('active');
+  else document.querySelector('.filter-btn')?.classList.add('active'); // "All"
+}
+
+// Show all on load
+filterByStatus('all');
+</script>
+</body>
+</html>

@@ -11,6 +11,7 @@ from app.auth import get_current_user, require_user
 from app.models import (
     User, Property, Lead, Application, ApplicationEvent, UserRole,
     SalesDeal, CmaRequest, PropertyFile, Organization, Comment, EmailMessage,
+    PropertyStatus, LeadStatus, ApplicationStatus,
 )
 
 router = APIRouter(tags=["dashboard"])
@@ -18,6 +19,59 @@ templates = Jinja2Templates(directory=Path(__file__).parent.parent / "templates"
 
 
 from fastapi.responses import RedirectResponse
+
+
+@router.get("/properties", response_class=HTMLResponse)
+async def properties_pipeline(request: Request, db: Session = Depends(get_db)):
+    """Public dominoes pipeline — anyone can view inventory and status."""
+    org = db.query(Organization).first()
+    if not org:
+        return HTMLResponse("<h1>No organization found</h1>", status_code=404)
+    org_id = org.id
+
+    properties = db.query(Property).filter(Property.org_id == org_id).order_by(Property.status, Property.address).all()
+    leads = db.query(Lead).filter(Lead.org_id == org_id, Lead.status.in_([LeadStatus.NEW, LeadStatus.CONTACTED, LeadStatus.QUALIFIED])).all()
+    apps = db.query(Application).filter(Application.org_id == org_id).all()
+
+    # Build domino counts: Available → Showing → CMA → Approval → Applicant → Signed → Paid
+    lead_by_prop = {}
+    for l in leads:
+        lead_by_prop.setdefault(l.property_id, 0)
+        lead_by_prop[l.property_id] += 1
+
+    app_by_prop = {}
+    for a in apps:
+        app_by_prop.setdefault(a.property_id, 0)
+        app_by_prop[a.property_id] += 1
+
+    dominoes = [
+        {"key": "AVAILABLE", "label": "Available", "sub": "On Market", "count": 0},
+        {"key": "SHOWING", "label": "Showing", "sub": "Tours Booked", "count": 0},
+        {"key": "CMA", "label": "CMA", "sub": "Pricing Review", "count": 0},
+        {"key": "APPROVAL", "label": "Approval", "sub": "Submitted", "count": 0},
+        {"key": "APPLICANT", "label": "Applicant", "sub": "Approved", "count": 0},
+        {"key": "LEASE_SIGNED", "label": "Signed", "sub": "Lease Executed", "count": 0},
+        {"key": "MOVED_IN", "label": "Paid", "sub": "Deposit Received", "count": 0, "final": True},
+    ]
+    domino_map = {d["key"]: d for d in dominoes}
+
+    for p in properties:
+        status = p.status.value if hasattr(p.status, "value") else str(p.status)
+        if status in domino_map:
+            domino_map[status]["count"] += 1
+        # Properties with active leads count as "Showing"
+        if status == "AVAILABLE" and p.id in lead_by_prop:
+            domino_map["SHOWING"]["count"] += 1
+            domino_map["AVAILABLE"]["count"] = max(0, domino_map["AVAILABLE"]["count"] - 1)
+
+    return templates.TemplateResponse("properties_pipeline.html", {
+        "request": request,
+        "properties": properties,
+        "dominoes": dominoes,
+        "org": org,
+        "lead_by_prop": lead_by_prop,
+        "app_by_prop": app_by_prop,
+    })
 
 @router.get("/dashboard")
 async def dashboard():

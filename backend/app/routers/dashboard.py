@@ -65,6 +65,8 @@ async def properties_pipeline(request: Request, db: Session = Depends(get_db)):
     org = db.query(Organization).first()
     org_name = org.name if org else "FatCat Asset Management"
     deals = _load_deals()
+    # Sort: highest price first, no-price at end
+    deals = sorted(deals, key=lambda d: (d.get("price") or 0), reverse=True)
 
     # Build domino counts from spreadsheet statuses
     dominoes = [

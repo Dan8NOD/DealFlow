@@ -19,58 +19,74 @@ templates = Jinja2Templates(directory=Path(__file__).parent.parent / "templates"
 
 
 from fastapi.responses import RedirectResponse
+import json as _json
+from pathlib import Path
+
+_DEALS_CACHE = None
+_DEALS_PATH = Path(__file__).parent.parent.parent / "deals_data.json"
+
+
+def _load_deals():
+    """Load property data from the synced spreadsheet JSON."""
+    global _DEALS_CACHE
+    if _DEALS_CACHE is not None:
+        return _DEALS_CACHE
+    if _DEALS_PATH.exists():
+        with open(_DEALS_PATH) as f:
+            _DEALS_CACHE = _json.load(f)
+    else:
+        _DEALS_CACHE = []
+    return _DEALS_CACHE
+
+
+# Spreadsheet status → domino stage mapping
+STATUS_MAP = {
+    "EXECUTE": ("AVAILABLE", "Active", "On Market"),
+    "FINISHED": ("RENTED", "Rented", "Lease Done"),
+    "CMA": ("CMA", "CMA", "Pricing Review"),
+    "FOR APPROVAL": ("APPROVAL", "Approval", "Submitted"),
+    "APPROVED APPLICANT": ("APPLICANT", "Applicant", "Approved"),
+    "WAIT": ("HOLD", "On Hold", "Construction"),
+    "Load Pics": ("AVAILABLE", "Active", "On Market"),
+    "Get Listing Agmt": ("AVAILABLE", "Active", "On Market"),
+    "LIVE": ("AVAILABLE", "Active", "On Market"),
+    "YouTube/FB": ("AVAILABLE", "Active", "On Market"),
+    "": ("AVAILABLE", "Active", "On Market"),
+}
 
 
 @router.get("/properties", response_class=HTMLResponse)
 async def properties_pipeline(request: Request, db: Session = Depends(get_db)):
-    """Public dominoes pipeline — anyone can view inventory and status."""
+    """Public dominoes pipeline — reads from synced spreadsheet data."""
     org = db.query(Organization).first()
-    if not org:
-        return HTMLResponse("<h1>No organization found</h1>", status_code=404)
-    org_id = org.id
+    org_name = org.name if org else "FatCat Asset Management"
+    deals = _load_deals()
 
-    properties = db.query(Property).filter(Property.org_id == org_id).order_by(Property.status, Property.address).all()
-    leads = db.query(Lead).filter(Lead.org_id == org_id, Lead.status.in_([LeadStatus.NEW, LeadStatus.CONTACTED, LeadStatus.QUALIFIED])).all()
-    apps = db.query(Application).filter(Application.org_id == org_id).all()
-
-    # Build domino counts: Available → Showing → CMA → Approval → Applicant → Signed → Paid
-    lead_by_prop = {}
-    for l in leads:
-        lead_by_prop.setdefault(l.property_id, 0)
-        lead_by_prop[l.property_id] += 1
-
-    app_by_prop = {}
-    for a in apps:
-        app_by_prop.setdefault(a.property_id, 0)
-        app_by_prop[a.property_id] += 1
-
+    # Build domino counts from spreadsheet statuses
     dominoes = [
         {"key": "AVAILABLE", "label": "Available", "sub": "On Market", "count": 0},
         {"key": "SHOWING", "label": "Showing", "sub": "Tours Booked", "count": 0},
         {"key": "CMA", "label": "CMA", "sub": "Pricing Review", "count": 0},
         {"key": "APPROVAL", "label": "Approval", "sub": "Submitted", "count": 0},
         {"key": "APPLICANT", "label": "Applicant", "sub": "Approved", "count": 0},
-        {"key": "LEASE_SIGNED", "label": "Signed", "sub": "Lease Executed", "count": 0},
-        {"key": "MOVED_IN", "label": "Paid", "sub": "Deposit Received", "count": 0, "final": True},
+        {"key": "RENTED", "label": "Signed", "sub": "Lease Done", "count": 0},
+        {"key": "PAID", "label": "Paid", "sub": "Deposit Received", "count": 0, "final": True},
     ]
     domino_map = {d["key"]: d for d in dominoes}
 
-    for p in properties:
-        status = p.status.value if hasattr(p.status, "value") else str(p.status)
-        if status in domino_map:
-            domino_map[status]["count"] += 1
-        # Properties with active leads count as "Showing"
-        if status == "AVAILABLE" and p.id in lead_by_prop:
-            domino_map["SHOWING"]["count"] += 1
-            domino_map["AVAILABLE"]["count"] = max(0, domino_map["AVAILABLE"]["count"] - 1)
+    for d in deals:
+        if d.get("is_sale"):
+            continue
+        raw_status = d.get("status", "")
+        stage_key, _, _ = STATUS_MAP.get(raw_status, ("AVAILABLE", "Active", "On Market"))
+        if stage_key in domino_map:
+            domino_map[stage_key]["count"] += 1
 
     return templates.TemplateResponse("properties_pipeline.html", {
         "request": request,
-        "properties": properties,
+        "deals": deals,
         "dominoes": dominoes,
-        "org": org,
-        "lead_by_prop": lead_by_prop,
-        "app_by_prop": app_by_prop,
+        "org_name": org_name,
     })
 
 @router.get("/dashboard")

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Properties Pipeline — {{ org.name }}</title>
+<title>Properties Pipeline — {{ org_name }}</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
@@ -40,20 +40,21 @@ nav .spacer { flex: 1; }
 .filter-btn:hover { background: #21262d; color: #e6edf3; }
 .filter-btn.active { background: #d4a853; color: #0d1117; border-color: #d4a853; font-weight: 600; }
 
+/* Section header */
+.section-header { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #d4a853; padding: 12px 0 6px; border-bottom: 1px solid #21262d; margin-bottom: 8px; grid-column: 1 / -1; }
+
 /* Property grid */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 12px; }
 .prop-card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; overflow: hidden; transition: border-color 0.15s; }
 .prop-card:hover { border-color: #d4a853; }
 .prop-head { padding: 12px 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #21262d; }
 .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.status-dot.available { background: #3fb950; }
-.status-dot.showing { background: #58a6ff; }
+.status-dot.available, .status-dot.execute { background: #3fb950; }
+.status-dot.finished, .status-dot.rented { background: #238636; }
 .status-dot.cma { background: #d29922; }
-.status-dot.approval { background: #bc8cff; }
-.status-dot.applicant { background: #bc8cff; }
-.status-dot.lease_signed { background: #3fb950; }
-.status-dot.moved_in { background: #238636; }
-.status-dot.rented { background: #3fb950; }
+.status-dot.for\ approval, .status-dot.approval { background: #bc8cff; }
+.status-dot.approved\ applicant, .status-dot.applicant { background: #bc8cff; }
+.status-dot.wait, .status-dot.hold { background: #f85149; }
 .status-dot.default { background: #8b949e; }
 .prop-head .addr { flex: 1; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .prop-head .unit { font-size: 12px; color: #d4a853; }
@@ -63,7 +64,7 @@ nav .spacer { flex: 1; }
 .prop-stat:nth-child(odd) { border-right: 1px solid #21262d; }
 .prop-stat .label { color: #8b949e; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
 .prop-stat .value { font-weight: 600; font-size: 13px; margin-top: 2px; }
-.prop-stat .value.lead { color: #58a6ff; }
+.prop-notes { padding: 8px 12px; font-size: 11px; color: #8b949e; border-top: 1px solid #21262d; font-style: italic; }
 .empty-state { text-align: center; padding: 60px 20px; color: #8b949e; }
 
 @media(max-width:768px) {
@@ -103,30 +104,37 @@ nav .spacer { flex: 1; }
 
 <div class="filters">
   <button class="filter-btn active" onclick="filterByStatus('all')">All</button>
-  <button class="filter-btn" onclick="filterByStatus('AVAILABLE')">Available</button>
-  <button class="filter-btn" onclick="filterByStatus('RENTED')">Rented</button>
-  <button class="filter-btn" onclick="filterByStatus('OCCUPIED')">Occupied</button>
-  <button class="filter-btn" onclick="filterByStatus('OFF_MARKET')">Off Market</button>
+  <button class="filter-btn" onclick="filterByStatus('EXECUTE')">Active</button>
+  <button class="filter-btn" onclick="filterByStatus('CMA')">CMA</button>
+  <button class="filter-btn" onclick="filterByStatus('FOR APPROVAL')">Approval</button>
+  <button class="filter-btn" onclick="filterByStatus('APPROVED APPLICANT')">Applicant</button>
+  <button class="filter-btn" onclick="filterByStatus('FINISHED')">Rented</button>
+  <button class="filter-btn" onclick="filterByStatus('WAIT')">On Hold</button>
+  <button class="filter-btn" onclick="filterByStatus('SALES')">Sales</button>
 </div>
 
 <div class="grid" id="grid">
-  {% for p in properties %}
-  {% set status = p.status.value if p.status.value is defined else p.status %}
-  <div class="prop-card" data-status="{{ status }}" style="display:none">
+  {% for d in deals %}
+  {% set status = d.status or '' %}
+  {% set section_class = 'SALES' if d.is_sale else d.section %}
+  <div class="prop-card" data-status="{{ status }}" data-section="{{ section_class }}" style="display:none">
     <div class="prop-head">
-      <span class="status-dot {{ status.lower().replace('_','') if status else 'default' }}"></span>
-      <span class="addr">{{ p.address }}</span>
-      {% if p.unit %}<span class="unit">{{ p.unit }}</span>{% endif %}
-      <span class="price">${{ "{:,.0f}".format(p.rent) if p.rent else '—' }}</span>
+      <span class="status-dot {{ status.lower().replace(' ','_') if status else 'default' }}"></span>
+      <span class="addr">{{ d.address }}</span>
+      {% if d.unit %}<span class="unit">{{ d.unit }}</span>{% endif %}
+      <span class="price">{% if d.price %}{% if d.is_sale %}${{ "{:,.0f}".format(d.price) }}{% else %}${{ "{:,.0f}".format(d.price) }}{% endif %}{% else %}—{% endif %}</span>
     </div>
     <div class="prop-body">
-      <div class="prop-stat"><div class="label">Status</div><div class="value">{{ status.replace('_',' ') if status else '—' }}</div></div>
-      <div class="prop-stat"><div class="label">City</div><div class="value">{{ p.city or '—' }}, {{ p.state or '' }}</div></div>
-      <div class="prop-stat"><div class="label">Bed/Bath</div><div class="value">{{ p.bedrooms or '—' }}/{{ p.bathrooms or '—' }}</div></div>
-      <div class="prop-stat"><div class="label">Leads</div><div class="value lead">{{ lead_by_prop.get(p.id, 0) }}</div></div>
-      <div class="prop-stat"><div class="label">Apps</div><div class="value">{{ app_by_prop.get(p.id, 0) }}</div></div>
-      <div class="prop-stat"><div class="label">Tenant</div><div class="value">{{ p.tenant_name or '—' }}</div></div>
+      <div class="prop-stat"><div class="label">Status</div><div class="value">{{ status or '—' }}</div></div>
+      <div class="prop-stat"><div class="label">Section</div><div class="value">{{ d.section }}</div></div>
+      {% if d.beds %}<div class="prop-stat"><div class="label">Bed/Bath</div><div class="value">{{ d.beds }}</div></div>{% endif %}
+      {% if d.available %}<div class="prop-stat"><div class="label">Available</div><div class="value">{{ d.available }}</div></div>{% endif %}
+      {% if d.lockbox %}<div class="prop-stat"><div class="label">Lockbox</div><div class="value">{{ d.lockbox }}</div></div>{% endif %}
+      {% if d.bsf %}<div class="prop-stat"><div class="label">BSF</div><div class="value">{{ d.bsf }}</div></div>{% endif %}
+      {% if d.showmojo %}<div class="prop-stat"><div class="label">ShowMojo</div><div class="value">{{ d.showmojo }}</div></div>{% endif %}
+      {% if d.mls %}<div class="prop-stat"><div class="label">MLS</div><div class="value">{{ d.mls }}</div></div>{% endif %}
     </div>
+    {% if d.notes %}<div class="prop-notes">{{ d.notes }}</div>{% endif %}
   </div>
   {% endfor %}
   <div class="empty-state" id="empty-state" style="display:none">
@@ -141,21 +149,26 @@ const cards = document.querySelectorAll('.prop-card[data-status]');
 
 function filterByStatus(status) {
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  // Also un-highlight dominoes
+  event?.target?.classList.add('active');
+
   let visible = 0;
   cards.forEach(c => {
-    const match = status === 'all' || c.dataset.status === status;
+    let match = false;
+    if (status === 'all') {
+      match = true;
+    } else if (status === 'SALES') {
+      match = c.dataset.section === 'SALES';
+    } else if (status === 'WAIT') {
+      match = c.dataset.section === 'HOLD';
+    } else {
+      match = c.dataset.status === status;
+    }
     c.style.display = match ? '' : 'none';
     if (match) visible++;
   });
   document.getElementById('empty-state').style.display = visible === 0 ? 'block' : 'none';
-  // Highlight active filter button
-  const btn = [...document.querySelectorAll('.filter-btn')].find(b => b.textContent.trim().toLowerCase().includes(status.toLowerCase().replace('_',' ')) || b.onclick.toString().includes(status));
-  if (btn) btn.classList.add('active');
-  else document.querySelector('.filter-btn')?.classList.add('active'); // "All"
 }
 
-// Show all on load
 filterByStatus('all');
 </script>
 </body>

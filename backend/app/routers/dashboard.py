@@ -24,6 +24,7 @@ from pathlib import Path
 
 _DEALS_CACHE = None
 _DEALS_PATH = Path(__file__).parent.parent.parent / "deals_data.json"
+_DEALS_PATH_ALT = Path(__file__).parent.parent.parent.parent / "deals_data.json"
 
 
 def _load_deals():
@@ -33,6 +34,9 @@ def _load_deals():
         return _DEALS_CACHE
     if _DEALS_PATH.exists():
         with open(_DEALS_PATH) as f:
+            _DEALS_CACHE = _json.load(f)
+    elif _DEALS_PATH_ALT.exists():
+        with open(_DEALS_PATH_ALT) as f:
             _DEALS_CACHE = _json.load(f)
     else:
         _DEALS_CACHE = []

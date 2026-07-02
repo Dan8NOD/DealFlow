@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     debug: bool = True
     base_url: str = "http://localhost:8000"
     stripe_secret_key: str = ""
+    calendly_api_key: str = ""
     gmail_client_id: str = ""
     gmail_client_secret: str = ""
     ms_client_id: str = ""

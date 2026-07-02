@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendly — Fat Cat AM</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
+nav { display: flex; align-items: center; gap: 1.5rem; padding: 1rem 2rem; background: #161b22; border-bottom: 1px solid #30363d; }
+nav h1 { font-size: 1.25rem; font-weight: 600; color: #006bff; letter-spacing: 1px; }
+nav a { color: #8b949e; text-decoration: none; font-size: .875rem; }
+nav a:hover { color: #d4a853; } nav .spacer { flex: 1; }
+nav .user { font-size: .8rem; color: #8b949e; }
+.container { max-width: 1000px; margin: 0 auto; padding: 2rem; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.stat { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.25rem; text-align: center; }
+.stat .num { font-size: 1.75rem; font-weight: 700; color: #006bff; }
+.stat .lbl { font-size: .8rem; color: #8b949e; margin-top: 4px; }
+.panel { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+h2 { color: #d4a853; margin-bottom: .75rem; font-size: 1.1rem; }
+table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+th { text-align: left; padding: .5rem; border-bottom: 1px solid #30363d; color: #8b949e; font-weight: 500; }
+td { padding: .5rem; border-bottom: 1px solid #21262d; }
+.btn { padding: .5rem 1rem; border-radius: 6px; border: 1px solid #30363d; background: #21262d; color: #e6edf3; font-size: .875rem; cursor: pointer; text-decoration: none; display: inline-block; }
+.btn:hover { background: #30363d; }
+.btn-primary { background: #006bff; color: #fff; border-color: #006bff; font-weight: 600; }
+.empty { text-align: center; padding: 3rem; color: #8b949e; }
+.error-box { background: #f8514911; border: 1px solid #f85149; color: #f85149; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: .875rem; }
+</style>
+</head>
+<body>
+<nav>
+  <h1>📅 Calendly</h1>
+  <a href="/nod">Dashboard</a>
+  <a href="/products">Products</a>
+  <a href="/nodify">MixMatch</a>
+  <a href="/calendly">Calendly</a>
+  <a href="https://calendly.com/negotiatorsondemand" target="_blank">📅 Book</a>
+  <span class="spacer"></span>
+  <span class="user">{{ user.email }}</span>
+  <form action="/auth/logout" method="post" style="display:inline"><button class="btn" style="padding:.3rem .8rem">Logout</button></form>
+</nav>
+
+<div class="container">
+
+  {% if error %}
+  <div class="error-box">⚠️ {{ error }}</div>
+  {% endif %}
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="num">{{ events|length }}</div>
+      <div class="lbl">Upcoming Sessions</div>
+    </div>
+    <div class="stat">
+      <div class="num">$250</div>
+      <div class="lbl">Rate / hr</div>
+    </div>
+    <div class="stat">
+      <div class="num">${{ events|length * 250 }}</div>
+      <div class="lbl">Potential Revenue</div>
+    </div>
+    <div class="stat">
+      <div class="num">60</div>
+      <div class="lbl">Minutes / Session</div>
+    </div>
+  </div>
+
+  <!-- Event link -->
+  <div class="panel">
+    <h2>🔗 Booking Link</h2>
+    <p style="color:#8b949e;font-size:.85rem;margin-bottom:.5rem;">Share this link with clients:</p>
+    <a href="{{ calendly_url }}" target="_blank" class="btn btn-primary">{{ calendly_url }}</a>
+  </div>
+
+  <!-- Upcoming events -->
+  <div class="panel">
+    <h2>📋 Upcoming Sessions</h2>
+    {% if events %}
+    <table>
+      <tr>
+        <th>Invitee</th>
+        <th>Email</th>
+        <th>Event</th>
+        <th>Date / Time</th>
+        <th>Status</th>
+      </tr>
+      {% for ev in events %}
+      <tr>
+        <td>{{ ev.invitee }}</td>
+        <td style="color:#8b949e;">{{ ev.email }}</td>
+        <td>{{ ev.name }}</td>
+        <td>{{ ev.start[:16]|replace('T',' ') if ev.start else '—' }}</td>
+        <td>{{ ev.status }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <div class="empty">
+      <div style="font-size:36px;opacity:0.3;margin-bottom:10px;">📅</div>
+      <p>No upcoming sessions.</p>
+      <p style="margin-top:8px;"><a href="{{ calendly_url }}" target="_blank" class="btn btn-primary" style="margin-top:8px;">Share Booking Link →</a></p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+</body>
+</html>

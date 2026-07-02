@@ -73,5 +73,5 @@ async def calendly_dashboard(
     return templates.TemplateResponse("calendly_dashboard.html", {
         "request": request, "user": user,
         "events": data["events"], "error": data.get("error"),
-        "calendly_url": "https://calendly.com/dancruzrealty/virtualcoffeewithdan",
+        "calendly_url": "https://calendly.com/negotiatorsondemand/virtualcoffeewithdan",
     })

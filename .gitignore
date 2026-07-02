@@ -8,3 +8,4 @@
 *.db.bak.*
 .env.prod
 .DS_Store
+.env

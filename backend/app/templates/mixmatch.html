@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NOD-ify">
-    <title>NOD-ify — MixMatch FV9</title>
+    <title>NOD-ify — MixMatch FV9.1</title>
     <!-- ponytail: issue #30 — GA4 placeholder, replace G-XXXXXXXXXX with real ID -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
     <style>
@@ -15,9 +15,9 @@
         :root {
             --bg: #1a1a2e;
             --table: #2d2440;
-            --felt: #1e5a3a;
-            --felt-dark: #14452c;
-            --felt-border: #16653d;
+            --felt: #0f0f18;
+            --felt-dark: #0a0a12;
+            --felt-border: #1f1f2e;
             --card-bg: #fefcf3;
             --card-shadow: rgba(0,0,0,0.4);
             --text: #2c2c2c;
@@ -76,9 +76,7 @@
         .logo { display: flex; align-items: center; gap: 10px; }
         .logo-icon {
             width: 36px; height: 36px;
-            background: var(--accent); border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 18px; color: #1a1a2e;
+            background: url('nod-coin.png') center/cover, var(--accent); border-radius: 50%;
             box-shadow: 0 0 20px var(--accent-glow);
         }
         .logo h1 { color: #fff; font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
@@ -273,15 +271,18 @@
             perspective: 1200px; min-height: 300px;
             padding: 6px 0;
         }
+        /* ponytail: Apple Wallet card style — depth, radius, clean lift */
         .tool-card {
             width: 195px; min-height: 180px;
-            background: var(--card-bg); border-radius: 12px;
+            background: linear-gradient(145deg, #2a2638 0%, #211d2e 100%);
+            border-radius: 14px;
             padding: 16px 14px 12px;
-            box-shadow: 0 4px 12px var(--card-shadow), 0 0 0 1px rgba(255,255,255,0.05);
-            cursor: pointer; transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.08);
+            cursor: pointer; transition: transform .28s cubic-bezier(.2,.8,.2,1), box-shadow .28s ease;
             position: relative; display: flex; flex-direction: column;
-            animation: card-deal 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+            animation: card-deal .42s cubic-bezier(.34,1.56,.64,1) both;
             transform-style: preserve-3d; user-select: none;
+            border: 1px solid rgba(255,255,255,0.04);
         }
         .tool-card:nth-child(1) { animation-delay: 0.02s; }
         .tool-card:nth-child(2) { animation-delay: 0.06s; }
@@ -309,13 +310,13 @@
         .tool-card:nth-child(24) { animation-delay: 0.94s; }
         .tool-card:nth-child(25) { animation-delay: 0.98s; }
         .tool-card:hover {
-            transform: translateY(-8px) scale(1.03);
-            box-shadow: 0 12px 30px var(--card-shadow), 0 0 0 1px var(--accent), 0 0 30px var(--accent-glow);
+            transform: translateY(-4px);
+            box-shadow: 0 14px 28px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,215,0,0.15);
             z-index: 20;
         }
         .tool-card.active-card {
-            transform: translateY(-10px) scale(1.06);
-            box-shadow: 0 16px 40px var(--card-shadow), 0 0 0 2px var(--accent), 0 0 40px var(--accent-glow);
+            transform: translateY(-6px);
+            box-shadow: 0 18px 36px rgba(0,0,0,0.6), 0 0 0 1px var(--accent);
             z-index: 30;
         }
         .tool-card.used {
@@ -328,13 +329,13 @@
             border-left: 3px solid var(--orange) !important;
         }
         .tool-card.current-focus {
-            box-shadow: 0 0 0 2px var(--accent), 0 0 25px var(--accent-glow);
-            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 0 0 1px var(--accent), 0 10px 24px rgba(0,0,0,0.5);
+            transform: translateY(-2px);
             z-index: 15;
         }
         @keyframes card-deal {
-            0% { opacity:0; transform:translateY(-20px) rotateX(40deg) scale(0.85); }
-            100% { opacity:1; transform:translateY(0) rotateX(0deg) scale(1); }
+            0% { opacity:0; transform:translateY(-18px) scale(0.9); }
+            100% { opacity:1; transform:translateY(0) scale(1); }
         }
         @keyframes card-pop {
             0% { transform:scale(0.92) translateY(6px); }
@@ -342,12 +343,12 @@
         }
         .tool-card .cat-badge {
             font-size: 9px; padding: 2px 7px; border-radius: 10px;
-            background: rgba(0,0,0,0.05); color: var(--text-dim);
+            background: rgba(0,0,0,0.2); color: var(--text-dim);
             display: inline-block; margin-bottom: 5px;
             font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
         }
-        .tool-card .card-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 5px; line-height: 1.3; }
-        .tool-card .card-desc { font-size: 11px; line-height: 1.5; color: var(--text-dim); flex: 1; }
+        .tool-card .card-name { font-size: 15px; font-weight: 700; color: #e8e8f0; margin-bottom: 5px; line-height: 1.3; text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
+        .tool-card .card-desc { font-size: 11px; line-height: 1.5; color: #c0c0cc; flex: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
         .tool-card .card-count {
             font-size: 10px; color: var(--text-dim); margin-top: 6px;
             display: flex; align-items: center; gap: 3px;
@@ -381,17 +382,17 @@
         .btn-ghost:hover { background: rgba(255,255,255,0.18); transform:translateY(-1px); }
         .btn-sm { padding:5px 12px; font-size:11px; border-radius:8px; }
         .timer-display {
-            display:flex; align-items:center; gap:10px; margin-left:auto;
-            background:rgba(0,0,0,0.3); padding:6px 14px 6px 12px;
-            border-radius:10px; border:1px solid rgba(255,255,255,0.1);
+            display:flex; align-items:center; gap:12px; margin-left:auto;
+            background:rgba(0,0,0,0.4); padding:8px 18px 8px 14px;
+            border-radius:12px; border:1px solid rgba(255,255,255,0.12);
         }
         .timer-display .time {
-            font-size:24px; font-weight:700; color:#fff;
-            font-variant-numeric:tabular-nums; min-width:70px; text-align:center;
+            font-size:34px; font-weight:800; color:#fff;
+            font-variant-numeric:tabular-nums; min-width:90px; text-align:center;
+            letter-spacing:1px; line-height:1;
         }
-        .timer-display .time.warning { color: var(--orange); }
         .timer-display .time.danger { color: var(--red); animation: pulse-danger 1s infinite; }
-        .timer-display .timer-label { color:rgba(255,255,255,0.4); font-size:10px; text-transform:uppercase; letter-spacing:1px; }
+        .timer-display .timer-label { color:rgba(255,255,255,0.5); font-size:11px; text-transform:uppercase; letter-spacing:1.5px; font-weight:600; }
         .timer-display input {
             width:42px; padding:3px 6px; border-radius:6px;
             border:1px solid rgba(255,255,255,0.15); background:rgba(0,0,0,0.3);
@@ -404,6 +405,102 @@
         }
         .stat-item { color:rgba(255,255,255,0.45); font-size:11px; display:flex; align-items:center; gap:3px; }
         .stat-item strong { color:#fff; font-size:13px; }
+
+        /* ponytail: Domino's-style staircase progress bar — 4 segments, red = reached */
+        .stair-progress {
+            width:100%; max-width:1100px; display:flex; gap:2px; margin:8px 0 6px;
+            position:relative; z-index:10;
+        }
+        .stair-progress .seg {
+            flex:1; height:40px; border-radius:10px;
+            background:rgba(255,255,255,0.04);
+            border:1px solid rgba(255,255,255,0.06);
+            display:flex; align-items:center; justify-content:center; gap:5px;
+            font-size:12px; font-weight:800; letter-spacing:.8px; text-transform:uppercase;
+            color:rgba(255,255,255,0.18); transition:all .5s ease;
+            overflow:hidden; white-space:nowrap; position:relative;
+            cursor:pointer; touch-action:manipulation;
+        }
+        .stair-progress .seg:active { transform:scale(0.97); }
+        .stair-progress .seg .seg-count {
+            position:absolute; top:3px; right:6px; font-size:9px; font-weight:700; opacity:.6;
+        }
+        .stair-progress .seg.done .seg-count,
+        .stair-progress .seg.current .seg-count { color:#ffcc66; }
+        .stair-progress .seg .seg-icon { font-size:16px; opacity:0.3; }
+        .stair-progress .seg.lit .seg-icon,
+        .stair-progress .seg.current .seg-icon { opacity:1; }
+        .stair-progress .seg.done {
+            background:linear-gradient(90deg,#ffd700,#ff8c00,#c1121f,#8b0000,#c1121f,#ff8c00,#ffd700);
+            background-size:200% 100%;
+            animation:flame-sweep 1.8s linear infinite;
+            border-color:#c1121f; color:#fff;
+            box-shadow:0 0 8px rgba(193,18,31,0.3);
+        }
+        .stair-progress .seg.current {
+            background:linear-gradient(90deg,#fff59d,#ffd700,#ff8c00,#e63946,#ff8c00,#ffd700,#fff59d);
+            background-size:200% 100%;
+            animation:flame-sweep-current 1.2s linear infinite, stair-pulse 1.4s ease-in-out infinite;
+            border-color:#ff4444; color:#fff;
+            box-shadow:0 0 20px rgba(230,57,70,0.7);
+        }
+        @keyframes flame-sweep {
+            0%{background-position:200% 0;}
+            100%{background-position:0 0;}
+        }
+        @keyframes flame-sweep-current {
+            0%{background-position:200% 0;}
+            100%{background-position:0 0;}
+        }
+        @keyframes stair-pulse {
+            0%,100%{box-shadow:0 0 14px rgba(230,57,70,0.5); transform:scale(1);}
+            50%{box-shadow:0 0 28px rgba(230,57,70,0.9); transform:scale(1.02);}
+        }
+        .stair-progress .seg-arrow.lit {
+            color:#ffd700;
+            text-shadow:0 0 6px rgba(255,215,0,.6);
+            animation:arrow-pulse 1.8s ease-in-out infinite;
+        }
+        @keyframes arrow-pulse {
+            0%,100%{opacity:.6;}
+            50%{opacity:1;}
+        }
+        .stair-progress .seg-arrow.lit::after {
+            content:'●'; position:absolute; color:#ffd700; font-size:6px; opacity:.9;
+            animation:dot-travel 1.2s linear infinite;
+        }
+        @keyframes dot-travel {
+            0%{transform:translateX(-4px); opacity:.3;}
+            50%{transform:translateX(4px); opacity:1;}
+            100%{transform:translateX(-4px); opacity:.3;}
+        }
+        .stair-progress::after {
+            content:''; position:absolute; bottom:-4px; left:0; height:2px;
+            background:linear-gradient(to right,#ffd700,#ff8c00,#c1121f);
+            width:var(--stair-fill,0%); transition:width .4s ease; z-index:-1;
+            box-shadow:0 0 6px rgba(255,215,0,.5);
+        }
+        .stair-progress .seg.lit { /* fallback for old segments */ }
+        .stair-progress .seg-arrow {
+            display:flex; align-items:center; flex-shrink:0;
+            color:rgba(255,255,255,0.12); font-size:11px; padding:0 1px;
+        }
+        
+        .stair-progress .seg.activate {
+            animation: seg-bounce .6s cubic-bezier(.34,1.56,.64,1);
+        }
+        @keyframes seg-bounce {
+            0%{transform:scale(.92);}
+            40%{transform:scale(1.1);}
+            100%{transform:scale(1);}
+        }
+        @media(max-width:600px){
+            .stair-progress .seg { height:32px; font-size:8px; gap:3px; border-radius:8px; }
+            .stair-progress .seg .seg-icon { font-size:12px; }
+            .stair-progress .seg .seg-count { display:none; }
+            .stair-progress .seg-arrow.lit::after { display:none; }
+            .stair-progress .seg-arrow { font-size:8px; }
+        }
         .category-filters {
             display:flex; gap:5px; flex-wrap:wrap;
             padding:0 0 6px; width:100%; max-width:1100px;
@@ -622,11 +719,12 @@
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    padding: 4px 0;
+                    padding: 8px 0;
+                    gap: 8px;
                 }
-                .wheel-header { text-align:center; margin-bottom: 10px; }
-                .wheel-header h2 { color:#fff; font-size:20px; font-weight:700; margin-bottom:2px; }
-                .wheel-header p { color:rgba(255,255,255,0.45); font-size:12px; }
+                .wheel-header { text-align:center; margin-bottom: 4px; }
+                .wheel-header h2 { color:#fff; font-size:22px; font-weight:700; margin-bottom:2px; }
+                .wheel-header p { color:rgba(255,255,255,0.5); font-size:13px; }
 
                 .wheel-layout {
                     display: flex;
@@ -640,11 +738,11 @@
                 .wheel-canvas-wrap {
                     position: relative;
                     flex: 1;
-                    max-width: 480px;
+                    max-width: 500px;
                     touch-action: none;
                 }
                 @media (min-width: 769px) {
-                    .wheel-canvas-wrap { max-width: 600px; }
+                    .wheel-canvas-wrap { max-width: 580px; }
                     .wheel-label-primary { font-size: 28px; }
                     .wheel-label.active-label { font-size: 36px; }
                     .wheel-label-secondary, .wheel-label-tertiary { display: none; }
@@ -687,8 +785,8 @@
 
                 /* ── Big SPIN button ── */
                 .spin-btn-big {
-                    padding: 14px 40px;
-                    font-size: 20px;
+                    padding: 16px 48px;
+                    font-size: 22px;
                     font-weight: 900;
                     font-family: 'Press Start 2P', monospace;
                     border-radius: 50px;
@@ -703,6 +801,8 @@
                     animation: spin-btn-pulse 2s ease-in-out infinite;
                     position: relative;
                     overflow: hidden;
+                    min-height: 48px;
+                    touch-action: manipulation;
                 }
                 .spin-btn-big:hover {
                     transform: translateY(-3px);
@@ -726,20 +826,23 @@
                 /* ── Winner banner ── */
                 .wheel-winner {
                     text-align: center;
-                    padding: 16px 28px;
-                    margin: 10px auto;
-                    max-width: 420px;
-                    background: rgba(0,0,0,0.5);
+                    padding: 20px 32px;
+                    margin: 12px auto;
+                    max-width: 460px;
+                    background: rgba(0,0,0,0.6);
                     border-radius: 16px;
                     border: 2px solid var(--accent);
                     color: #fff;
-                    font-size: 22px;
+                    font-size: 26px;
                     font-weight: 900;
                     font-family: 'Press Start 2P', monospace;
                     letter-spacing: 2px;
                     animation: winner-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
                     box-shadow: 0 0 40px var(--accent-glow), 0 0 80px rgba(212,168,83,0.2);
                     text-shadow: 0 0 20px var(--accent-glow);
+                }
+                @media(max-width:600px){
+                    .wheel-winner { font-size: 18px; padding: 14px 16px; max-width: 100%; }
                 }
                 @keyframes winner-pop {
                     0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
@@ -749,15 +852,16 @@
 
                 /* ── Spin history strip ── */
                 .spin-history {
-                    display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
-                    min-height: 28px; margin: 6px 0;
+                    display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+                    min-height: 32px; margin: 8px 0;
                 }
                 .spin-history .sh-chip {
-                    padding: 3px 12px; border-radius: 14px;
-                    font-size: 11px; font-weight: 700; color: #fff;
+                    padding: 5px 14px; border-radius: 16px;
+                    font-size: 12px; font-weight: 700; color: #fff;
                     letter-spacing: 0.5px;
-                    opacity: 0.85;
+                    opacity: 0.9;
                     animation: card-pop 0.3s both;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
                 }
 
                 /* ─── NOD Academy Reference Cards ─── */
@@ -1045,9 +1149,11 @@
 
                 .wheel-emotion-slice {
                     cursor: pointer;
-                    transition: filter 0.3s;
+                    transition: filter 0.3s, transform 0.15s;
+                    transform-origin: 250px 250px;
                 }
                 .wheel-emotion-slice:hover { filter: brightness(1.25); }
+                .wheel-emotion-slice:active { filter: brightness(1.6) drop-shadow(0 0 12px rgba(255,255,255,0.6)); transform: scale(1.03); }
                 .wheel-emotion-slice.active-slice {
                     filter: brightness(1.5) drop-shadow(0 0 18px rgba(255,255,255,0.5));
                     animation: slice-pulse 1.5s ease-in-out infinite;
@@ -1075,7 +1181,7 @@
                 .wheel-label {
                     fill: #fff; text-anchor: middle; dominant-baseline: central;
                     pointer-events: none; font-weight: 600;
-                    paint-order: stroke; stroke: rgba(0,0,0,0.35); stroke-width: 0.6px;
+                    paint-order: stroke; stroke: rgba(0,0,0,0.5); stroke-width: 0.8px;
                 }
                 .wheel-label-primary {
                     font-size: 24px; font-weight: 900; letter-spacing: 1px;
@@ -1466,7 +1572,7 @@
                     .toolbar .btn { font-size: 11px; padding: 8px 12px; min-height: 40px; }
                     .toolbar .btn-sm { padding: 7px 10px; font-size: 10px; min-height: 36px; }
                     .timer-display { margin-left: 0; padding: 5px 10px; gap: 6px; flex-wrap: wrap; }
-                    .timer-display .time { font-size: 20px; min-width: 55px; }
+                    .timer-display .time { font-size: 28px; min-width: 75px; }
                     .timer-display input { width: 36px; font-size: 11px; }
                     .stats-bar { gap: 8px; font-size: 10px; }
                     .stat-item strong { font-size: 12px; }
@@ -1564,6 +1670,94 @@ background:radial-gradient(circle at 35% 35%, #ffd740, #d4a853);
 box-shadow:0 0 8px rgba(212,168,83,.8),0 0 20px rgba(212,168,83,.3);}
 .coin-burst::after{content:'$';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#1a1a2e;}
 
+/* ─── Mode deck info pill ─── */
+.mode-deck-info {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    text-align: center;
+    margin: 4px 0 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+.mode-deck-info span { color: var(--accent); font-size: 13px; }
+
+/* ─── Warrior Mode: Castle Wall Background ─── */
+/* 90s pixel-art castle battlements using CSS only */
+.warrior-castle-bg {
+    position: relative;
+}
+.warrior-castle-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    z-index: 0;
+    /* Stone wall: staggered grey brick pattern */
+    background-color: #1a1614;
+    background-image:
+        /* Mortar lines horizontal */
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 18px,
+            rgba(0,0,0,0.55) 18px,
+            rgba(0,0,0,0.55) 20px
+        ),
+        /* Mortar lines vertical — offset every other row */
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 36px,
+            rgba(0,0,0,0.4) 36px,
+            rgba(0,0,0,0.4) 38px
+        ),
+        /* Stone color variation — give bricks a carved feel */
+        repeating-linear-gradient(
+            180deg,
+            rgba(90,78,70,0.25) 0px,
+            rgba(70,60,54,0.18) 9px,
+            rgba(90,78,70,0.25) 18px
+        );
+    pointer-events: none;
+}
+/* Crenellation (battlements) silhouette at the top */
+.warrior-castle-bg::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 16px;
+    border-radius: 14px 14px 0 0;
+    z-index: 1;
+    pointer-events: none;
+    /* Pixel-art crenellations: alternating solid/gap */
+    background: repeating-linear-gradient(
+        90deg,
+        rgba(50,42,38,0.9) 0px,
+        rgba(50,42,38,0.9) 14px,
+        transparent 14px,
+        transparent 28px
+    );
+}
+.warrior-castle-bg > div {
+    position: relative;
+    z-index: 2;
+}
+/* Green Room check items */
+.gr-check-item.checked {
+    opacity: 0.65;
+    background: rgba(212,168,83,0.05) !important;
+}
+.gr-check-item.checked .gr-circle {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+.gr-check-item:active { transform: scale(0.98); }
+@media (max-width: 600px) {
+    .gr-check-item { padding: 12px 12px !important; }
+    .gr-check-item div[style*="font-size:14px"] { font-size: 13px !important; }
+}
+
 /* ─── Extra-small screens (< 400px) ─── */
 @media (max-width: 399px) {
     .wheel-canvas-wrap { padding: 0; }
@@ -1605,10 +1799,10 @@ box-shadow:0 0 8px rgba(212,168,83,.8),0 0 20px rgba(212,168,83,.3);}
     <!-- ██ Header ██ -->
     <div class="header">
         <div class="logo">
-            <div class="logo-icon">N</div>
+            <div class="logo-icon"></div>
             <div>
                 <h1>NOD-ify</h1>
-                <span>MixMatch · FV9</span>
+                <span>MixMatch · FV9.1</span>
             </div>
         </div>
         <div class="header-controls">
@@ -1632,19 +1826,27 @@ box-shadow:0 0 8px rgba(212,168,83,.8),0 0 20px rgba(212,168,83,.3);}
     <!-- ██ Nav Tabs ██ -->
     <div class="nav-tabs">
         <button class="nav-tab active" onclick="switchView('tools',this)">&#127183; Tool Deck <span class="badge" id="toolCountBadge">23</span></button>
-        <button class="nav-tab" onclick="switchView('stair',this)">&#127970; Change Stair</button>
         <button class="nav-tab" onclick="switchView('wheel',this)">&#127804; Emotion Wheel</button>
         <button class="nav-tab" onclick="switchView('haggle',this)" style="color:#ff5ea8;">&#128176; Haggle</button>
         <button class="nav-tab" onclick="switchView('friend',this)" style="color:#66bb6a;">&#129309; Friend</button>
         <button class="nav-tab" onclick="switchView('boss',this)" style="color:#ff3b3b;">&#128081; Boss</button>
         <button class="nav-tab" onclick="switchView('mediator',this)" style="color:#64b5f6;">&#9878;&#65039; Mediator</button>
-        <button class="nav-tab" onclick="switchView('graphics',this)" style="color:#c9a96e;">&#9881;&#65039; Settings</button>
-        <button class="nav-tab" onclick="switchView('warrior',this)" style="color:#e0e0e0;">&#128481;&#65039; Warrior</button>
+        <button class="nav-tab" onclick="switchView('warrior',this)" style="color:#e0e0e0;">&#128481;&#65039;&#128737;&#65039; Warrior</button>
         <button class="nav-tab" onclick="switchView('youtube',this)" style="color:#ff4444;">&#127916; YouTube</button>
+        <button class="nav-tab" onclick="switchView('graphics',this)" style="color:#c9a96e;">&#9881;&#65039; Settings</button>
     </div>
 
     <!-- ██ VIEW: Tools ██ -->
     <div class="view-container active" id="view-tools">
+        <div class="stair-progress" id="stairProgress">
+            <div class="seg" data-stage="0" onclick="filterByStage(0)"><span class="seg-icon">🔍</span>Get Info<span class="seg-count">1</span></div>
+            <div class="seg-arrow">▸</div>
+            <div class="seg" data-stage="1" onclick="filterByStage(1)"><span class="seg-icon">💛</span>Empathy<span class="seg-count">2</span></div>
+            <div class="seg-arrow">▸</div>
+            <div class="seg" data-stage="2" onclick="filterByStage(2)"><span class="seg-icon">🤝</span>Trust<span class="seg-count">3</span></div>
+            <div class="seg-arrow">▸</div>
+            <div class="seg" data-stage="3" onclick="filterByStage(3)"><span class="seg-icon">✅</span>Collab<span class="seg-count">4</span></div>
+        </div>
         <div class="stats-bar" id="statsBar">
             <div class="stat-item">Available: <strong id="statAvailable">0</strong></div>
             <div class="stat-item">Used: <strong id="statUsed">0</strong></div>
@@ -1714,24 +1916,12 @@ box-shadow:0 0 8px rgba(212,168,83,.8),0 0 20px rgba(212,168,83,.3);}
         </div>
     </div>
 
-    <!-- ██ VIEW: Behavioral Change Stair ██ -->
-    <div class="view-container" id="view-stair">
-        <div class="stair-container">
-            <div class="stair-header">
-                <h2>&#127970; Machiavelli Behaviour Change</h2>
-                <p style="color:rgba(255,255,255,0.4);font-size:12px;">Bid around the table <span style="color:var(--accent);font-weight:600;">· Rapport flows across all stages</span></p>
-            </div>
-            <div class="rapport-bar">Rapport <span style="font-weight:300;font-size:11px;opacity:0.6;">&#8594; builds across every stage</span></div>
-            <div class="stair-grid" id="stairGrid"></div>
-        </div>
-    </div>
-
     <!-- ██ VIEW: Wheel of Emotions ██ -->
     <div class="view-container" id="view-wheel">
         <div class="wheel-container">
             <div class="wheel-header">
                 <h2>&#127804; Wheel of Emotions</h2>
-                <p>6 primary emotions · tap any sector for full breakdown</p>
+                <p>16 emotions · tap any sector for full breakdown · spin for random</p>
             </div>
             <!-- SPIN button FIRST so it's at top on mobile -->
             <div class="wheel-spin-row" style="display:flex;justify-content:center;margin:6px 0;">
@@ -1783,14 +1973,16 @@ box-shadow:0 0 8px rgba(212,168,83,.8),0 0 20px rgba(212,168,83,.3);}
         <div class="mode-wrap">
             <div class="mode-header">
                 <h2>💰 HAGGLE MODE</h2>
-                <p>4 scenarios · flinch, anchor, fairness frame. Tap a card for the script.</p>
+                <p>4 scenarios · flinch, anchor, fairness frame. Deal one card at a time.</p>
             </div>
             <div class="mode-toolbar">
-                <button class="btn" onclick="renderModeCards('haggle')">⇄ SHUFFLE</button>
-                <button class="btn" onclick="document.querySelectorAll('.mode-scenario').forEach(s=>s.classList.remove('open'))">✕ CLEAR</button>
+                <button class="btn" onclick="modeShuffle('haggle')">🔀 SHUFFLE &amp; DEAL</button>
+                <button class="btn" onclick="modeDraw('haggle')">➡ NEXT</button>
+                <button class="btn" onclick="modeClear('haggle')">✕ CLEAR</button>
             </div>
+            <div class="mode-deck-info" id="deck-info-haggle" style="display:none;"></div>
             <div class="mode-scenario" id="scenario-haggle"></div>
-            <div class="mode-grid" id="grid-haggle"></div>
+            <div class="mode-grid" id="grid-haggle" style="display:none;"></div>
         </div>
     </div>
 
@@ -1799,14 +1991,16 @@ box-shadow:0 0 8px rgba(212,168,83,.8),0 0 20px rgba(212,168,83,.3);}
         <div class="mode-wrap">
             <div class="mode-header">
                 <h2>🤝 FRIEND MODE</h2>
-                <p>6 scenarios · liking, reciprocity, unity, social proof. Tap a card for the script.</p>
+                <p>6 scenarios · liking, reciprocity, unity, social proof. Deal one card at a time.</p>
             </div>
             <div class="mode-toolbar">
-                <button class="btn" onclick="renderModeCards('friend')">⇄ SHUFFLE</button>
-                <button class="btn" onclick="document.querySelectorAll('.mode-scenario').forEach(s=>s.classList.remove('open'))">✕ CLEAR</button>
+                <button class="btn" onclick="modeShuffle('friend')">🔀 SHUFFLE &amp; DEAL</button>
+                <button class="btn" onclick="modeDraw('friend')">➡ NEXT</button>
+                <button class="btn" onclick="modeClear('friend')">✕ CLEAR</button>
             </div>
+            <div class="mode-deck-info" id="deck-info-friend" style="display:none;"></div>
             <div class="mode-scenario" id="scenario-friend"></div>
-            <div class="mode-grid" id="grid-friend"></div>
+            <div class="mode-grid" id="grid-friend" style="display:none;"></div>
         </div>
     </div>
 
@@ -1815,14 +2009,16 @@ box-shadow:0 0 8px rgba(212,168,83,.8),0 0 20px rgba(212,168,83,.3);}
         <div class="mode-wrap">
             <div class="mode-header">
                 <h2>👔 BOSS MODE</h2>
-                <p>3 scenarios · managing up — BATNA, label, reframe, accusation audit. Tap a card for the script.</p>
+                <p>3 scenarios · managing up — BATNA, label, reframe, accusation audit. Deal one card at a time.</p>
             </div>
             <div class="mode-toolbar">
-                <button class="btn" onclick="renderModeCards('boss')">⇄ SHUFFLE</button>
-                <button class="btn" onclick="document.querySelectorAll('.mode-scenario').forEach(s=>s.classList.remove('open'))">✕ CLEAR</button>
+                <button class="btn" onclick="modeShuffle('boss')">🔀 SHUFFLE &amp; DEAL</button>
+                <button class="btn" onclick="modeDraw('boss')">➡ NEXT</button>
+                <button class="btn" onclick="modeClear('boss')">✕ CLEAR</button>
             </div>
+            <div class="mode-deck-info" id="deck-info-boss" style="display:none;"></div>
             <div class="mode-scenario" id="scenario-boss"></div>
-            <div class="mode-grid" id="grid-boss"></div>
+            <div class="mode-grid" id="grid-boss" style="display:none;"></div>
         </div>
     </div>
 
@@ -1832,14 +2028,16 @@ box-shadow:0 0 8px rgba(212,168,83,.8),0 0 20px rgba(212,168,83,.3);}
         <div class="mode-wrap">
             <div class="mode-header">
                 <h2>⚖️ MEDIATOR MODE</h2>
-                <p>6 scenarios · de-escalate, label, reframe, calibrated Q. Tap a card for the script.</p>
+                <p>6 scenarios · de-escalate, label, reframe, calibrated Q. Deal one card at a time.</p>
             </div>
             <div class="mode-toolbar">
-                <button class="btn" onclick="renderModeCards('mediator')">⇄ SHUFFLE</button>
-                <button class="btn" onclick="document.querySelectorAll('.mode-scenario').forEach(s=>s.classList.remove('open'))">✕ CLEAR</button>
+                <button class="btn" onclick="modeShuffle('mediator')">🔀 SHUFFLE &amp; DEAL</button>
+                <button class="btn" onclick="modeDraw('mediator')">➡ NEXT</button>
+                <button class="btn" onclick="modeClear('mediator')">✕ CLEAR</button>
             </div>
+            <div class="mode-deck-info" id="deck-info-mediator" style="display:none;"></div>
             <div class="mode-scenario" id="scenario-mediator"></div>
-            <div class="mode-grid" id="grid-mediator"></div>
+            <div class="mode-grid" id="grid-mediator" style="display:none;"></div>
         </div>
     </div>
 
@@ -1914,49 +2112,87 @@ box-shadow:0 0 8px rgba(212,168,83,.8),0 0 20px rgba(212,168,83,.3);}
     <div class="view-container" id="view-warrior">
         <div class="mode-wrap" style="max-width:640px;">
             <div class="mode-header">
-                <h2 style="color:#e0e0e0;text-shadow:3px 3px 0 #000,0 0 30px rgba(255,255,255,0.15);">&#128481; WARRIOR MODE</h2>
-                <p>Before you enter the conversation — assemble yourself.</p>
+                <h2 style="color:#e0e0e0;text-shadow:3px 3px 0 #000,0 0 30px rgba(255,255,255,0.15);">&#128481;&#65039; WARRIOR MODE &#128737;&#65039;</h2>
+                <p>Before you enter the conversation — prepare your mind.</p>
             </div>
-            <div style="background:rgba(0,0,0,0.4);border-radius:14px;padding:24px 20px;border:1px solid rgba(255,255,255,0.08);">
+            <div class="warrior-castle-bg" style="border-radius:14px;overflow:hidden;">
+                <div style="background:rgba(0,0,0,0.55);padding:24px 20px;border:1px solid rgba(255,255,255,0.10);border-radius:14px;">
 
-                <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:16px;text-align:center;">The Green Room</div>
-
-                <div style="display:flex;flex-direction:column;gap:16px;">
-                    <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px 16px;border-left:3px solid var(--accent);">
-                        <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Outcome</div>
-                        <div style="font-size:14px;color:rgba(255,255,255,0.8);font-style:italic;">What outcome truly matters?</div>
+                    <div style="text-align:center;margin-bottom:6px;">
+                        <div style="font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);font-weight:800;">&#9876;&#65039; The Green Room</div>
+                        <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px;line-height:1.5;">Your pre-conversation mental checklist. Tap each question when you&rsquo;ve answered it honestly.</div>
                     </div>
 
-                    <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px 16px;border-left:3px solid #ff5ea8;">
-                        <div style="font-size:10px;color:#ff5ea8;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Emotion</div>
-                        <div style="font-size:14px;color:rgba(255,255,255,0.8);font-style:italic;">What emotion am I bringing into this conversation?</div>
+                    <!-- Progress bar -->
+                    <div style="width:100%;height:4px;background:rgba(255,255,255,0.07);border-radius:2px;margin:14px 0;">
+                        <div id="grProgress" style="height:4px;background:var(--accent);border-radius:2px;width:0%;transition:width 0.4s;box-shadow:0 0 8px var(--accent-glow);"></div>
                     </div>
 
-                    <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px 16px;border-left:3px solid #66bb6a;">
-                        <div style="font-size:10px;color:#66bb6a;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Motive</div>
-                        <div style="font-size:14px;color:rgba(255,255,255,0.8);font-style:italic;">Am I trying to prove something, or solve something?</div>
+                    <div style="display:flex;flex-direction:column;gap:10px;" id="greenRoomChecks">
+
+                        <div class="gr-check-item" onclick="grCheck(this)" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px 16px;border-left:3px solid var(--accent);cursor:pointer;transition:all 0.25s;display:flex;align-items:flex-start;gap:12px;-webkit-tap-highlight-color:transparent;">
+                            <div class="gr-circle" style="width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.25s;"></div>
+                            <div>
+                                <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;font-weight:700;">Outcome</div>
+                                <div style="font-size:14px;color:rgba(255,255,255,0.8);">What result do I actually want from this conversation?</div>
+                            </div>
+                        </div>
+
+                        <div class="gr-check-item" onclick="grCheck(this)" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px 16px;border-left:3px solid #ff5ea8;cursor:pointer;transition:all 0.25s;display:flex;align-items:flex-start;gap:12px;-webkit-tap-highlight-color:transparent;">
+                            <div class="gr-circle" style="width:22px;height:22px;border-radius:50%;border:2px solid #ff5ea8;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.25s;"></div>
+                            <div>
+                                <div style="font-size:10px;color:#ff5ea8;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;font-weight:700;">Emotion</div>
+                                <div style="font-size:14px;color:rgba(255,255,255,0.8);">What emotion am I carrying in — and is it helping or hurting me?</div>
+                            </div>
+                        </div>
+
+                        <div class="gr-check-item" onclick="grCheck(this)" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px 16px;border-left:3px solid #66bb6a;cursor:pointer;transition:all 0.25s;display:flex;align-items:flex-start;gap:12px;-webkit-tap-highlight-color:transparent;">
+                            <div class="gr-circle" style="width:22px;height:22px;border-radius:50%;border:2px solid #66bb6a;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.25s;"></div>
+                            <div>
+                                <div style="font-size:10px;color:#66bb6a;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;font-weight:700;">Motive</div>
+                                <div style="font-size:14px;color:rgba(255,255,255,0.8);">Am I here to prove something — or to solve something?</div>
+                            </div>
+                        </div>
+
+                        <div class="gr-check-item" onclick="grCheck(this)" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px 16px;border-left:3px solid #64b5f6;cursor:pointer;transition:all 0.25s;display:flex;align-items:flex-start;gap:12px;-webkit-tap-highlight-color:transparent;">
+                            <div class="gr-circle" style="width:22px;height:22px;border-radius:50%;border:2px solid #64b5f6;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.25s;"></div>
+                            <div>
+                                <div style="font-size:10px;color:#64b5f6;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;font-weight:700;">Frame</div>
+                                <div style="font-size:14px;color:rgba(255,255,255,0.8);">How do I want them to see me and this conversation?</div>
+                            </div>
+                        </div>
+
+                        <div class="gr-check-item" onclick="grCheck(this)" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px 16px;border-left:3px solid #ff3b3b;cursor:pointer;transition:all 0.25s;display:flex;align-items:flex-start;gap:12px;-webkit-tap-highlight-color:transparent;">
+                            <div class="gr-circle" style="width:22px;height:22px;border-radius:50%;border:2px solid #ff3b3b;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.25s;"></div>
+                            <div>
+                                <div style="font-size:10px;color:#ff3b3b;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;font-weight:700;">Walk-Away</div>
+                                <div style="font-size:14px;color:rgba(255,255,255,0.8);">What is my walk-away — and am I truly okay with using it?</div>
+                            </div>
+                        </div>
+
+                        <div class="gr-check-item" onclick="grCheck(this)" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px 16px;border-left:3px solid #d4a853;cursor:pointer;transition:all 0.25s;display:flex;align-items:flex-start;gap:12px;-webkit-tap-highlight-color:transparent;">
+                            <div class="gr-circle" style="width:22px;height:22px;border-radius:50%;border:2px solid #d4a853;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.25s;"></div>
+                            <div>
+                                <div style="font-size:10px;color:#d4a853;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;font-weight:700;">Best Self</div>
+                                <div style="font-size:14px;color:rgba(255,255,255,0.8);">What would the best version of me do right now?</div>
+                            </div>
+                        </div>
+
                     </div>
 
-                    <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px 16px;border-left:3px solid #64b5f6;">
-                        <div style="font-size:10px;color:#64b5f6;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Mode</div>
-                        <div style="font-size:14px;color:rgba(255,255,255,0.8);font-style:italic;">Which mode serves this situation best?</div>
+                    <!-- Completion state -->
+                    <div id="grComplete" style="display:none;text-align:center;margin-top:16px;padding:14px;background:rgba(212,168,83,0.08);border-radius:10px;border:1px solid rgba(212,168,83,0.25);animation:card-pop 0.4s both;">
+                        <div style="font-size:18px;margin-bottom:4px;">&#128737;&#65039; Ready.</div>
+                        <div style="font-size:12px;color:rgba(255,255,255,0.6);">You have your frame. Now go.</div>
                     </div>
 
-                    <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px 16px;border-left:3px solid #ff3b3b;">
-                        <div style="font-size:10px;color:#ff3b3b;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Walkaway</div>
-                        <div style="font-size:14px;color:rgba(255,255,255,0.8);font-style:italic;">What am I willing to walk away from?</div>
+                    <div style="text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+                        <div style="font-size:12px;color:rgba(255,255,255,0.3);font-style:italic;max-width:380px;line-height:1.6;">
+                            The most powerful move in any conversation happens before it starts. Decide your frame — your goal, your tone, your limits — before you open your mouth.
+                        </div>
                     </div>
+                    <div style="text-align:center;margin-top:10px;"></div>
 
-                    <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px 16px;border-left:3px solid #d4a853;">
-                        <div style="font-size:10px;color:#d4a853;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Impeccability</div>
-                        <div style="font-size:14px;color:rgba(255,255,255,0.8);font-style:italic;">What would an impeccable version of me do?</div>
-                    </div>
-                </div>
-
-                <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);">
-                    <div style="font-size:12px;color:rgba(255,255,255,0.35);font-style:italic;max-width:400px;margin:0 auto;">
-                        A warrior stops reacting and consciously chooses his assemblage point. Choose your frame before opening your mouth.
-                    </div>
                 </div>
             </div>
         </div>
@@ -2536,7 +2772,32 @@ const MODE_CARDS = {
             {who:'Boss', line:'\"I mean — it was your analysis, yes. I should have credited you. My mistake.\"'},
             {who:'You', line:'\"I appreciate you saying that. Going forward, I\'d like my name on my deliverables when they go up. Fair?\"'},
          ],
-         hint:'💡 Accusation audit → mirror → propose the new rule'}
+         hint:'💡 Accusation audit → mirror → propose the new rule'
+    },
+    {tag:'THE PROMOTION', name:'The Title Bump', label:'Calibrated Q + Anchor', desc:'You want a title change, not just money. Title = future leverage.',
+     approach:'Don\'t ask for the title directly. Ask what the criteria are. Let them name the gap, then close it with evidence.',
+     script:[
+        {who:'You', line:'\\\"What would someone need to demonstrate to earn a [Senior/Lead] title here?\\\"'},
+        {who:'Boss', line:'\\\"We\'d want to see consistent results and team leadership.\\\"'},
+        {who:'You', line:'\\\"I closed 14 deals last year and mentored two new hires. Is that the bar, or is there more?\\\"'},
+     ],
+     hint:'💡 Ask for criteria → let them name the gap → close it with evidence'},
+    {tag:'THE PIVOT', name:'The Direction Change', label:'Label + Getting More', desc:'Boss wants to move you to a different role or project. You\'re not sure it\'s right.',
+     approach:'Label the opportunity positively, then ask what you gain — not what you lose. Negotiate the terms of the pivot, not whether it happens.',
+     script:[
+        {who:'Boss', line:'\\\"I\'m thinking of moving you to the new initiative.\\\"'},
+        {who:'You', line:'\\\"It sounds like you see potential in me for this. I want to understand the upside — what does success look like in 6 months?\\\"'},
+        {who:'You', line:'\\\"If I take this on, I\'d want [specific resource/budget/visibility]. What\'s possible?\\\"'},
+     ],
+     hint:'💡 Label the positive → define success → negotiate the terms'},
+    {tag:'THE MICROMANAGER', name:'The Autonomy Play', label:'Reframe + Calibrated Q', desc:'Boss is checking in too often. You need space without looking like you don\'t care.',
+     approach:'Reframe their checking as care, not control. Propose a rhythm that gives them confidence without daily check-ins.',
+     script:[
+        {who:'You', line:'\\\"I can tell you care about this project staying on track. I want the same thing.\\\"'},
+        {who:'You', line:'\\\"What if I send a Friday summary with status, risks, and what I need from you? That way you\'re never surprised.\\\"'},
+        {who:'You', line:'\\\"What would make you feel confident enough to not need mid-week check-ins?\\\"'},
+     ],
+     hint:'💡 Reframe control as care → propose a rhythm → ask what builds trust'},
     ],
     mediator: [
         // ponytail: emotionally charged mediation — de-escalate, label, reframe, calibrated Q
@@ -2728,6 +2989,73 @@ function renderStats(){
     document.getElementById('statAvailable').textContent=state.sessionActive?state.currentDeck.length:total;
     document.getElementById('statUsed').textContent=state.usedTools.length;
     document.getElementById('statRound').textContent=state.round;
+    renderStairProgress();
+}
+
+
+function burst(seg){
+    const rect = seg.getBoundingClientRect();
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top + rect.height/2;
+    for(let i=0; i<9; i++){
+        const p = document.createElement('div');
+        p.style.cssText = 'position:fixed;left:'+cx+'px;top:'+cy+'px;width:6px;height:6px;border-radius:50%;background:#ffd700;z-index:9999;pointer-events:none;';
+        document.body.appendChild(p);
+        const ang = (i/9)*Math.PI*2 + (Math.random()-.5)*.6;
+        const dist = 34 + Math.random()*18;
+        const tx = Math.cos(ang)*dist;
+        const ty = Math.sin(ang)*dist;
+        p.animate([
+            {transform:'translate(0,0)', opacity:1},
+            {transform:'translate('+tx+'px,'+ty+'px)', opacity:0}
+        ], {duration:520+Math.random()*90, easing:'ease-out'}).onfinish = ()=>p.remove();
+    }
+}
+
+// ponytail: light up staircase segments based on used tools' categories
+// stage 0=INFO(Information), 1=EMPATHY(Rapport+Emotion), 2=TRUST(Strategy), 3=COLLAB(Closure)
+function renderStairProgress(){
+    const usedCats = new Set(state.usedTools.map(t=>t.cat));
+    const stageCats = ['Information',['Rapport','Emotion'],'Strategy','Closure'];
+    let highest = -1;
+    stageCats.forEach((cats,i)=>{
+        const arr = Array.isArray(cats)?cats:[cats];
+        if(arr.some(c=>usedCats.has(c))) highest = i;
+    });
+    if(state.stairMode !== null) highest = Math.max(highest, state.stairMode);
+    // ponytail: simple stateful guard — only first-time activation triggers particles/bounce
+    if(!window.__stairPrev) window.__stairPrev = -1;
+    const prev = window.__stairPrev;
+    const isMobile = window.innerWidth <= 600;
+
+    document.querySelectorAll('#stairProgress > .seg').forEach((seg,i)=>{
+        const wasLit = i <= prev;
+        const isLit = i <= highest;
+        seg.classList.toggle('done', i < highest);
+        seg.classList.toggle('current', i === highest);
+        seg.classList.toggle('lit', isLit);
+
+        // bounce + particles on first-light transition
+        if(!wasLit && isLit){
+            seg.classList.add('activate');
+            setTimeout(()=>seg.classList.remove('activate'), 600);
+            if(!isMobile) burst(seg);
+        }
+    });
+
+    // underline fill (0/25/50/75/100)
+    const fill = highest >= 0 ? ((highest+1)/4)*100 : 0;
+    document.getElementById('stairProgress').style.setProperty('--stair-fill', fill+'%');
+
+    // arrows: gold+dot if BOTH sides lit
+    const arrows = document.querySelectorAll('#stairProgress > .seg-arrow');
+    arrows.forEach((arr,i)=>{
+        const leftLit  = document.querySelectorAll('#stairProgress > .seg')[i].classList.contains('lit');
+        const rightLit = document.querySelectorAll('#stairProgress > .seg')[i+1].classList.contains('lit');
+        arr.classList.toggle('lit', leftLit && rightLit);
+    });
+
+    window.__stairPrev = highest;
 }
 
 function renderLog(){
@@ -2895,7 +3223,19 @@ function resetSession(){
     document.getElementById('timerDisplay').textContent = `${String(dur).padStart(2,'0')}:00`;
 }
 
-function shuffleTools(){if(state.sessionActive){shuffleArray(state.currentDeck);renderCards();}}
+function shuffleTools(){
+    SFX.click();
+    if(state.currentView==='haggle'||state.currentView==='friend'||state.currentView==='boss'||state.currentView==='mediator'){
+        const mode=state.currentView;
+        if(MODE_CARDS[mode] && MODE_CARDS[mode].length>1){
+            shuffleArray(MODE_CARDS[mode]);
+            renderModeCards(mode);
+            navigator.vibrate&&navigator.vibrate(8);
+        }
+    } else if(state.sessionActive){
+        shuffleArray(state.currentDeck);renderCards();
+    }
+}
 function toggleCardsArea(){
     const area = document.getElementById('cardsArea');
     const btn = document.getElementById('cardsToggleBtn');
@@ -2925,7 +3265,7 @@ function updateTimerDisplay(ms){
     const s=Math.max(0,Math.floor(ms/1000));
     const m=Math.floor(s/60); const sec=s%60;
     el.textContent=`${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-    el.className='time'+(sec<=30?' danger':s<=120?' warning':'');
+    el.className='time'+(ms<=180000?' danger':'');
 }
 
 function onCardClick(name){
@@ -2998,7 +3338,20 @@ function renderStair(){
     }, 80);
 }
 
-const STAIR_STAGE_CATS = ['Information','Rapport','Rapport','Closure']; // ponytail: stage 0=INFO tools, 1=EMPATHY/Rapport, 2=TRUST/Rapport, 3=COLLAB/Closure
+const STAIR_STAGE_CATS = ['Information',['Rapport','Emotion'],'Strategy','Closure']; // ponytail: stage 0=INFO, 1=EMPATHY, 2=TRUST, 3=COLLAB
+
+// ponytail: tap progress segment → filter tools by that stage's categories
+function filterByStage(i){
+    SFX.click();
+    const cats = STAIR_STAGE_CATS[i];
+    const arr = Array.isArray(cats)?cats:[cats];
+    // ponytail: if multiple cats, filter to first one (cat-pill single-select)
+    state.activeFilter = arr[0];
+    state.stairMode = i;
+    renderCategoryFilters();
+    renderCards();
+    navigator.vibrate&&navigator.vibrate(8);
+}
 
 function toggleStage(i){
     SFX.click();
@@ -3160,10 +3513,10 @@ function spinWheel(){
         if(banner){
             banner.style.display='block';
             banner.style.color=won.color;
-            banner.innerHTML=`&#127922; ${won.name}! &#127922;`;
+            banner.innerHTML=`&#127922; ${won.name}! &#127922;<br><button class="btn btn-ghost btn-sm" style="margin-top:10px;font-family:Inter,sans-serif;" onclick="spinWheel()">&#8635; Spin Again</button>`;
             banner.style.borderColor=won.color;
             banner.style.boxShadow=`0 0 40px ${won.color}55, 0 0 80px ${won.color}22`;
-            setTimeout(()=>{banner.style.display='none';},4000);
+            setTimeout(()=>{banner.style.display='none';},6000);
         }
         // Update spin history (last 5)
         const hist=document.getElementById('spinHistory');
@@ -3215,6 +3568,7 @@ function toggleLegend(){
 }
 
 function selectEmotion(idx){
+    navigator.vibrate&&navigator.vibrate(15);SFX.coin();
     const em=EMOTIONS[idx];
     state.lastUsedEmotion=em.name;
     // Auto-spin: center this emotion under the pointer (top, 0deg)
@@ -3669,6 +4023,123 @@ function toggleSetting(key, val) {
 const settingStyle = document.createElement('style');
 settingStyle.textContent = '.settings-btn{font-size:12px!important;}.settings-btn.active-setting{background:var(--accent)!important;color:#0d0d1a!important;border-color:var(--accent)!important;}';
 document.head.appendChild(settingStyle);
+
+// ─── Mode deck state (haggle / friend / boss / mediator) ───
+const modeDecks = { haggle: [], friend: [], boss: [], mediator: [] };
+const modeDeckIdx = { haggle: -1, friend: -1, boss: -1, mediator: -1 };
+
+function modeShuffle(mode) {
+    SFX.click(); coinBurst(5);
+    const cards = (MODE_CARDS[mode] || []).slice();
+    shuffleArray(cards);
+    modeDecks[mode] = cards;
+    modeDeckIdx[mode] = -1;
+    modeDraw(mode);
+}
+
+function modeDraw(mode) {
+    const deck = modeDecks[mode];
+    if (!deck.length) { modeShuffle(mode); return; }
+    modeDeckIdx[mode] = (modeDeckIdx[mode] + 1) % deck.length;
+    const idx = modeDeckIdx[mode];
+    const remaining = deck.length - idx;
+
+    // Update deck counter pill
+    const info = document.getElementById('deck-info-' + mode);
+    if (info) {
+        info.style.display = 'block';
+        info.innerHTML = `Card <span>${idx + 1}</span> of <span>${deck.length}</span> &nbsp;·&nbsp; <span>${remaining - 1}</span> remaining`;
+    }
+
+    // Show scenario panel with this card
+    showModeScenarioFromCard(mode, deck[idx]);
+
+    // If we've gone through all cards, announce and reset index so next draw loops
+    if (remaining === 1) {
+        setTimeout(() => {
+            const info2 = document.getElementById('deck-info-' + mode);
+            if (info2) info2.innerHTML = `✓ Deck complete — hit <strong>SHUFFLE</strong> for a new deal.`;
+        }, 400);
+    }
+}
+
+function modeClear(mode) {
+    const box = document.getElementById('scenario-' + mode);
+    if (box) box.classList.remove('open');
+    const info = document.getElementById('deck-info-' + mode);
+    if (info) info.style.display = 'none';
+    modeDecks[mode] = [];
+    modeDeckIdx[mode] = -1;
+}
+
+function showModeScenarioFromCard(mode, c) {
+    SFX.click(); coinBurst(4);
+    const box = document.getElementById('scenario-' + mode);
+    if (!c || !box) return;
+    const modeColors = {haggle:'#ff5ea8',friend:'#66bb6a',boss:'#ff3b3b',mediator:'#64b5f6'};
+    const color = modeColors[mode] || '#d4a853';
+    const scriptHtml = c.script ? c.script.map(s =>
+        `<div class="ms-script"><span class="say">${s.who}:</span> ${s.line}</div>`
+    ).join('') : `<div class="ms-script">${c.hint||''}</div>`;
+    const toolsHtml = c.tools ? `
+        <div class="ms-section-label">🏆 RELEVANT TOOLS</div>
+        <div class="ms-tools">${c.tools.map(t => `<span class="ms-tool">${t}</span>`).join('')}</div>
+    ` : '';
+    box.innerHTML = `
+        <span class="ms-badge" style="background:${color}20;color:${color};border:1px solid ${color}40;">${c.tag}</span>
+        <div class="ms-title">${c.name}</div>
+        <div class="ms-tagline">${c.desc}</div>
+        <div class="ms-section-label">🎯 TACTIC: ${c.label}</div>
+        <div class="ms-approach">${c.approach}</div>
+        <div class="ms-section-label">📝 SCRIPT</div>
+        ${scriptHtml}
+        ${toolsHtml}
+        <button class="ms-close" onclick="modeClear('${mode}')">✕ Close</button>
+    `;
+    box.classList.remove('open'); void box.offsetWidth; box.classList.add('open');
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ─── Green Room checklist ───
+function grCheck(el) {
+    el.classList.toggle('checked');
+    const circle = el.querySelector('.gr-circle');
+    if (el.classList.contains('checked')) {
+        circle.textContent = '✓';
+        circle.style.background = 'var(--accent)';
+        if (navigator.vibrate) navigator.vibrate(30);
+    } else {
+        circle.textContent = '';
+        circle.style.background = '';
+    }
+    const items = document.querySelectorAll('#greenRoomChecks .gr-check-item');
+    const done = document.querySelectorAll('#greenRoomChecks .gr-check-item.checked').length;
+    const bar = document.getElementById('grProgress');
+    if (bar) bar.style.width = Math.round((done / items.length) * 100) + '%';
+    const complete = document.getElementById('grComplete');
+    if (complete) complete.style.display = (done === items.length) ? 'block' : 'none';
+}
+function grReset() {
+    document.querySelectorAll('#greenRoomChecks .gr-check-item').forEach(el => {
+        el.classList.remove('checked');
+        const c = el.querySelector('.gr-circle');
+        if (c) { c.textContent = ''; c.style.background = ''; }
+    });
+    const bar = document.getElementById('grProgress');
+    if (bar) bar.style.width = '0%';
+    const complete = document.getElementById('grComplete');
+    if (complete) complete.style.display = 'none';
+}
+
+// ─── Academy filter ───
+function filterAcademy(cat, btn) {
+    document.querySelectorAll('.academy-filter').forEach(b => b.classList.remove('af-active'));
+    btn.classList.add('af-active');
+    document.querySelectorAll('.academy-level').forEach(level => {
+        if (cat === 'all') { level.style.display = ''; }
+        else { level.style.display = (level.dataset.level === cat) ? '' : 'none'; }
+    });
+}
 </script>
 <!-- ponytail: issue #28 — QR code to open site on mobile -->
 <div style="text-align:center;padding:12px 0;">
@@ -3693,7 +4164,7 @@ document.head.appendChild(settingStyle);
                     border:1px solid rgba(255,220,100,0.6);transition:box-shadow 0.2s,transform 0.15s;"
              onmouseover="this.style.boxShadow='0 0 40px rgba(212,168,83,0.8)';this.style.transform='scale(1.03)'"
              onmouseout="this.style.boxShadow='0 0 20px rgba(212,168,83,0.5)';this.style.transform='scale(1)'">
-            📅 Book a 1-on-1 Session
+            📅 Book 1-on-1 Coaching — $250/hr
           </a>
         </div>
       </div>

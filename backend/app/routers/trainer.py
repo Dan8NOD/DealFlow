@@ -12,13 +12,13 @@ router = APIRouter(tags=["trainer"])
 templates_path = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(templates_path))
 
-# ponytail: /nodify serves the full MixMatch SPA behind auth (asset dashboard + trainer)
+# ponytail: /nodify serves the asset dashboard. MixMatch FV3 SPA lives at dan8nod.github.io/NOD-ify (negotiatorsondemand.com).
 @router.get("/nodify", response_class=HTMLResponse)
 async def nodify_asset_page(
     request: Request,
     user: User = Depends(require_user),
 ):
-    return templates.TemplateResponse("mixmatch.html", {
+    return templates.TemplateResponse("nodify_asset.html", {
         "request": request,
         "user": user,
     })

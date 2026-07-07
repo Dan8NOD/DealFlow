@@ -103,7 +103,7 @@ PRODUCT_LADDER = [
      "desc": "Recorded Saturday sessions + toolkit", "link": ""},
     {"name": "Advanced Masterclass", "price": 499, "status": "todo",
      "desc": "Deep dive: Level 3 tools, storytelling", "link": ""},
-    {"name": "Private Coaching — $250/hr", "price": 250, "status": "done",
+    {"name": "Private Coaching — $500/hr", "price": 500, "status": "done",
      "desc": "1-on-1 negotiation coaching. 60 minutes, live via Zoom. Bring a real deal, leave with a playbook.",
      "link": "",
      "buy_link": "https://calendly.com/negotiatorsondemand/virtualcoffeewithdan"},

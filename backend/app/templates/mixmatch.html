@@ -3020,14 +3020,14 @@ const EMOTIONS = [
 
 // ─── Mode Cards & Scenarios ─── (moved to top for initialization safety)
 // ponytail: defined before any renderer that references them
-const WARRIOR_PRINCIPLES = {
+var WARRIOR_PRINCIPLES = {
     haggle:{ principle:'Cunning', power:9, mindset:'"Everyone wants something. Find it."', wisdom:'Never fight price. Find what price represents.' },
     friend:{ principle:'Kindness', power:10, mindset:'"People don\'t remember arguments. They remember how they felt."', wisdom:'Trust compounds faster than money.' },
     boss:{ principle:'Ruthlessness', power:10, mindset:'"Kindness without boundaries becomes weakness."', wisdom:'Delay creates larger problems.' },
     mediator:{ principle:'Patience', power:10, mindset:'"The first story is rarely the real story."', wisdom:'The calmer person usually controls the conversation.' },
 };
 
-const MODE_CARDS = {
+var MODE_CARDS = {
     haggle: [
         // ponytail: no-rapport haggle — Ackerman, 3 ways of no, calibrated Q, labels, guilt trip, getting more
         {tag:'COLD OPENER', name:'The Ackerman Ladder', label:'Ackerman Model', desc:'No small talk. They want a number. Give one designed to move — not your real ceiling.',

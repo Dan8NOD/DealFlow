@@ -3018,227 +3018,8 @@ const EMOTIONS = [
         tertiary:{'Superior':['Better-Than','Over'],'Above':['Beyond','Untouchable'],'Condescending':['Patronizing','Talking-Down'],'Disdainful':['Scornful','Derisive'],'Mocking':['Ridiculing','Sarcastic']}},
 ];
 
-// ponytail: compact subset — 6 universal Plutchik emotions for the wheel on small screens.
-// Toggle between 6 (compact) and 16 (full) on the Wheel of Emotions view.
-const COMPACT_EMOTIONS = ['ANGER', 'DISGUST', 'SAD', 'HAPPY', 'SURPRISE', 'FEAR'];
-const _emotionsFor = (compact) => compact
-    ? COMPACT_EMOTIONS.map(n => EMOTIONS.find(e => e.name === n))
-    : EMOTIONS;
-
-// ═══════════════════════════════════════════════════════════════════════
-// MODE TOOLS — focused tool sets per mode
-// ═══════════════════════════════════════════════════════════════════════
-const BK_TOOLS = [
-    {name:'Labels',desc:'Identify emotions, concerns, beliefs, or perceptions.',
-     why:'Naming emotions diffuses them and builds rapport. It shows you are listening on a deeper level.',
-     examples:['"It sounds like…"','"It seems like…"','"It looks like…"','"It feels like…"','"It appears that…"','"It sounds frustrating…"','"It sounds important…"','"It sounds like you\'re concerned…"','"It seems like that\'s been difficult…"'],
-     mistakes:['Do not say "I understand"','Focus on identifying emotions, not fixing them','Don\'t guess — observe and name what you hear'],
-     reminder:'Stay curious. Name the emotion. Then be quiet. Let them confirm.',
-     cat:'Rapport',count:2},
-    {name:'Vision Labels',desc:'Labels aimed at future concerns, goals, fears, or outcomes.',
-     why:'Future-focused labels address unspoken worries before they become objections.',
-     examples:['"It sounds like reliability is important to you."','"It seems like you\'re trying to avoid surprises."','"It sounds like you want confidence before moving forward."','"It sounds like timing matters here."','"I get the sense that certainty is key for you."'],
-     mistakes:['Don\'t make assumptions — listen first','Tonality matters: calm, curious, non-judgmental','Avoid leading the witness'],
-     reminder:'Label what they want NEXT, not what\'s happening NOW.',
-     cat:'Rapport',count:2},
-    {name:'Mirrors',desc:'Repeat the last 1–3 important words your counterpart says.',
-     why:'Mirroring encourages elaboration. People naturally want to fill the silence after hearing their own words echoed back.',
-     examples:['Them: "The biggest issue is the timeline."  You: "The timeline?"','Them: "We\'ve had bad experiences before."  You: "Bad experiences?"','Them: "This feels risky for our team."  You: "Risky?"'],
-     mistakes:['Don\'t mirror everything — pick key words','Don\'t parrot — repeat only the meaningful phrase','Don\'t break the silence afterward'],
-     reminder:'Mirror → silence. Let them fill the gap.',
-     cat:'Rapport',count:3},
-    {name:'Trigger',desc:'Use words that provoke a reaction — fear, shock, urgency, or past bad experiences.',
-     why:'Triggers break patterned thinking. A well-placed trigger jolts someone out of their script and opens room for real negotiation.',
-     examples:['"Have you considered what happens if this falls apart?"','"Other people in your position have been burned by that."','"I know this might be uncomfortable to hear…"','"What\'s the worst that could happen?"'],
-     mistakes:['Don\'t overuse — one trigger per conversation is enough','Don\'t sound threatening — stay calm and curious','Don\'t trigger without a follow-up (label or question)'],
-     reminder:'One trigger. Then label or ask. Don\'t pile on.',
-     cat:'Emotion',count:2},
-    {name:'Minimal Encouragers',desc:'Small responses that encourage the other person to continue talking.',
-     why:'People reveal more when they feel heard. Minimal encouragers keep them talking without interrupting their flow.',
-     examples:['"Hmm."','"Interesting."','"Go on."','"Tell me more."','"I see."','"Really?"','"And?"','"What happened next?"'],
-     mistakes:['Don\'t overuse — one word is enough','Don\'t make it sound sarcastic','Don\'t interrupt — place between their sentences'],
-     reminder:'Less is more. One word. Then quiet.',
-     cat:'Rapport',count:1},
-    {name:'Calibrated Questions',desc:'Questions that start with What or How — designed to create collaboration.',
-     why:'Calibrated questions give the other person a sense of control while steering the conversation. What/How questions avoid defensiveness.',
-     examples:[{q:'"What makes this important to you?"'},{q:'"What would an ideal outcome look like?"'},{q:'"What concerns you most?"'},{q:'"How am I supposed to do that?"'},{q:'"How would that work?"'},{q:'"How can we solve this together?"'}],
-     mistakes:['Avoid Why questions — they trigger defensiveness','Don\'t ask leading questions','Don\'t ask more than one at a time'],
-     reminder:'What/How only. No Why. No leading.',
-     cat:'Information',count:4},
-    {name:'No-Oriented Questions',desc:'Questions designed to make the other person feel safe by inviting a "no."',
-     why:'People feel safer saying no than yes. A "no" protects their autonomy and opens real dialogue.',
-     examples:['OPEN-ENDED (preferred):','"Would it be ridiculous to explore another option?"','"Is now a bad time to talk?"','"Would it be unreasonable to discuss this?"','"Is it a bad idea to look at alternatives?"','','CLOSED-ENDED (use sparingly):','"Are you against moving forward?"','"Is this not a priority right now?"'],
-     mistakes:['Focus on OPEN-ENDED no-questions — they invite explanation','Closed-ended can feel manipulative','Don\'t sound pushy — genuine curiosity only'],
-     reminder:'Give them a safe "no." Then ask what they CAN say yes to.',
-     cat:'Information',count:3},
-    {name:'Accusation Audit',desc:'List negative thoughts they may have before they say them.',
-     why:'Bringing negatives into the open early defuses them. If you name their fear, they don\'t have to raise it — and they trust you more.',
-     examples:['"You probably think I\'m wasting your time."','"It may seem like I\'m pushing too hard."','"You might feel this is too expensive."','"You may think this isn\'t a good fit."','"It probably seems like I don\'t understand your situation."'],
-     mistakes:['Don\'t skip the real fears — go for the hardest one','Don\'t apologize for the accusation — just name it','Don\'t try to rebut it immediately'],
-     reminder:'Name the elephant in the room first. Then silence. Let them respond.',
-     cat:'Information',count:5},
-    {name:'Summaries',desc:'Summaries demonstrate understanding and help move conversations forward.',
-     why:'A good summary shows you\'ve truly heard them. It builds trust and clarifies next steps. Only deploy twice — once mid-session, once near the end.',
-     examples:['"So far you\'ve told me that timing is important, you\'re concerned about cost, and you\'ve had bad experiences. Because of that, it sounds like you\'re feeling cautious."'],
-     mistakes:['Don\'t summarize more than TWICE per session','Don\'t add your own opinions — just reflect back','Don\'t skip the emotional layer: Facts + Concerns + Emotions'],
-     reminder:'Formula: Facts + Concerns + Emotions. Once mid-session, once near end.',
-     cat:'Closure',count:2},
-    {name:'Tactical Empathy',desc:'Demonstrate understanding without agreeing.',
-     why:'Understanding lowers defenses. People negotiate differently with someone who "gets it." You don\'t have to agree to understand.',
-     examples:['"It sounds like that\'s been frustrating."','"It seems like you\'ve been dealing with this for a while."','"It sounds like you\'ve put a lot of thought into this."'],
-     mistakes:['Don\'t confuse empathy with agreement','Don\'t fake it — genuine curiosity matters','Don\'t follow empathy with a solution — just sit in it'],
-     reminder:'Understand their world. You don\'t have to agree.',
-     cat:'Rapport',count:2},
-    {name:'Dynamic Silence',desc:'After a mirror, label, calibrated question, or summary — remain silent.',
-     why:'Silence creates pressure. The other person will fill it — often with the information you need.',
-     examples:['Mirror → Silence','Label → Silence','Calibrated Question → Silence','Summary → Silence'],
-     mistakes:['Don\'t rush to fill the silence','Don\'t fidget or look away — maintain eye contact','Don\'t cave — 3+ seconds feels long but works'],
-     reminder:'Speak last. The one who talks least wins.',
-     cat:'Rapport',count:2},
-];
-
-// ═══════════════════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════════════════
-let state = {
-    tools: JSON.parse(JSON.stringify(BASE_TOOLS)),
-    currentDeck: [],
-    usedTools: [],
-    skippedTools: [],
-    currentTool: null,
-    timer: null,
-    endTime: null,
-    sessionStartTime: null,
-    sessionActive: false,
-    round: 0,
-    sessionId: null,
-    activeFilter: 'All',
-    sessionLogOpen: false,
-    currentView: 'tools',
-    lastUsedEmotion: null,
-    zenCardIndices: null, // ponytail: 3 indices into state.tools; null = auto-init with Accusation Audit first
-    stairMode: null, // ponytail: stage index when stair-filtered (0-3 for LISTEN/EMPATHY/TRUST/COLLAB)
-    compactMode: localStorage.getItem('nod-compact') === '1', // ponytail: 6 wedges vs 16
-    expandedCards: localStorage.getItem('nod-expand') === '1', // ponytail: false = 3 cards, true = all 30+
-    adsDismissed: localStorage.getItem('nod-ads-dismissed') === '1', // ponytail: ad row hidden by user
-    basicMode: localStorage.getItem('nod-basic') === '1', // ponytail: filter cards to the 11 Voss core tools
-};
-
-function freshId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
-
-// ponytail: compact mode toggle — 6 wedges (Plutchik) vs 16 (Plutchik + 10 Voss)
-function toggleCompact(){
-    state.compactMode = !state.compactMode;
-    localStorage.setItem('nod-compact', state.compactMode ? '1' : '0');
-    SFX.click();
-    const sub = document.getElementById('wheelSubtitle');
-    if(sub) sub.textContent = state.compactMode
-        ? '6 emotions · tap any sector for full breakdown · spin for random'
-        : '16 emotions · tap any sector for full breakdown · spin for random';
-    if(state.currentView === 'wheel'){ renderWheel(); buildEmoAccordion(); }
-    if(state.basicMode){ renderZenWheel(); }
-    const b = document.getElementById('compactToggleBtn');
-    if(b) b.textContent = state.compactMode ? '⊞ Full (16)' : '⊟ Compact (6)';
-}
-
-// ponytail: expand the 3-card view to all 30+ tools (and back). Default is 3 (Basic mode).
-function expandCards(){
-    SFX.click();
-    state.expandedCards = !state.expandedCards;
-    localStorage.setItem('nod-expand', state.expandedCards ? '1' : '0');
-    renderCards();
-    renderToolsView();
-    const b = document.getElementById('expandToggleBtn');
-    if(b) b.textContent = state.expandedCards ? '👁 3 only' : '👁 Show all';
-}
-
-// ponytail: dismiss the affiliate row. Persists; reset by clearing localStorage 'nod-ads-dismissed'.
-function dismissAds(){
-    state.adsDismissed = true;
-    localStorage.setItem('nod-ads-dismissed', '1');
-    const row = document.getElementById('adRow');
-    if(row) row.style.display = 'none';
-    SFX.click();
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// VIEW SWITCHING
-// ═══════════════════════════════════════════════════════════════════════
-function switchView(name,btn){
-    SFX.click();
-    document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('.view-container').forEach(v=>v.classList.remove('active'));
-    if(btn) btn.classList.add('active');
-    state.currentView = name;
-    document.getElementById('view-'+name).classList.add('active');
-    document.getElementById('toolCountBadge').textContent = state.tools.length;
-
-    // ponytail: 90s mode feel — swap background, trigger arcade overlay
-    const surface = document.querySelector('.table-surface');
-    const feels = {haggle:'haggle',friend:'friend',boss:'boss',mediator:'mediator'};
-    if(feels[name]){ surface.setAttribute('data-feel', feels[name]); triggerModeTransition(name); }
-    else { surface.removeAttribute('data-feel'); }
-
-    if(name==='stair'||name==='warrior') renderStair();
-    if(name==='wheel'){ renderWheel(); buildEmoAccordion(); }
-    if(feels[name]) renderModeCards(name);
-}
-
-// ponytail: update the 4 mode headers to reflect the actual MODE_CARDS count, not the hardcoded lie
-document.querySelectorAll('.mode-scenario-count').forEach(p => {
-    const mode = p.dataset.mode;
-    const n = (MODE_CARDS[mode] || []).length;
-    if (n) p.textContent = p.textContent.replace('— scenarios', `${n} scenarios`);
-});
-
-const _origSwitchView = switchView;
-switchView = function(view, el) {
-    _origSwitchView.apply(this, arguments);
-    if(['haggle','friend','boss','mediator'].includes(view)) {
-        const ts = document.querySelector('.table-surface');
-        ts.classList.remove('mode-flash'); void ts.offsetWidth; ts.classList.add('mode-flash');
-        if(navigator.vibrate) navigator.vibrate(15);
-        if(typeof NodSFX !== 'undefined') NodSFX.modeSwitch();
-    }
-    const av = document.querySelector('.view-container.active');
-    if(av) {
-        const s = document.createElement('div'); s.className = 'view-shimmer';
-        av.style.position = 'relative'; av.appendChild(s);
-        setTimeout(() => s.remove(), 400);
-    }
-};
-
-function triggerModeTransition(mode){
-    const titles = {
-        haggle:['HAGGLE MODE','💰 PRICE WAR'],
-        friend:['FRIEND MODE','🤝 BUILD THE BOND'],
-        boss:['BOSS MODE','👔 COMMAND THE ROOM'],
-        mediator:['MEDIATOR MODE','⚖️ HOLD THE PEACE'],
-    };
-    // ponytail: warrior reminder — one sentence loading screen, Don Juan style
-    const warriorReminders = {
-        haggle:'Need nothing. Observe everything.',
-        friend:'Connection before persuasion.',
-        boss:'Clear is kind.',
-        mediator:'Slow the room until truth can speak.',
-    };
-    const ov = document.getElementById('modeTransition');
-    const t = titles[mode]; if(!t) return;
-    // ponytail: skip overlay on mobile — takes too long, cards flash in underneath
-    if(window.innerWidth < 768){ ov.classList.remove('active'); return; }
-    document.getElementById('mtTitle').textContent = t[0];
-    document.getElementById('mtSub').textContent = t[1];
-    // warrior reminder line
-    let wr = document.getElementById('mtWarrior');
-    if(!wr){ wr=document.createElement('div'); wr.id='mtWarrior'; wr.style.cssText='font-size:13px;color:var(--accent);font-style:italic;margin-top:18px;opacity:0.8;'; ov.querySelector('.mtc').appendChild(wr); }
-    wr.textContent = warriorReminders[mode] || '';
-    ov.classList.remove('active'); void ov.offsetWidth; ov.classList.add('active');
-    setTimeout(()=>ov.classList.remove('active'), 1300);
-}
-
-// ─── Mode Cards & Scenarios ───
-// ponytail: 90s arcade negotiation scenarios per mode
-// ponytail: warrior principles — Don Juan meets Chris Voss
+// ─── Mode Cards & Scenarios ─── (moved to top for initialization safety)
+// ponytail: defined before any renderer that references them
 const WARRIOR_PRINCIPLES = {
     haggle:{ principle:'Cunning', power:9, mindset:'"Everyone wants something. Find it."', wisdom:'Never fight price. Find what price represents.' },
     friend:{ principle:'Kindness', power:10, mindset:'"People don\'t remember arguments. They remember how they felt."', wisdom:'Trust compounds faster than money.' },
@@ -3521,6 +3302,228 @@ function showModeScenario(mode, idx){
     `;
     box.classList.remove('open'); void box.offsetWidth; box.classList.add('open');
 }
+
+// ponytail: compact subset — 6 universal Plutchik emotions for the wheel on small screens.
+// Toggle between 6 (compact) and 16 (full) on the Wheel of Emotions view.
+const COMPACT_EMOTIONS = ['ANGER', 'DISGUST', 'SAD', 'HAPPY', 'SURPRISE', 'FEAR'];
+const _emotionsFor = (compact) => compact
+    ? COMPACT_EMOTIONS.map(n => EMOTIONS.find(e => e.name === n))
+    : EMOTIONS;
+
+// ═══════════════════════════════════════════════════════════════════════
+// MODE TOOLS — focused tool sets per mode
+// ═══════════════════════════════════════════════════════════════════════
+const BK_TOOLS = [
+    {name:'Labels',desc:'Identify emotions, concerns, beliefs, or perceptions.',
+     why:'Naming emotions diffuses them and builds rapport. It shows you are listening on a deeper level.',
+     examples:['"It sounds like…"','"It seems like…"','"It looks like…"','"It feels like…"','"It appears that…"','"It sounds frustrating…"','"It sounds important…"','"It sounds like you\'re concerned…"','"It seems like that\'s been difficult…"'],
+     mistakes:['Do not say "I understand"','Focus on identifying emotions, not fixing them','Don\'t guess — observe and name what you hear'],
+     reminder:'Stay curious. Name the emotion. Then be quiet. Let them confirm.',
+     cat:'Rapport',count:2},
+    {name:'Vision Labels',desc:'Labels aimed at future concerns, goals, fears, or outcomes.',
+     why:'Future-focused labels address unspoken worries before they become objections.',
+     examples:['"It sounds like reliability is important to you."','"It seems like you\'re trying to avoid surprises."','"It sounds like you want confidence before moving forward."','"It sounds like timing matters here."','"I get the sense that certainty is key for you."'],
+     mistakes:['Don\'t make assumptions — listen first','Tonality matters: calm, curious, non-judgmental','Avoid leading the witness'],
+     reminder:'Label what they want NEXT, not what\'s happening NOW.',
+     cat:'Rapport',count:2},
+    {name:'Mirrors',desc:'Repeat the last 1–3 important words your counterpart says.',
+     why:'Mirroring encourages elaboration. People naturally want to fill the silence after hearing their own words echoed back.',
+     examples:['Them: "The biggest issue is the timeline."  You: "The timeline?"','Them: "We\'ve had bad experiences before."  You: "Bad experiences?"','Them: "This feels risky for our team."  You: "Risky?"'],
+     mistakes:['Don\'t mirror everything — pick key words','Don\'t parrot — repeat only the meaningful phrase','Don\'t break the silence afterward'],
+     reminder:'Mirror → silence. Let them fill the gap.',
+     cat:'Rapport',count:3},
+    {name:'Trigger',desc:'Use words that provoke a reaction — fear, shock, urgency, or past bad experiences.',
+     why:'Triggers break patterned thinking. A well-placed trigger jolts someone out of their script and opens room for real negotiation.',
+     examples:['"Have you considered what happens if this falls apart?"','"Other people in your position have been burned by that."','"I know this might be uncomfortable to hear…"','"What\'s the worst that could happen?"'],
+     mistakes:['Don\'t overuse — one trigger per conversation is enough','Don\'t sound threatening — stay calm and curious','Don\'t trigger without a follow-up (label or question)'],
+     reminder:'One trigger. Then label or ask. Don\'t pile on.',
+     cat:'Emotion',count:2},
+    {name:'Minimal Encouragers',desc:'Small responses that encourage the other person to continue talking.',
+     why:'People reveal more when they feel heard. Minimal encouragers keep them talking without interrupting their flow.',
+     examples:['"Hmm."','"Interesting."','"Go on."','"Tell me more."','"I see."','"Really?"','"And?"','"What happened next?"'],
+     mistakes:['Don\'t overuse — one word is enough','Don\'t make it sound sarcastic','Don\'t interrupt — place between their sentences'],
+     reminder:'Less is more. One word. Then quiet.',
+     cat:'Rapport',count:1},
+    {name:'Calibrated Questions',desc:'Questions that start with What or How — designed to create collaboration.',
+     why:'Calibrated questions give the other person a sense of control while steering the conversation. What/How questions avoid defensiveness.',
+     examples:[{q:'"What makes this important to you?"'},{q:'"What would an ideal outcome look like?"'},{q:'"What concerns you most?"'},{q:'"How am I supposed to do that?"'},{q:'"How would that work?"'},{q:'"How can we solve this together?"'}],
+     mistakes:['Avoid Why questions — they trigger defensiveness','Don\'t ask leading questions','Don\'t ask more than one at a time'],
+     reminder:'What/How only. No Why. No leading.',
+     cat:'Information',count:4},
+    {name:'No-Oriented Questions',desc:'Questions designed to make the other person feel safe by inviting a "no."',
+     why:'People feel safer saying no than yes. A "no" protects their autonomy and opens real dialogue.',
+     examples:['OPEN-ENDED (preferred):','"Would it be ridiculous to explore another option?"','"Is now a bad time to talk?"','"Would it be unreasonable to discuss this?"','"Is it a bad idea to look at alternatives?"','','CLOSED-ENDED (use sparingly):','"Are you against moving forward?"','"Is this not a priority right now?"'],
+     mistakes:['Focus on OPEN-ENDED no-questions — they invite explanation','Closed-ended can feel manipulative','Don\'t sound pushy — genuine curiosity only'],
+     reminder:'Give them a safe "no." Then ask what they CAN say yes to.',
+     cat:'Information',count:3},
+    {name:'Accusation Audit',desc:'List negative thoughts they may have before they say them.',
+     why:'Bringing negatives into the open early defuses them. If you name their fear, they don\'t have to raise it — and they trust you more.',
+     examples:['"You probably think I\'m wasting your time."','"It may seem like I\'m pushing too hard."','"You might feel this is too expensive."','"You may think this isn\'t a good fit."','"It probably seems like I don\'t understand your situation."'],
+     mistakes:['Don\'t skip the real fears — go for the hardest one','Don\'t apologize for the accusation — just name it','Don\'t try to rebut it immediately'],
+     reminder:'Name the elephant in the room first. Then silence. Let them respond.',
+     cat:'Information',count:5},
+    {name:'Summaries',desc:'Summaries demonstrate understanding and help move conversations forward.',
+     why:'A good summary shows you\'ve truly heard them. It builds trust and clarifies next steps. Only deploy twice — once mid-session, once near the end.',
+     examples:['"So far you\'ve told me that timing is important, you\'re concerned about cost, and you\'ve had bad experiences. Because of that, it sounds like you\'re feeling cautious."'],
+     mistakes:['Don\'t summarize more than TWICE per session','Don\'t add your own opinions — just reflect back','Don\'t skip the emotional layer: Facts + Concerns + Emotions'],
+     reminder:'Formula: Facts + Concerns + Emotions. Once mid-session, once near end.',
+     cat:'Closure',count:2},
+    {name:'Tactical Empathy',desc:'Demonstrate understanding without agreeing.',
+     why:'Understanding lowers defenses. People negotiate differently with someone who "gets it." You don\'t have to agree to understand.',
+     examples:['"It sounds like that\'s been frustrating."','"It seems like you\'ve been dealing with this for a while."','"It sounds like you\'ve put a lot of thought into this."'],
+     mistakes:['Don\'t confuse empathy with agreement','Don\'t fake it — genuine curiosity matters','Don\'t follow empathy with a solution — just sit in it'],
+     reminder:'Understand their world. You don\'t have to agree.',
+     cat:'Rapport',count:2},
+    {name:'Dynamic Silence',desc:'After a mirror, label, calibrated question, or summary — remain silent.',
+     why:'Silence creates pressure. The other person will fill it — often with the information you need.',
+     examples:['Mirror → Silence','Label → Silence','Calibrated Question → Silence','Summary → Silence'],
+     mistakes:['Don\'t rush to fill the silence','Don\'t fidget or look away — maintain eye contact','Don\'t cave — 3+ seconds feels long but works'],
+     reminder:'Speak last. The one who talks least wins.',
+     cat:'Rapport',count:2},
+];
+
+// ═══════════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════════
+let state = {
+    tools: JSON.parse(JSON.stringify(BASE_TOOLS)),
+    currentDeck: [],
+    usedTools: [],
+    skippedTools: [],
+    currentTool: null,
+    timer: null,
+    endTime: null,
+    sessionStartTime: null,
+    sessionActive: false,
+    round: 0,
+    sessionId: null,
+    activeFilter: 'All',
+    sessionLogOpen: false,
+    currentView: 'tools',
+    lastUsedEmotion: null,
+    zenCardIndices: null, // ponytail: 3 indices into state.tools; null = auto-init with Accusation Audit first
+    stairMode: null, // ponytail: stage index when stair-filtered (0-3 for LISTEN/EMPATHY/TRUST/COLLAB)
+    compactMode: localStorage.getItem('nod-compact') === '1', // ponytail: 6 wedges vs 16
+    expandedCards: localStorage.getItem('nod-expand') === '1', // ponytail: false = 3 cards, true = all 30+
+    adsDismissed: localStorage.getItem('nod-ads-dismissed') === '1', // ponytail: ad row hidden by user
+    basicMode: localStorage.getItem('nod-basic') === '1', // ponytail: filter cards to the 11 Voss core tools
+};
+
+function freshId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+
+// ponytail: compact mode toggle — 6 wedges (Plutchik) vs 16 (Plutchik + 10 Voss)
+function toggleCompact(){
+    state.compactMode = !state.compactMode;
+    localStorage.setItem('nod-compact', state.compactMode ? '1' : '0');
+    SFX.click();
+    const sub = document.getElementById('wheelSubtitle');
+    if(sub) sub.textContent = state.compactMode
+        ? '6 emotions · tap any sector for full breakdown · spin for random'
+        : '16 emotions · tap any sector for full breakdown · spin for random';
+    if(state.currentView === 'wheel'){ renderWheel(); buildEmoAccordion(); }
+    if(state.basicMode){ renderZenWheel(); }
+    const b = document.getElementById('compactToggleBtn');
+    if(b) b.textContent = state.compactMode ? '⊞ Full (16)' : '⊟ Compact (6)';
+}
+
+// ponytail: expand the 3-card view to all 30+ tools (and back). Default is 3 (Basic mode).
+function expandCards(){
+    SFX.click();
+    state.expandedCards = !state.expandedCards;
+    localStorage.setItem('nod-expand', state.expandedCards ? '1' : '0');
+    renderCards();
+    renderToolsView();
+    const b = document.getElementById('expandToggleBtn');
+    if(b) b.textContent = state.expandedCards ? '👁 3 only' : '👁 Show all';
+}
+
+// ponytail: dismiss the affiliate row. Persists; reset by clearing localStorage 'nod-ads-dismissed'.
+function dismissAds(){
+    state.adsDismissed = true;
+    localStorage.setItem('nod-ads-dismissed', '1');
+    const row = document.getElementById('adRow');
+    if(row) row.style.display = 'none';
+    SFX.click();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// VIEW SWITCHING
+// ═══════════════════════════════════════════════════════════════════════
+function switchView(name,btn){
+    SFX.click();
+    document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.view-container').forEach(v=>v.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    state.currentView = name;
+    document.getElementById('view-'+name).classList.add('active');
+    document.getElementById('toolCountBadge').textContent = state.tools.length;
+
+    // ponytail: 90s mode feel — swap background, trigger arcade overlay
+    const surface = document.querySelector('.table-surface');
+    const feels = {haggle:'haggle',friend:'friend',boss:'boss',mediator:'mediator'};
+    if(feels[name]){ surface.setAttribute('data-feel', feels[name]); triggerModeTransition(name); }
+    else { surface.removeAttribute('data-feel'); }
+
+    if(name==='stair'||name==='warrior') renderStair();
+    if(name==='wheel'){ renderWheel(); buildEmoAccordion(); }
+    if(feels[name]) renderModeCards(name);
+}
+
+// ponytail: update the 4 mode headers to reflect the actual MODE_CARDS count, not the hardcoded lie
+document.querySelectorAll('.mode-scenario-count').forEach(p => {
+    const mode = p.dataset.mode;
+    const n = (MODE_CARDS[mode] || []).length;
+    if (n) p.textContent = p.textContent.replace('— scenarios', `${n} scenarios`);
+});
+
+const _origSwitchView = switchView;
+switchView = function(view, el) {
+    _origSwitchView.apply(this, arguments);
+    if(['haggle','friend','boss','mediator'].includes(view)) {
+        const ts = document.querySelector('.table-surface');
+        ts.classList.remove('mode-flash'); void ts.offsetWidth; ts.classList.add('mode-flash');
+        if(navigator.vibrate) navigator.vibrate(15);
+        if(typeof NodSFX !== 'undefined') NodSFX.modeSwitch();
+    }
+    const av = document.querySelector('.view-container.active');
+    if(av) {
+        const s = document.createElement('div'); s.className = 'view-shimmer';
+        av.style.position = 'relative'; av.appendChild(s);
+        setTimeout(() => s.remove(), 400);
+    }
+};
+
+function triggerModeTransition(mode){
+    const titles = {
+        haggle:['HAGGLE MODE','💰 PRICE WAR'],
+        friend:['FRIEND MODE','🤝 BUILD THE BOND'],
+        boss:['BOSS MODE','👔 COMMAND THE ROOM'],
+        mediator:['MEDIATOR MODE','⚖️ HOLD THE PEACE'],
+    };
+    // ponytail: warrior reminder — one sentence loading screen, Don Juan style
+    const warriorReminders = {
+        haggle:'Need nothing. Observe everything.',
+        friend:'Connection before persuasion.',
+        boss:'Clear is kind.',
+        mediator:'Slow the room until truth can speak.',
+    };
+    const ov = document.getElementById('modeTransition');
+    const t = titles[mode]; if(!t) return;
+    // ponytail: skip overlay on mobile — takes too long, cards flash in underneath
+    if(window.innerWidth < 768){ ov.classList.remove('active'); return; }
+    document.getElementById('mtTitle').textContent = t[0];
+    document.getElementById('mtSub').textContent = t[1];
+    // warrior reminder line
+    let wr = document.getElementById('mtWarrior');
+    if(!wr){ wr=document.createElement('div'); wr.id='mtWarrior'; wr.style.cssText='font-size:13px;color:var(--accent);font-style:italic;margin-top:18px;opacity:0.8;'; ov.querySelector('.mtc').appendChild(wr); }
+    wr.textContent = warriorReminders[mode] || '';
+    ov.classList.remove('active'); void ov.offsetWidth; ov.classList.add('active');
+    setTimeout(()=>ov.classList.remove('active'), 1300);
+}
+
+// ─── Mode Cards & Scenarios ───
+// ponytail: 90s arcade negotiation scenarios per mode
+// ponytail: warrior principles — Don Juan meets Chris Voss
 
 // ═══════════════════════════════════════════════════════════════════════
 // TOOLS VIEW — RENDER

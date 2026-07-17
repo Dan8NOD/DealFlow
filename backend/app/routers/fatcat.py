@@ -63,9 +63,39 @@ button{{background:#d4a853;color:#1a1a2e;border:none;padding:8px 16px;border-rad
 button:hover{{background:#e4b863}}
 .summary{{color:#94a3b8;font-size:12px;margin-bottom:12px}}
 .empty{{color:#64748b;padding:40px;text-align:center;font-style:italic}}
+/* ponytail: goals inline — no DB, just contenteditable + localStorage */
+.goals{{display:grid;gap:10px;margin-bottom:24px}}
+.goal{{background:#1a1a30;border:1px solid #2d3f52;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:12px}}
+.goal .g-pri{{width:4px;height:36px;border-radius:2px;flex-shrink:0}}
+.goal .g-body{{flex:1;min-width:0}}
+.goal .g-name{{font-size:14px;font-weight:700;color:#e2e8f0}}
+.goal .g-name small{{color:#94a3b8;font-weight:400;font-size:11px;margin-left:6px}}
+.goal .g-status{{font-size:12px;color:#94a3b8;margin-top:2px}}
+.goal .g-status[contenteditable]{{outline:none;border-bottom:1px dashed #2d3f52;cursor:text;min-width:60px;display:inline-block}}
+.goal .g-status[contenteditable]:focus{{border-color:#d4a853}}
+.goal .g-next{{font-size:11px;color:#64748b;margin-top:2px}}
+.goal .g-next[contenteditable]{{outline:none;border-bottom:1px dashed #2d3f52;cursor:text;min-width:80px;display:inline-block}}
+.pri-high{{background:#ef4444}}
+.pri-mid{{background:#d4a853}}
+.pri-low{{background:#64748b}}
 </style>
 </head>
 <body>
+<!-- ponytail: goals section — hardcoded 5 businesses, contenteditable persists in localStorage -->
+<h2>🎯 Business Goals</h2>
+<div class="goals" id="goals">
+<div class="goal"><div class="g-pri pri-high"></div><div class="g-body"><div class="g-name">Negotiators On Demand <small>Meditation Camp · Deep Work Camp</small></div><div class="g-status" contenteditable data-key="nod">Revenue-generating — 2 products live</div><div class="g-next" contenteditable data-key="nod-next">Next: Publish v2 training manual</div></div></div>
+<div class="goal"><div class="g-pri pri-high"></div><div class="g-body"><div class="g-name">FatCat Asset Management</div><div class="g-status" contenteditable data-key="fatcat">Digital asset manager live on Render</div><div class="g-next" contenteditable data-key="fatcat-next">Next: Add business goals planner</div></div></div>
+<div class="goal"><div class="g-pri pri-mid"></div><div class="g-body"><div class="g-name">Content Creator</div><div class="g-status" contenteditable data-key="content">Consistent — NOD News, TikTok daily</div><div class="g-next" contenteditable data-key="content-next">Next: Batch content calendar</div></div></div>
+<div class="goal"><div class="g-pri pri-low"></div><div class="g-body"><div class="g-name">Gadget Designer <small>Low priority</small></div><div class="g-status" contenteditable data-key="gadget">Negotiation toolkit prototype exists</div><div class="g-next" contenteditable data-key="gadget-next">Next: Prototype when bandwidth opens</div></div></div>
+<div class="goal"><div class="g-pri pri-mid"></div><div class="g-body"><div class="g-name">Minimalist Home Builder</div><div class="g-status" contenteditable data-key="builder">Planning phase</div><div class="g-next" contenteditable data-key="builder-next">Next: Define build model + first lot</div></div></div>
+</div>
+<script>
+// ponytail: contenteditable auto-save to localStorage
+document.querySelectorAll('[contenteditable]').forEach(function(el){{var k=el.getAttribute('data-key');var v=localStorage.getItem(k);if(v)el.textContent=v;el.addEventListener('blur',function(){{localStorage.setItem(k,this.textContent)}})}})
+</script>
+
+<h2>📦 Digital Assets</h2>
 <h1>🐈 FatCat AM</h1>
 <p class="sub">Digital asset manager — the content engine</p>
 

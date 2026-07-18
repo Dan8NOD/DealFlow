@@ -47,7 +47,7 @@ tr:hover td{{background:#1a1a30}}
 <h1>🎤 NOD on the Streets</h1>
 <p class="sub">${len(entries)} entries — pick contenders for the live \$100 haggling showdown</p>
 <table>
-<tr><th>Name</th><th>Entry</th><th>Contacted</th><th>Date</th></tr>
+<tr><th>Name</th><th>Contact</th><th>Reached</th><th>Date</th></tr>
 {rows}
 </table>
 </body></html>"""

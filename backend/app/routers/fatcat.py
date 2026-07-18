@@ -98,6 +98,7 @@ document.querySelectorAll('[contenteditable]').forEach(function(el){{var k=el.ge
 <h2>📦 Digital Assets</h2>
 <h1>🐈 FatCat AM</h1>
 <p class="sub">Digital asset manager — the content engine</p>
+<p style="font-size:12px;color:#64748b;margin-bottom:16px"><a href="/streets" style="color:#d4a853">🎤 NOD on the Streets — Admin</a> · entries come here</p>
 
 <form method="POST" action="/fatcat/add">
   <input type="text" name="name" placeholder="Asset name" required>

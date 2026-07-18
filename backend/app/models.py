@@ -346,6 +346,16 @@ class DigitalAsset(Base):
     org = relationship("Organization")
 
 
+class StreetContestEntry(Base):
+    """NOD on the Streets — $100 live haggling contest entry."""
+    __tablename__ = "street_contest_entries"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(200), nullable=False)
+    text = Column(Text, nullable=False)
+    contacted = Column(Boolean, default=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+
 class EmailMessage(Base):
     """Raw email captured from an email account, before parsing into leads/applications/sales."""
     __tablename__ = "email_messages"

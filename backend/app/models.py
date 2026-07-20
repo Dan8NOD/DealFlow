@@ -331,6 +331,31 @@ class Comment(Base):
     __table_args__ = (Index("ix_comment_record", "record_type", "record_id"),)
 
 
+class DigitalAsset(Base):
+    """Digital content asset — one piece of the content engine."""
+    __tablename__ = "digital_assets"
+    id = Column(Integer, primary_key=True)
+    org_id = Column(Integer, ForeignKey("organizations.id"), nullable=False, index=True)
+    name = Column(String(200), nullable=False)
+    asset_type = Column(String(30))  # video, podcast, product, post, social
+    status = Column(String(30), default="planned")  # planned, recording, editing, published
+    url = Column(Text)
+    notes = Column(Text)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, onupdate=func.now())
+    org = relationship("Organization")
+
+
+class StreetContestEntry(Base):
+    """NOD on the Streets — $100 live haggling contest entry."""
+    __tablename__ = "street_contest_entries"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(200), nullable=False)
+    text = Column(Text, nullable=False)
+    contacted = Column(Boolean, default=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+
 class EmailMessage(Base):
     """Raw email captured from an email account, before parsing into leads/applications/sales."""
     __tablename__ = "email_messages"

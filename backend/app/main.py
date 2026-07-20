@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.db import engine, Base
-from app.routers import auth, dashboard, nod, trainer
+from app.routers import auth, dashboard, nod, trainer, calendly, fatcat, streets
 import os
 
 settings = get_settings()
@@ -17,7 +17,7 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if settings.debug else [settings.base_url],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,6 +33,9 @@ app.include_router(auth.router)
 app.include_router(dashboard.router)
 app.include_router(trainer.router)
 app.include_router(nod.router)
+app.include_router(calendly.router)
+app.include_router(fatcat.router)
+app.include_router(streets.router)
 
 
 @app.get("/health")

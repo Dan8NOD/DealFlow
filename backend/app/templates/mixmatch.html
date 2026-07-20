@@ -1491,55 +1491,103 @@
             min-width: 60px; text-align: right; flex-shrink: 0;
         }
         .emo-item {
-            margin-bottom: 4px; border-radius: 10px; overflow: hidden;
-            background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.06);
-            transition: border-color 0.2s;
+            --c: #888;
+            margin-bottom: 8px; border-radius: 12px; overflow: hidden;
+            background: linear-gradient(180deg, #232338 0%, #1c1c30 100%);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-left: 4px solid var(--c);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+            transition: border-color 0.2s, box-shadow 0.25s, transform 0.18s;
+            opacity: 0;
+            animation: emoRise 420ms cubic-bezier(0.22,0.9,0.3,1) forwards;
+            animation-delay: calc(var(--i, 0) * 45ms);
         }
-        .emo-item.open { border-color: rgba(255,255,255,0.15); }
+        @keyframes emoRise {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .emo-item:hover {
+            box-shadow: 0 5px 18px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.09), 0 0 14px color-mix(in srgb, var(--c) 30%, transparent);
+        }
+        .emo-item.open {
+            border-color: rgba(255,255,255,0.14);
+            border-left-color: var(--c);
+            box-shadow: 0 6px 22px rgba(0,0,0,0.45), inset 0 0 0 1px color-mix(in srgb, var(--c) 22%, transparent);
+        }
         .emo-item-header {
-            display: flex; align-items: center; gap: 10px;
-            padding: 12px 16px; cursor: pointer; user-select: none;
+            display: flex; align-items: center; gap: 12px;
+            padding: 13px 16px; cursor: pointer; user-select: none;
+            min-height: 48px;
             -webkit-tap-highlight-color: transparent;
+            transition: transform 0.12s ease;
         }
+        .emo-item-header:active { transform: scale(0.98); }
         .emo-item-header .emo-dot {
             width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
-            box-shadow: 0 0 8px currentColor;
+            background: var(--c); color: var(--c);
+            box-shadow: 0 0 8px currentColor, inset 0 -2px 3px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.35);
         }
         .emo-item-header .emo-name {
-            font-size: 16px; font-weight: 700; color: #fff; flex: 1;
+            font-size: 16px; font-weight: 800; letter-spacing: 0.04em; color: #fff; flex: 1;
         }
+        .emo-item-header .emo-count {
+            font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.45);
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+            padding: 2px 9px; border-radius: 20px; letter-spacing: 0.03em;
+            transition: background 0.2s, color 0.2s;
+        }
+        .emo-item.open .emo-count { background: var(--c); color: #fff; border-color: transparent; }
         .emo-item-header .emo-chevron {
-            font-size: 12px; color: rgba(255,255,255,0.3);
-            transition: transform 0.25s;
+            font-size: 12px; color: rgba(255,255,255,0.35);
+            transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), color 0.3s;
         }
-        .emo-item.open .emo-chevron { transform: rotate(90deg); }
+        .emo-item.open .emo-chevron { transform: rotate(90deg); color: var(--c); }
         .emo-item-body {
-            max-height: 0; overflow: hidden;
-            transition: max-height 0.3s ease;
+            max-height: 0; overflow: hidden; opacity: 0;
+            transition: max-height 0.34s cubic-bezier(0.22,0.9,0.3,1), opacity 0.26s ease-out;
+            background: color-mix(in srgb, var(--c) 7%, transparent);
         }
-        .emo-item.open .emo-item-body { max-height: 1200px; }
+        .emo-item.open .emo-item-body { opacity: 1; }
         .emo-sec {
-            padding: 8px 16px 8px 40px;
-            border-top: 1px solid rgba(255,255,255,0.04);
+            --c: inherit;
+            padding: 4px 16px 4px 34px;
+            border-top: 1px solid rgba(255,255,255,0.05);
         }
         .emo-sec-header {
-            font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.7);
-            padding: 4px 0; cursor: pointer; display: flex; align-items: center; gap: 6px;
+            font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.85);
+            padding: 9px 0; cursor: pointer; display: flex; align-items: center; gap: 8px;
+            min-height: 40px;
             -webkit-tap-highlight-color: transparent;
+            transition: color 0.2s;
+        }
+        .emo-sec-header:hover { color: #fff; }
+        .emo-sec-header::before {
+            content: ''; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+            background: var(--c); opacity: 0.7;
         }
         .emo-sec-header .sec-chevron {
-            font-size: 10px; color: rgba(255,255,255,0.25); transition: transform 0.2s;
+            font-size: 10px; color: rgba(255,255,255,0.3); margin-left: auto;
+            transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
         }
-        .emo-sec.open .sec-chevron { transform: rotate(90deg); }
+        .emo-sec.open .sec-chevron { transform: rotate(90deg); color: var(--c); }
         .emo-sec-words {
-            max-height: 0; overflow: hidden; transition: max-height 0.25s ease;
-            display: flex; flex-wrap: wrap; gap: 4px; padding: 0 0 4px 16px;
+            max-height: 0; overflow: hidden; opacity: 0;
+            transition: max-height 0.3s cubic-bezier(0.22,0.9,0.3,1), opacity 0.22s ease-out;
+            display: flex; flex-wrap: wrap; gap: 5px; padding: 0 0 4px 15px;
         }
-        .emo-sec.open .emo-sec-words { max-height: 200px; padding-bottom: 8px; }
+        .emo-sec.open .emo-sec-words { max-height: 300px; opacity: 1; padding-bottom: 9px; }
         .emo-word {
-            font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.6);
-            padding: 3px 10px; border-radius: 8px;
-            background: rgba(255,255,255,0.06);
+            font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.78);
+            padding: 4px 11px; border-radius: 8px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-left: 2px solid var(--c);
+            transition: background 0.15s, color 0.15s;
+        }
+        .emo-word:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        @media (prefers-reduced-motion: reduce) {
+            .emo-item { animation: none; opacity: 1; }
+            .emo-item-body, .emo-sec-words, .emo-chevron, .sec-chevron { transition: none; }
         }
 
         /* ─── Modal ─── */
@@ -4260,27 +4308,82 @@ function buildEmoAccordion(){
     const existing = container.querySelectorAll('.emo-item');
     existing.forEach(e=>e.remove());
 
-    // ponytail: legend mirrors the wheel mode (compact 6 vs full 16)
+    // legend mirrors the wheel mode (compact 6 vs full 16)
     const ems = _emotionsFor(state.compactMode);
-    ems.forEach((em) => {
+    ems.forEach((em, i) => {
         const idx = EMOTIONS.findIndex(e => e.name === em.name);
         const item = document.createElement('div');
         item.className = 'emo-item';
+        item.style.setProperty('--c', em.color);
+        item.style.setProperty('--i', i);
         item.innerHTML = `
-            <div class="emo-item-header" onclick="this.parentElement.classList.toggle('open')">
-                <span class="emo-dot" style="background:${em.color};color:${em.color};"></span>
+            <div class="emo-item-header" role="button" tabindex="0" aria-expanded="false" aria-controls="emoBody_${idx}">
+                <span class="emo-dot" aria-hidden="true"></span>
                 <span class="emo-name">${em.name}</span>
-                <span class="emo-chevron">&#9654;</span>
+                <span class="emo-count">${em.secondary.length}</span>
+                <span class="emo-chevron" aria-hidden="true">&#9654;</span>
             </div>
             <div class="emo-item-body" id="emoBody_${idx}"></div>
         `;
         container.appendChild(item);
     });
     applyEmoDepth();
+    wireEmoAccordion();
+}
+
+// ponytail: single delegated handler — set once per rebuild, no inline onclick
+function wireEmoAccordion(){
+    const container = document.getElementById('emoAccordion');
+    if(container._wired) return;
+    container._wired = true;
+
+    function toggleItem(header){
+        const item = header.closest('.emo-item');
+        const body = item.querySelector('.emo-item-body');
+        const open = !item.classList.contains('open');
+        item.classList.toggle('open', open);
+        header.setAttribute('aria-expanded', String(open));
+        body.style.maxHeight = open ? body.scrollHeight + 'px' : '0px';
+    }
+    function toggleSec(header){
+        const sec = header.closest('.emo-sec');
+        const words = sec.querySelector('.emo-sec-words');
+        const open = !sec.classList.contains('open');
+        sec.classList.toggle('open', open);
+        words.style.maxHeight = open ? words.scrollHeight + 'px' : '0px';
+        // Re-measure the parent item body — child expansion changes its height
+        const body = sec.closest('.emo-item-body');
+        if(body && body.closest('.emo-item').classList.contains('open')){
+            body.style.maxHeight = body.scrollHeight + 'px';
+        }
+    }
+    function onActivate(e){
+        const secHeader = e.target.closest('.emo-sec-header');
+        if(secHeader){ toggleSec(secHeader); return; }
+        const header = e.target.closest('.emo-item-header');
+        if(header) toggleItem(header);
+    }
+    container.addEventListener('click', onActivate);
+    container.addEventListener('keydown', e => {
+        if(e.key === 'Enter' || e.key === ' '){
+            const t = e.target.closest('.emo-item-header, .emo-sec-header');
+            if(t){ e.preventDefault(); onActivate(e); }
+        }
+    });
+    // Keep open panels sized correctly on rotation/resize
+    window.addEventListener('resize', () => {
+        container.querySelectorAll('.emo-item.open > .emo-item-body').forEach(b => {
+            b.style.maxHeight = b.scrollHeight + 'px';
+        });
+    });
 }
 
 function applyEmoDepth(){
-    EMOTIONS.forEach((em, idx) => {
+    document.querySelectorAll('#emoAccordion .emo-item').forEach(item => {
+        const name = item.querySelector('.emo-name').textContent;
+        const em = EMOTIONS.find(e => e.name === name);
+        if(!em) return;
+        const idx = EMOTIONS.indexOf(em);
         const body = document.getElementById('emoBody_'+idx);
         if(!body) return;
         let html = '';
@@ -4288,28 +4391,33 @@ function applyEmoDepth(){
             em.secondary.forEach(sec => {
                 const ters = em.tertiary[sec] || [];
                 const showTert = emoDepth >= 2 && ters.length;
-                html += `<div class="emo-sec" id="emoSec_${idx}_${sec.replace(/\s/g,'')}">
-                    <div class="emo-sec-header" onclick="this.parentElement.classList.toggle('open')">
-                        <span class="sec-chevron">&#9654;</span> ${sec}
+                html += `<div class="emo-sec${showTert ? ' open' : ''}">
+                    <div class="emo-sec-header" role="button" tabindex="0">
+                        <span>${sec}</span>
+                        <span class="sec-chevron" aria-hidden="true">&#9654;</span>
                     </div>
                     <div class="emo-sec-words">`;
-                if(showTert){
+                if(ters.length){
                     ters.forEach(t => html += `<span class="emo-word">${t}</span>`);
                 }
                 html += `</div></div>`;
             });
         }
         body.innerHTML = html;
+        // Auto-expand primaries to match depth; measure after layout settles
+        const header = item.querySelector('.emo-item-header');
+        const open = emoDepth >= 1;
+        item.classList.toggle('open', open);
+        if(header) header.setAttribute('aria-expanded', String(open));
+        requestAnimationFrame(() => {
+            body.querySelectorAll('.emo-sec.open > .emo-sec-words').forEach(w => {
+                w.style.maxHeight = w.scrollHeight + 'px';
+            });
+            body.style.maxHeight = open ? body.scrollHeight + 'px' : '0px';
+        });
     });
-    // Auto-expand all to match depth
-    document.querySelectorAll('.emo-item').forEach(item => {
-        if(emoDepth >= 1) item.classList.add('open');
-        else item.classList.remove('open');
-    });
-    if(emoDepth >= 2){
-        document.querySelectorAll('.emo-sec').forEach(s => s.classList.add('open'));
-    }
-    document.getElementById('emoDepthLabel').textContent = DEPTH_LABELS[emoDepth];
+    const label = document.getElementById('emoDepthLabel');
+    if(label) label.textContent = DEPTH_LABELS[emoDepth];
 }
 
 function setEmoDepth(val){

@@ -4073,6 +4073,21 @@ function renderWheel(){
             <stop offset="70%" stop-color="rgba(0,0,0,0)"/>
             <stop offset="100%" stop-color="rgba(0,0,0,0.22)"/>
         </radialGradient>
+        <radialGradient id="dotGrad${sectors}" cx="35%" cy="30%" r="80%">
+            <stop offset="0%" stop-color="#f5e3b0"/>
+            <stop offset="45%" stop-color="#d4a853"/>
+            <stop offset="100%" stop-color="#7a5a14"/>
+        </radialGradient>
+        <linearGradient id="pillGrad${sectors}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(52,52,72,0.92)"/>
+            <stop offset="55%" stop-color="rgba(20,20,30,0.88)"/>
+            <stop offset="100%" stop-color="rgba(8,8,14,0.92)"/>
+        </linearGradient>
+        <radialGradient id="domeGrad${sectors}" cx="42%" cy="36%" r="65%">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.11)"/>
+            <stop offset="45%" stop-color="rgba(255,255,255,0.04)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+        </radialGradient>
     </defs>`;
 
     svg += `<circle cx="${cx}" cy="${cy}" r="${R+6}" fill="none" stroke="url(#hubRing${sectors})" stroke-width="4" opacity="0.85"/>`;
@@ -4086,12 +4101,15 @@ function renderWheel(){
         return `M${x1},${y1} A${r2},${r2} 0 0 1 ${x2},${y2} L${x3},${y3} A${r1},${r1} 0 0 0 ${x4},${y4} Z`;
     };
 
-    // Draw radial dividers between sectors
+    // Draw radial dividers between sectors — ponytail: beveled "engraved" look (dark line + hairline highlight offset)
     for(let i=0;i<sectors;i++){
         const a=i*sectorAngle;
         const[x1,y1]=pt(rCenter,a);
         const[x2,y2]=pt(R+2,a);
-        svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="rgba(0,0,0,0.2)" stroke-width="0.8"/>`;
+        svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="rgba(0,0,0,0.38)" stroke-width="1.6"/>`;
+        const[hx1,hy1]=pt(rCenter,a+0.35);
+        const[hx2,hy2]=pt(R+2,a+0.35);
+        svg += `<line x1="${hx1}" y1="${hy1}" x2="${hx2}" y2="${hy2}" stroke="rgba(255,255,255,0.10)" stroke-width="0.7"/>`;
     }
 
     ems.forEach((em, loopIdx) => {
@@ -4124,13 +4142,15 @@ function renderWheel(){
         const pillW = Math.min(estW + 14, maxW);
         const pillH = labelFs + 10;
         svg += `<g transform="rotate(${r1},${lx},${ly})">`;
-        svg += `<rect x="${lx - pillW/2}" y="${ly - pillH/2}" width="${pillW}" height="${pillH}" rx="7" fill="rgba(20,20,30,0.82)" stroke="rgba(212,168,83,0.45)" stroke-width="0.5"/>`;
+        // soft gold halo behind pill — lifts text off saturated wedge colors
+        svg += `<ellipse cx="${lx}" cy="${ly}" rx="${pillW/2 + 9}" ry="${pillH/2 + 7}" fill="rgba(212,168,83,0.14)"/>`;
+        svg += `<rect x="${lx - pillW/2}" y="${ly - pillH/2}" width="${pillW}" height="${pillH}" rx="7" fill="url(#pillGrad${sectors})" stroke="rgba(212,168,83,0.5)" stroke-width="0.6"/>`;
         svg += `<text x="${lx}" y="${ly}" font-size="${labelFs}" font-weight="800" text-anchor="middle" dominant-baseline="central" fill="#fff" letter-spacing="0.5" class="wheel-label wheel-label-primary">${labelText}</text>`;
         svg += `</g>`;
 
-        // Gold rim dot
+        // ponytail: rivet-style rim dots — shared radial gradient reads as brushed metal studs
         const[dx,dy]=pt(R+6,startA);
-        svg+=`<circle cx="${dx}" cy="${dy}" r="3" fill="#d4a853" opacity="0.7" class="wheel-rim-dot"/>`;
+        svg+=`<circle cx="${dx}" cy="${dy}" r="3.2" fill="url(#dotGrad${sectors})" stroke="rgba(0,0,0,0.35)" stroke-width="0.5" class="wheel-rim-dot"/>`;
         const[dx2,dy2]=pt(R+6,startA+1.5);
         svg+=`<circle cx="${dx2}" cy="${dy2}" r="1.5" fill="#fff" opacity="0.12" class="wheel-rim-dot"/>`;
     });
@@ -4142,6 +4162,8 @@ function renderWheel(){
     svg+=`<ellipse cx="${cx - rCenter*0.28}" cy="${cy - rCenter*0.34}" rx="${rCenter*0.42}" ry="${rCenter*0.26}" fill="rgba(255,255,255,0.16)"/>`;
     // bottom contact shadow for depth
     svg+=`<ellipse cx="${cx}" cy="${cy + rCenter*0.42}" rx="${rCenter*0.55}" ry="${rCenter*0.18}" fill="rgba(0,0,0,0.35)"/>`;
+    // convex glass dome highlight — light pools top-left, opposite the vignette. PS2 lens feel.
+    svg+=`<circle cx="${cx}" cy="${cy}" r="${R+6}" fill="url(#domeGrad${sectors})" pointer-events="none"/>`;
     // vignette over whole wheel — darkens rim edges, PS2 disc feel
     svg+=`<circle cx="${cx}" cy="${cy}" r="${R+6}" fill="url(#vignette${sectors})" pointer-events="none"/>`;
 

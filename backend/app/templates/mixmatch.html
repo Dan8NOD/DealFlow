@@ -954,21 +954,45 @@
                     border-left: 14px solid transparent;
                     border-right: 14px solid transparent;
                     border-top: 26px solid #e53935;
-                    filter: drop-shadow(0 2px 8px rgba(229,57,53,0.8));
+                    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 8px rgba(229,57,53,0.7));
+                }
+                /* ponytail: specular highlight — top half lighter, reads as glossy plastic */
+                .wheel-pointer::before {
+                    content: ''; position: absolute;
+                    top: -26px; left: -14px;
+                    width: 0; height: 0;
+                    border-left: 14px solid transparent;
+                    border-right: 14px solid transparent;
+                    border-top: 13px solid rgba(255,255,255,0.35);
+                    pointer-events: none;
                 }
                 .wheel-pointer::after {
                     content: ''; position: absolute;
                     top: -28px; left: 50%;
                     transform: translateX(-50%);
-                    width: 14px; height: 14px;
-                    background: radial-gradient(circle, #ff1744, #b71c1c);
+                    width: 16px; height: 16px;
+                    background: radial-gradient(circle at 35% 30%, #ff8a80, #ff1744 55%, #b71c1c);
                     border-radius: 50%;
-                    box-shadow: 0 0 10px rgba(255,23,68,0.7), 0 0 20px rgba(255,23,68,0.3);
+                    border: 1px solid rgba(255,255,255,0.3);
+                    box-shadow: 0 0 10px rgba(255,23,68,0.7), 0 0 20px rgba(255,23,68,0.3), inset 0 -2px 4px rgba(0,0,0,0.4);
                     animation: pointer-glow 1.2s ease-in-out infinite;
                 }
                 @keyframes pointer-glow {
-                    0%,100%{box-shadow:0 0 6px #ff1744,0 0 12px rgba(255,23,68,0.2)}
-                    50%{box-shadow:0 0 14px #ff1744,0 0 28px rgba(255,23,68,0.5)}
+                    0%,100%{box-shadow:0 0 6px #ff1744,0 0 12px rgba(255,23,68,0.2), inset 0 -2px 4px rgba(0,0,0,0.4)}
+                    50%{box-shadow:0 0 14px #ff1744,0 0 28px rgba(255,23,68,0.5), inset 0 -2px 4px rgba(0,0,0,0.4)}
+                }
+                /* ponytail: PS2 attract mode — slow wheel breathing glow when idle */
+                .wheel-canvas-wrap.attract svg {
+                    animation: wheel-breathe 4s ease-in-out infinite;
+                }
+                @keyframes wheel-breathe {
+                    0%,100% { filter: drop-shadow(0 6px 24px rgba(0,0,0,0.35)) drop-shadow(0 0 0px rgba(212,168,83,0)); }
+                    50% { filter: drop-shadow(0 6px 24px rgba(0,0,0,0.35)) drop-shadow(0 0 22px rgba(212,168,83,0.35)); }
+                }
+                @media (prefers-reduced-motion: reduce) {
+                    .wheel-pointer::after { animation: none; }
+                    .wheel-canvas-wrap.attract svg { animation: none; }
+                    .spin-btn-big { animation: none; }
                 }
 
                 /* ── Big SPIN button ── */
@@ -4033,8 +4057,26 @@ function renderWheel(){
         <g id="wheelGroup" transform="rotate(${wheelRotation},250,250)">`;
 
     // Gold outer rim
-    svg += `<circle cx="${cx}" cy="${cy}" r="${R+4}" fill="none" stroke="#d4a853" stroke-width="3" opacity="0.5"/>`;
-    svg += `<circle cx="${cx}" cy="${cy}" r="${R+1}" fill="none" stroke="#d4a853" stroke-width="1" opacity="0.3"/>`;
+    // ponytail: defs for glossy + 3D hub — IDs include sector count to avoid collisions on compact/full re-render
+    svg += `<defs>
+        <radialGradient id="hubGrad${sectors}" cx="38%" cy="32%" r="75%">
+            <stop offset="0%" stop-color="#4a4a6a"/>
+            <stop offset="35%" stop-color="#2a2a44"/>
+            <stop offset="100%" stop-color="#10101c"/>
+        </radialGradient>
+        <linearGradient id="hubRing${sectors}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#e8c97a"/>
+            <stop offset="50%" stop-color="#d4a853"/>
+            <stop offset="100%" stop-color="#8a6a20"/>
+        </linearGradient>
+        <radialGradient id="vignette${sectors}" cx="50%" cy="50%" r="50%">
+            <stop offset="70%" stop-color="rgba(0,0,0,0)"/>
+            <stop offset="100%" stop-color="rgba(0,0,0,0.22)"/>
+        </radialGradient>
+    </defs>`;
+
+    svg += `<circle cx="${cx}" cy="${cy}" r="${R+6}" fill="none" stroke="url(#hubRing${sectors})" stroke-width="4" opacity="0.85"/>`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="${R+1}" fill="none" stroke="#d4a853" stroke-width="1" opacity="0.35"/>`;
 
     const rad=d=>d*Math.PI/180;
     const pt=(ri,a)=>[cx+ri*Math.cos(rad(a)),cy+ri*Math.sin(rad(a))];
@@ -4093,8 +4135,15 @@ function renderWheel(){
         svg+=`<circle cx="${dx2}" cy="${dy2}" r="1.5" fill="#fff" opacity="0.12" class="wheel-rim-dot"/>`;
     });
 
-    // Center hub
-    svg+=`<circle cx="${cx}" cy="${cy}" r="${rCenter-2}" fill="#1a1a2e" stroke="rgba(212,168,83,0.25)" stroke-width="1.5"/>`;
+    // ponytail: PS2-style 3D hub — radial gradient dome + metallic gold ring + specular highlight
+    svg+=`<circle cx="${cx}" cy="${cy}" r="${rCenter+3}" fill="none" stroke="url(#hubRing${sectors})" stroke-width="3" opacity="0.9"/>`;
+    svg+=`<circle cx="${cx}" cy="${cy}" r="${rCenter-2}" fill="url(#hubGrad${sectors})" stroke="rgba(212,168,83,0.3)" stroke-width="1"/>`;
+    // specular crescent — top-left light source
+    svg+=`<ellipse cx="${cx - rCenter*0.28}" cy="${cy - rCenter*0.34}" rx="${rCenter*0.42}" ry="${rCenter*0.26}" fill="rgba(255,255,255,0.16)"/>`;
+    // bottom contact shadow for depth
+    svg+=`<ellipse cx="${cx}" cy="${cy + rCenter*0.42}" rx="${rCenter*0.55}" ry="${rCenter*0.18}" fill="rgba(0,0,0,0.35)"/>`;
+    // vignette over whole wheel — darkens rim edges, PS2 disc feel
+    svg+=`<circle cx="${cx}" cy="${cy}" r="${R+6}" fill="url(#vignette${sectors})" pointer-events="none"/>`;
 
     svg+=`</g></svg>`;
     container.innerHTML = svg;
@@ -4124,14 +4173,21 @@ function renderWheel(){
     const slider=document.getElementById('wheelSlider');
     if(slider) slider.value=Math.max(-180,Math.min(180,wheelRotation));
 
+    // ponytail: attract mode — idle breathing glow starts after 8s, stops on interaction
+    _attractTimer && clearTimeout(_attractTimer);
+    _attractTimer = setTimeout(()=>{ const w=document.querySelector('.wheel-canvas-wrap'); if(w && !isDragging) w.classList.add('attract'); }, 8000);
+
     // ponytail: pre-generate 2 labels on view load
     if(!document.getElementById('lmCards').children.length || document.getElementById('lmCards').querySelector('.lm-empty')){
         generateLabels();
     }
 }
 
-function startDrag(e){isDragging=true;dragStartX=e.clientX;const s=document.querySelector('#wheelCanvas svg');if(s)s.style.cursor='grabbing';const g=document.querySelector('#wheelGroup');if(g)g.classList.add('dragging');}
-function startDragTouch(e){isDragging=true;dragStartX=e.touches[0].clientX;const g=document.querySelector('#wheelGroup');if(g)g.classList.add('dragging');}
+let _attractTimer = null;
+function _stopAttract(){ _attractTimer && clearTimeout(_attractTimer); const w=document.querySelector('.wheel-canvas-wrap'); if(w) w.classList.remove('attract'); }
+
+function startDrag(e){_stopAttract();isDragging=true;dragStartX=e.clientX;const s=document.querySelector('#wheelCanvas svg');if(s)s.style.cursor='grabbing';const g=document.querySelector('#wheelGroup');if(g)g.classList.add('dragging');}
+function startDragTouch(e){_stopAttract();isDragging=true;dragStartX=e.touches[0].clientX;const g=document.querySelector('#wheelGroup');if(g)g.classList.add('dragging');}
 function onDrag(e){if(!isDragging)return;const dx=e.clientX-dragStartX;if(Math.abs(dx)>3){wheelRotation+=dx*0.3;dragStartX=e.clientX;requestAnimationFrame(updateWheelRotation);}else if(Math.abs(dx)<2&&e.type!=='touchmove'){stopDrag();}}
 function onDragTouch(e){if(!isDragging)return;const dx=e.touches[0].clientX-dragStartX;if(Math.abs(dx)>3){wheelRotation+=dx*0.3;dragStartX=e.touches[0].clientX;requestAnimationFrame(updateWheelRotation);}}
 function stopDrag(){isDragging=false;const s=document.querySelector('#wheelCanvas svg');if(s)s.style.cursor='grab';const g=document.querySelector('#wheelGroup');if(g)g.classList.remove('dragging');}
@@ -4145,6 +4201,7 @@ function updateWheelRotation(){
 }
 function sliderRotate(val){wheelRotation=parseFloat(val);updateWheelRotation();}
 function spinWheel(){
+    _stopAttract();
     const spinBtn=document.getElementById('spinBtn');
     if(spinBtn){spinBtn.disabled=true;spinBtn.dataset.label=spinBtn.textContent;spinBtn.textContent='🌀 Spinning…';}
     // Haptic feedback on spin start
@@ -4180,7 +4237,7 @@ function spinWheel(){
         if(banner){
             banner.style.display='block';
             banner.style.color=won.color;
-            banner.innerHTML=`&#127922; ${won.name}! &#127922;<br><button class="btn btn-ghost btn-sm" style="margin-top:10px;font-family:Inter,sans-serif;" onclick="spinWheel()">&#8635; Spin Again</button>`;
+            banner.innerHTML=`&#127804; ${won.name}! &#127804;<br><button class="btn btn-ghost btn-sm" style="margin-top:10px;font-family:Inter,sans-serif;" onclick="spinWheel()">&#8635; Spin Again</button>`;
             banner.style.borderColor=won.color;
             banner.style.boxShadow=`0 0 40px ${won.color}55, 0 0 80px ${won.color}22`;
             setTimeout(()=>{banner.style.display='none';},6000);
@@ -4328,6 +4385,7 @@ function buildEmoAccordion(){
         item.className = 'emo-item';
         item.style.setProperty('--c', em.color);
         item.style.setProperty('--i', i);
+        item.dataset.emoIdx = idx;
         item.innerHTML = `
             <div class="emo-item-header" role="button" tabindex="0" aria-expanded="false" aria-controls="emoBody_${idx}">
                 <span class="emo-dot" aria-hidden="true"></span>
@@ -4343,19 +4401,57 @@ function buildEmoAccordion(){
     wireEmoAccordion();
 }
 
+// ponytail: build an item's secondary/tertiary DOM (idempotent — skips if already built)
+function _buildEmoBody(item, revealDepth){
+    const idx = parseInt(item.dataset.emoIdx, 10);
+    const em = EMOTIONS[idx];
+    const body = item.querySelector('.emo-item-body');
+    if(!em || !body || body.dataset.built) return;
+    const depth = revealDepth || emoDepth;
+    let html = '';
+    if(depth >= 1){
+        em.secondary.forEach(sec => {
+            const ters = em.tertiary[sec] || [];
+            const showTert = depth >= 2 && ters.length;
+            html += `<div class="emo-sec${showTert ? ' open' : ''}">
+                <div class="emo-sec-header" role="button" tabindex="0">
+                    <span>${sec}</span>
+                    <span class="sec-chevron" aria-hidden="true">&#9654;</span>
+                </div>
+                <div class="emo-sec-words">`;
+            if(ters.length) ters.forEach(t => html += `<span class="emo-word">${t}</span>`);
+            html += `</div></div>`;
+        });
+    }
+    body.innerHTML = html;
+    body.dataset.built = depth; // remember what depth it was built at
+}
+
 // ponytail: single delegated handler — set once per rebuild, no inline onclick
 function wireEmoAccordion(){
     const container = document.getElementById('emoAccordion');
     if(container._wired) return;
     container._wired = true;
 
+    function openItem(item, header){
+        // Tapping at "Names only" still opens — build content on demand
+        // and surface it (slider follows so the state stays coherent).
+        if(emoDepth === 0){ setEmoDepth(2); }
+        const body = item.querySelector('.emo-item-body');
+        item.classList.add('open');
+        header.setAttribute('aria-expanded', 'true');
+        requestAnimationFrame(()=>{ body.style.maxHeight = body.scrollHeight + 'px'; });
+    }
+    function closeItem(item, header){
+        const body = item.querySelector('.emo-item-body');
+        item.classList.remove('open');
+        header.setAttribute('aria-expanded', 'false');
+        body.style.maxHeight = '0px';
+    }
     function toggleItem(header){
         const item = header.closest('.emo-item');
-        const body = item.querySelector('.emo-item-body');
-        const open = !item.classList.contains('open');
-        item.classList.toggle('open', open);
-        header.setAttribute('aria-expanded', String(open));
-        body.style.maxHeight = open ? body.scrollHeight + 'px' : '0px';
+        if(item.classList.contains('open')) closeItem(item, header);
+        else openItem(item, header);
     }
     function toggleSec(header){
         const sec = header.closest('.emo-sec');
@@ -4363,7 +4459,6 @@ function wireEmoAccordion(){
         const open = !sec.classList.contains('open');
         sec.classList.toggle('open', open);
         words.style.maxHeight = open ? words.scrollHeight + 'px' : '0px';
-        // Re-measure the parent item body — child expansion changes its height
         const body = sec.closest('.emo-item-body');
         if(body && body.closest('.emo-item').classList.contains('open')){
             body.style.maxHeight = body.scrollHeight + 'px';
@@ -4382,7 +4477,6 @@ function wireEmoAccordion(){
             if(t){ e.preventDefault(); onActivate(e); }
         }
     });
-    // Keep open panels sized correctly on rotation/resize
     window.addEventListener('resize', () => {
         container.querySelectorAll('.emo-item.open > .emo-item-body').forEach(b => {
             b.style.maxHeight = b.scrollHeight + 'px';
@@ -4392,31 +4486,12 @@ function wireEmoAccordion(){
 
 function applyEmoDepth(){
     document.querySelectorAll('#emoAccordion .emo-item').forEach(item => {
-        const name = item.querySelector('.emo-name').textContent;
-        const em = EMOTIONS.find(e => e.name === name);
-        if(!em) return;
-        const idx = EMOTIONS.indexOf(em);
-        const body = document.getElementById('emoBody_'+idx);
-        if(!body) return;
-        let html = '';
-        if(emoDepth >= 1){
-            em.secondary.forEach(sec => {
-                const ters = em.tertiary[sec] || [];
-                const showTert = emoDepth >= 2 && ters.length;
-                html += `<div class="emo-sec${showTert ? ' open' : ''}">
-                    <div class="emo-sec-header" role="button" tabindex="0">
-                        <span>${sec}</span>
-                        <span class="sec-chevron" aria-hidden="true">&#9654;</span>
-                    </div>
-                    <div class="emo-sec-words">`;
-                if(ters.length){
-                    ters.forEach(t => html += `<span class="emo-word">${t}</span>`);
-                }
-                html += `</div></div>`;
-            });
+        // Rebuild bodies when depth changed since last build
+        const body = item.querySelector('.emo-item-body');
+        if(body && String(emoDepth) !== String(body.dataset.built)){
+            delete body.dataset.built;
         }
-        body.innerHTML = html;
-        // Auto-expand primaries to match depth; measure after layout settles
+        _buildEmoBody(item, emoDepth);
         const header = item.querySelector('.emo-item-header');
         const open = emoDepth >= 1;
         item.classList.toggle('open', open);
@@ -4434,6 +4509,8 @@ function applyEmoDepth(){
 
 function setEmoDepth(val){
     emoDepth = parseInt(val);
+    const slider = document.getElementById('emoDepth');
+    if(slider) slider.value = emoDepth;
     applyEmoDepth();
 }
 

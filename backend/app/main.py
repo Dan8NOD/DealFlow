@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.db import engine, Base
-from app.routers import auth, dashboard, nod, trainer, calendly, fatcat, streets
+from app.routers import auth, dashboard, nod, trainer, calendly, fatcat, streets, broker
 import os
 
 settings = get_settings()
@@ -36,6 +36,7 @@ app.include_router(nod.router)
 app.include_router(calendly.router)
 app.include_router(fatcat.router)
 app.include_router(streets.router)
+app.include_router(broker.router)
 
 
 @app.get("/health")

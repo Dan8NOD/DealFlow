@@ -5874,7 +5874,11 @@ async function initBrokerGate(){
 }
 
 function applyBrokerGating(){
-  if(_brokerActive) return; // paid user — full access
+  if(_brokerActive){
+    // paid user — full access, remove ads
+    document.querySelectorAll('.ad-row').forEach(ad => ad.style.display = 'none');
+    return;
+  }
   document.querySelectorAll('.tool-card').forEach(card => {
     const name = card.getAttribute('data-tool') || card.querySelector('.card-name')?.textContent || '';
     if(!BROKER_FREE_TOOLS.includes(name)){

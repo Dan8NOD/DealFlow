@@ -65,7 +65,8 @@ The Azure app connects to a fresh PostgreSQL database. Import your deals:
 cd /Users/danielcruz/Desktop/Leads/saas
 
 # Set the production DATABASE_URL (get it from Step 2 output)
-export DATABASE_URL="postgresql://renteradmin:YOUR_PW@YOUR_PG_HOST:5432/renter_portal?sslmode=require"
+export DATABASE_URL="postgresql://postgres:***@db.iubxycckgrplbpdbncfk.supabase.co:5432/postgres?sslmode=require"
+# Get this from Supabase dashboard → Project Settings → Connect → URI
 
 # Run the import (points at the live DB)
 cd backend

@@ -43,12 +43,12 @@ gh repo create renter-portal --public --source=. --remote=origin --push
    - **Build Command**: `pip install -r requirements.txt`
    - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 4. Add environment variables:
-   - `DATABASE_URL` — from Render Postgres (auto-created)
+   - `DATABASE_URL` — Supabase Postgres connection string (set manually)
    - `SECRET_KEY` — generate: `python3 -c "import secrets; print(secrets.token_urlsafe(32))"`
    - `ENVIRONMENT` = `production`
    - `DEBUG` = `false`
 5. Add a PostgreSQL database: "New +" → "PostgreSQL" → free tier
-6. Copy the database URL into the web service's `DATABASE_URL`
+6. Set DATABASE_URL in the web service to the Supabase connection string
 7. Click "Create Web Service" → wait 5 min for first deploy
 8. Visit `https://renter-portal-api-XXXX.onrender.com` — your app is LIVE
 

@@ -52,7 +52,10 @@ scripts/verify.py          # run after EVERY deploy: python3 scripts/verify.py
 ## Env vars (Render dashboard, never in repo)
 
 STRIPE_SECRET_KEY, STRIPE_PRICE_ID, STRIPE_WEBHOOK_SECRET, CALENDLY_API_KEY,
-DATABASE_URL (auto).
+DATABASE_URL — Supabase Postgres connection string (set manually in Render,
+NOT auto-attached from a Render Postgres instance). Get it from:
+Supabase dashboard → Project Settings → Connect → Connection string → URI.
+Format: postgresql://postgres:***@db.iubxycckgrplbpdbncfk.supabase.co:5432/postgres?sslmode=require
 
 ## Key features map
 

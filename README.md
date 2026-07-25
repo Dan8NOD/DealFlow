@@ -27,7 +27,8 @@ cd renter-portal-saas
 cp backend/.env.example backend/.env
 
 # Edit backend/.env with real values
-# DATABASE_URL=postgresql://postgres:postgres@db:5432/renter_portal
+# DATABASE_URL — Supabase connection string (was: Render Postgres auto-attached)
+# Get from Supabase dashboard → Project Settings → Connect → URI
 
 docker-compose up --build
 # Open http://localhost:8000
@@ -42,7 +43,7 @@ source .venv/bin/activate  # or `.venv\Scripts\activate` on Windows
 pip install -r requirements.txt
 
 # Use SQLite for fastest setup (no Docker needed)
-export DATABASE_URL=sqlite:///./renter_portal.db
+export DATABASE_URL=postgresql://postgres:***@db.iubxycckgrplbpdbncfk.supabase.co:5432/postgres?sslmode=require
 export SECRET_KEY=any-32-char-random-string
 
 uvicorn app.main:app --reload

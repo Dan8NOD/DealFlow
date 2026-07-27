@@ -5,7 +5,7 @@ Use when you don't have a pytest suite and need to confirm a deploy works.
 
 Usage:
     python3 verify-render-portal.py \
-        --base-url https://renter-portal-1-jajv.onrender.com \
+        --base-url https://iubxycckgrplbpdbncfk.supabase.co \
         --email dancruzhomes@gmail.com --password 'Leads2025!'
 
 The script always logs in first (most endpoints require auth) and reports
@@ -26,9 +26,9 @@ import urllib.parse
 import urllib.request
 
 
-DEFAULT_BASE_URL = os.environ.get("RENDER_URL", "https://renter-portal-1-jajv.onrender.com")
-DEFAULT_EMAIL = os.environ.get("RENDER_EMAIL", "dancruzhomes@gmail.com")
-DEFAULT_PASSWORD = os.environ.get("RENDER_PASSWORD", "Leads2025!")
+DEFAULT_BASE_URL = os.environ.get("SUPABASE_URL", "https://iubxycckgrplbpdbncfk.supabase.co")
+DEFAULT_EMAIL = os.environ.get("SUPABASE_EMAIL", "dancruzhomes@gmail.com")
+DEFAULT_PASSWORD = os.environ.get("SUPABASE_PASSWORD", "Leads2025!")
 
 
 def parse_args():

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>DealFlow — FatCat Pipeline</title>
+<title>DealFlow — NOD-ify Sales Pipeline</title>
 <style>
 :root {
   --bg: #0a0e14;
@@ -21,7 +21,6 @@
   --red: #f85149;
   --blue: #58a6ff;
   --purple: #bc8cff;
-  --yellow: #d29922;
   --radius: 10px;
   --shadow: 0 8px 24px rgba(0,0,0,0.35);
 }
@@ -61,6 +60,12 @@ header {
 }
 .logo span { color: var(--text-dim); font-weight: 400; font-size: 12px; margin-left: 8px; }
 .spacer { flex: 1; }
+.add-btn {
+  background: var(--gold); color: var(--bg); border: none;
+  padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px;
+  cursor: pointer; transition: box-shadow 0.15s;
+}
+.add-btn:hover { box-shadow: 0 0 20px var(--gold-glow); }
 .theme-toggle {
   background: var(--surface-2); border: 1px solid var(--border);
   color: var(--text-dim); width: 36px; height: 36px;
@@ -69,12 +74,34 @@ header {
 }
 .theme-toggle:hover { border-color: var(--gold); color: var(--gold); }
 
-/* ─── Pipeline board ─── */
+/* ─── Stats bar ─── */
+.stats-bar {
+  display: flex; gap: 24px; padding: 10px 24px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px; color: var(--text-dim);
+}
+.stats-bar strong { color: var(--gold); font-weight: 700; }
+.stats-bar .stat-mrr strong { color: var(--green); }
+
+/* ─── Filters ─── */
+.filters {
+  display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.filter-btn {
+  padding: 5px 14px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text-dim); font-size: 12px;
+  cursor: pointer; transition: all 0.1s;
+}
+.filter-btn:hover { background: var(--surface-2); color: var(--text); }
+.filter-btn.active { background: var(--gold); color: var(--bg); border-color: var(--gold); font-weight: 600; }
+
+/* ─── Board ─── */
 .board {
   display: flex; gap: 12px;
   padding: 16px 24px;
   overflow-x: auto;
-  min-height: calc(100vh - 60px);
+  min-height: calc(100vh - 130px);
 }
 .column {
   flex: 1; min-width: 280px; max-width: 360px;
@@ -97,7 +124,7 @@ header {
   color: var(--text-dim); background: var(--bg);
   padding: 2px 10px; border-radius: 999px;
 }
-.column-body { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.column-body { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; min-height: 100px; }
 .column-footer {
   padding: 8px 12px; border-top: 1px solid var(--border);
   font-size: 11px; color: var(--text-mid); text-align: center;
@@ -114,45 +141,47 @@ header {
 }
 .deal-card:hover { border-color: var(--gold); box-shadow: 0 4px 12px var(--gold-glow); }
 .deal-card.dragging { opacity: 0.5; cursor: grabbing; }
-.deal-card .addr { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-.deal-card .addr .unit { color: var(--gold); font-size: 12px; margin-left: 6px; }
-.deal-card .price { font-size: 15px; font-weight: 800; color: var(--gold); margin-bottom: 6px; }
-.deal-card .meta { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.deal-card .deal-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.deal-card .deal-price { font-size: 18px; font-weight: 800; color: var(--gold); margin-bottom: 8px; }
+.deal-card .meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
 .deal-card .tag {
   font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
   padding: 2px 8px; border-radius: 4px;
   background: var(--bg); color: var(--text-dim); border: 1px solid var(--border);
 }
-.deal-card .tag.rental { color: var(--blue); border-color: var(--blue); }
-.deal-card .tag.sale { color: var(--purple); border-color: var(--purple); }
-.deal-card .tag.hold { color: var(--red); border-color: var(--red); }
-.deal-card .tag.closed { color: var(--green); border-color: var(--green); }
-.deal-card .notes { font-size: 11px; color: var(--text-mid); font-style: italic; margin-top: 4px; line-height: 1.4; }
-.deal-card .stat-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); }
+.deal-card .tag.digital { color: var(--blue); border-color: var(--blue); }
+.deal-card .tag.subscription { color: var(--green); border-color: var(--green); }
+.deal-card .tag.service { color: var(--purple); border-color: var(--purple); }
+.deal-card .tag.source { color: var(--text-dim); }
+.deal-card .notes { font-size: 11px; color: var(--text-mid); font-style: italic; margin-top: 6px; line-height: 1.4; }
+.deal-card .deal-link { font-size: 11px; margin-top: 6px; }
+.deal-card .deal-link a { color: var(--gold); text-decoration: none; }
+.deal-card .deal-link a:hover { text-decoration: underline; }
 
-/* ─── Empty state ─── */
+/* ─── Empty ─── */
 .empty-col { text-align: center; padding: 40px 16px; color: var(--text-mid); font-size: 12px; }
 
-/* ─── Filters ─── */
-.filters {
-  display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 24px;
-  border-bottom: 1px solid var(--border);
+/* ─── Add deal modal ─── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  display: none; place-items: center; z-index: 20;
 }
-.filter-btn {
-  padding: 5px 14px; border-radius: 6px; border: 1px solid var(--border);
-  background: var(--surface); color: var(--text-dim); font-size: 12px;
-  cursor: pointer; transition: all 0.1s;
+.modal-overlay.open { display: grid; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px;
+  width: 90%; max-width: 420px; box-shadow: var(--shadow);
 }
-.filter-btn:hover { background: var(--surface-2); color: var(--text); }
-.filter-btn.active { background: var(--gold); color: var(--bg); border-color: var(--gold); font-weight: 600; }
-
-/* ─── Stats bar ─── */
-.stats-bar {
-  display: flex; gap: 24px; padding: 10px 24px;
-  border-bottom: 1px solid var(--border);
-  font-size: 12px; color: var(--text-dim);
+.modal h2 { font-size: 16px; color: var(--gold); margin-bottom: 16px; }
+.modal label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); margin-bottom: 4px; margin-top: 12px; }
+.modal input, .modal select, .modal textarea {
+  width: 100%; padding: 8px 10px; background: var(--bg); color: var(--text);
+  border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit;
 }
-.stats-bar strong { color: var(--gold); font-weight: 700; }
+.modal textarea { resize: vertical; min-height: 50px; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+.modal .btn-ghost { background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.modal .btn-primary { background: var(--gold); color: var(--bg); border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 13px; }
 
 /* ─── Mobile ─── */
 @media (max-width: 768px) {
@@ -160,9 +189,8 @@ header {
   .column { min-width: 240px; }
   header { padding: 10px 14px; }
   .filters { padding: 8px 14px; }
-  .stats-bar { padding: 8px 14px; gap: 14px; }
+  .stats-bar { padding: 8px 14px; gap: 14px; flex-wrap: wrap; }
 }
-
 @media (prefers-reduced-motion: reduce) {
   .deal-card { transition: none; }
   .deal-card:hover { box-shadow: none; }
@@ -172,55 +200,65 @@ header {
 <body>
 
 <header>
-  <div class="logo">DEALFLOW <span>FatCat Pipeline</span></div>
+  <div class="logo">DEALFLOW <span>NOD-ify Sales Pipeline</span></div>
   <div class="spacer"></div>
+  <button class="add-btn" onclick="openAddModal()">+ Add Deal</button>
   <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">🌙</button>
 </header>
 
 <div class="stats-bar" id="statsBar">
   <span><strong id="statTotal">0</strong> deals</span>
-  <span><strong id="statValue">$0</strong> total pipeline value</span>
-  <span><strong id="statRentals">0</strong> rentals</span>
-  <span><strong id="statSales">0</strong> sales</span>
-  <span><strong id="statClosed">0</strong> closed</span>
+  <span><strong id="statValue">$0</strong> pipeline value</span>
+  <span><strong id="statRevenue">$0</strong> closed revenue</span>
+  <span class="stat-mrr"><strong id="statMRR">$0</strong> MRR (subscriptions)</span>
 </div>
 
 <div class="filters">
   <button class="filter-btn active" onclick="filterDeals('all', this)">All</button>
-  <button class="filter-btn" onclick="filterDeals('RENTALS', this)">Rentals</button>
-  <button class="filter-btn" onclick="filterDeals('SALES', this)">Sales</button>
-  <button class="filter-btn" onclick="filterDeals('HOLD', this)">On Hold</button>
-  <button class="filter-btn" onclick="filterDeals('CLOSED', this)">Closed</button>
+  <button class="filter-btn" onclick="filterDeals('digital', this)">Digital</button>
+  <button class="filter-btn" onclick="filterDeals('subscription', this)">Subscriptions</button>
+  <button class="filter-btn" onclick="filterDeals('service', this)">Services</button>
 </div>
 
-<div class="board" id="board">
-  <!-- Columns rendered by JS -->
+<div class="board" id="board"></div>
+
+<!-- Add deal modal -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <h2>Add New Deal</h2>
+    <label>Name</label>
+    <input id="newName" placeholder="e.g. $5/mo App Subscription">
+    <label>Price ($)</label>
+    <input id="newPrice" type="number" placeholder="5" min="0">
+    <label>Type</label>
+    <select id="newType">
+      <option value="digital">Digital product</option>
+      <option value="subscription">Subscription</option>
+      <option value="service">Service / coaching</option>
+    </select>
+    <label>Source</label>
+    <input id="newSource" placeholder="Gumroad, Stripe, Calendly, Email">
+    <label>URL (optional)</label>
+    <input id="newUrl" placeholder="https://...">
+    <label>Notes</label>
+    <textarea id="newNotes" placeholder="Any context about this deal"></textarea>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeAddModal()">Cancel</button>
+      <button class="btn-primary" onclick="addDeal()">Add</button>
+    </div>
+  </div>
 </div>
 
 <script>
 // ─── Pipeline stages ──────────────────────────────────────────
 const STAGES = [
-  { key: 'PIPELINE',   label: 'Pipeline',    dot: 'var(--gold)',   desc: 'Active listings & leads' },
-  { key: 'SHOWING',    label: 'Showing',     dot: 'var(--blue)',   desc: 'Tours booked, CMAs in review' },
-  { key: 'NEGOTIATION',label: 'Negotiation', dot: 'var(--purple)', desc: 'Offers, approvals, applicants' },
-  { key: 'CLOSED',     label: 'Closed',      dot: 'var(--green)',  desc: 'Signed, paid, done' },
+  { key: 'PIPELINE',     label: 'Pipeline',     dot: 'var(--gold)',   desc: 'Available to sell' },
+  { key: 'NEGOTIATION',  label: 'Negotiation',  dot: 'var(--purple)', desc: 'In conversation' },
+  { key: 'CLOSED',       label: 'Closed',        dot: 'var(--green)',  desc: 'Sold and paid' },
 ];
 
-// Map old spreadsheet statuses to pipeline stages
-const STATUS_TO_STAGE = {
-  'EXECUTE':           'PIPELINE',
-  'LIVE':              'PIPELINE',
-  'Load Pics':         'PIPELINE',
-  'Get Listing Agmt':  'PIPELINE',
-  'YouTube/FB':        'PIPELINE',
-  '':                  'PIPELINE',
-  'CMA':               'SHOWING',
-  'FOR APPROVAL':      'NEGOTIATION',
-  'APPROVED APPLICANT':'NEGOTIATION',
-  'FINISHED':          'CLOSED',
-};
-
 // ─── State ─────────────────────────────────────────────────────
+const STORE_KEY = 'dealflow_deals_v1';
 let allDeals = [];
 let activeFilter = 'all';
 
@@ -240,42 +278,30 @@ function toggleTheme() {
   }
 })();
 
-// ─── Data loading ─────────────────────────────────────────────
+// ─── Data ─────────────────────────────────────────────────────
 async function loadDeals() {
-  // Try Supabase first (when configured), fall back to local JSON
+  // Try Supabase first (when configured)
   try {
     if (window._supabase && window._authUser) {
       const { data, error } = await _supabase.from('pipeline_deals').select('*').order('created_at', { ascending: false });
-      if (!error && data) { allDeals = data; return; }
+      if (!error && data && data.length) { allDeals = data; return; }
     }
-  } catch(e) { /* fall through to local */ }
-  // Local fallback: load the spreadsheet JSON
+  } catch(e) { /* fall through */ }
+  // Local: localStorage first, then seed from JSON
+  try {
+    const saved = localStorage.getItem(STORE_KEY);
+    if (saved) { allDeals = JSON.parse(saved); return; }
+  } catch(e) {}
   try {
     const resp = await fetch('deals_data.json');
     allDeals = await resp.json();
+    saveLocal();
   } catch(e) {
     allDeals = [];
   }
 }
-
-// ─── Stage assignment ──────────────────────────────────────────
-function dealStage(deal) {
-  if (deal.stage) return deal.stage; // explicit stage from Supabase
-  if (deal.section === 'CLOSED') return 'CLOSED';
-  if (deal.section === 'HOLD' || deal.status === 'WAIT') return 'PIPELINE';
-  const raw = deal.status || '';
-  return STATUS_TO_STAGE[raw] || 'PIPELINE';
-}
-
-function dealValue(deal) {
-  return deal.price || 0;
-}
-
-function dealType(deal) {
-  if (deal.is_sale || deal.section === 'SALES') return 'sale';
-  if (deal.section === 'CLOSED') return 'closed';
-  if (deal.section === 'HOLD' || deal.status === 'WAIT') return 'hold';
-  return 'rental';
+function saveLocal() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(allDeals)); } catch(e) {}
 }
 
 // ─── Rendering ────────────────────────────────────────────────
@@ -283,18 +309,10 @@ function renderBoard() {
   const board = document.getElementById('board');
   const filtered = activeFilter === 'all'
     ? allDeals
-    : activeFilter === 'HOLD'
-      ? allDeals.filter(d => dealType(d) === 'hold')
-      : allDeals.filter(d => {
-          const t = dealType(d);
-          if (activeFilter === 'RENTALS') return t === 'rental';
-          if (activeFilter === 'SALES') return t === 'sale';
-          if (activeFilter === 'CLOSED') return t === 'closed';
-          return true;
-        });
+    : allDeals.filter(d => d.type === activeFilter);
 
   board.innerHTML = STAGES.map(stage => {
-    const deals = filtered.filter(d => dealStage(d) === stage.key);
+    const deals = filtered.filter(d => (d.stage || 'PIPELINE') === stage.key);
     return `
       <div class="column" data-stage="${stage.key}">
         <div class="column-header">
@@ -303,54 +321,48 @@ function renderBoard() {
           <span class="column-count">${deals.length}</span>
         </div>
         <div class="column-body" id="col-${stage.key}">
-          ${deals.length === 0
-            ? '<div class="empty-col">No deals in this stage</div>'
-            : deals.map(d => renderCard(d)).join('')
-          }
+          ${deals.length === 0 ? '<div class="empty-col">No deals here</div>' : deals.map(renderCard).join('')}
         </div>
         <div class="column-footer">${stage.desc}</div>
       </div>
     `;
   }).join('');
 
-  updateStats(filtered);
+  updateStats();
   attachDragHandlers();
 }
 
 function renderCard(deal) {
-  const type = dealType(deal);
-  const value = dealValue(deal);
-  const fmt = v => v >= 1000 ? '$' + v.toLocaleString() : v ? '$' + v : '';
+  const fmt = v => v >= 1000 ? '$' + (v / 1000).toFixed(v % 1000 === 0 ? 0 : 1) + 'K' : '$' + v;
+  const recurring = deal.type === 'subscription' ? '/mo' : '';
   return `
-    <div class="deal-card" draggable="true" data-id="${deal.address + (deal.unit || '')}" data-stage="${dealStage(deal)}">
-      <div class="addr">${escapeHtml(deal.address)}${deal.unit ? '<span class="unit">' + escapeHtml(deal.unit) + '</span>' : ''}</div>
-      ${value ? '<div class="price">' + fmt(value) + '</div>' : ''}
+    <div class="deal-card" draggable="true" data-id="${escapeAttr(deal.id)}" data-stage="${deal.stage || 'PIPELINE'}">
+      <div class="deal-name">${escapeHtml(deal.name)}</div>
+      <div class="deal-price">${fmt(deal.price || 0)}${recurring}</div>
       <div class="meta">
-        <span class="tag ${type}">${type.toUpperCase()}</span>
-        ${deal.beds ? '<span class="tag">' + escapeHtml(deal.beds) + '</span>' : ''}
-        ${deal.available ? '<span class="tag">' + escapeHtml(String(deal.available)) + '</span>' : ''}
+        <span class="tag ${deal.type}">${deal.type || 'digital'}</span>
+        ${deal.source ? '<span class="tag source">' + escapeHtml(deal.source) + '</span>' : ''}
       </div>
-      ${deal.lockbox ? '<div class="stat-row"><span>Lockbox</span><span>' + escapeHtml(deal.lockbox) + '</span></div>' : ''}
       ${deal.notes ? '<div class="notes">' + escapeHtml(deal.notes) + '</div>' : ''}
+      ${deal.url ? '<div class="deal-link"><a href="' + escapeAttr(deal.url) + '" target="_blank" rel="noopener">Open →</a></div>' : ''}
     </div>
   `;
 }
 
-function escapeHtml(s) {
-  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
+function escapeHtml(s) { return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return escapeHtml(s); }
 
 // ─── Stats ────────────────────────────────────────────────────
-function updateStats(deals) {
-  document.getElementById('statTotal').textContent = deals.length;
-  const totalValue = deals.reduce((s, d) => s + (dealValue(d) || 0), 0);
-  document.getElementById('statValue').textContent = totalValue >= 1000
-    ? '$' + (totalValue / 1000).toFixed(0) + 'K'
-    : '$' + totalValue;
-  document.getElementById('statRentals').textContent = deals.filter(d => dealType(d) === 'rental').length;
-  document.getElementById('statSales').textContent = deals.filter(d => dealType(d) === 'sale').length;
-  document.getElementById('statClosed').textContent = deals.filter(d => dealType(d) === 'closed').length;
+function updateStats() {
+  const pipeline = allDeals.filter(d => (d.stage || 'PIPELINE') !== 'CLOSED');
+  const closed = allDeals.filter(d => d.stage === 'CLOSED');
+  const subs = allDeals.filter(d => d.type === 'subscription' && d.stage === 'CLOSED');
+  document.getElementById('statTotal').textContent = allDeals.length;
+  document.getElementById('statValue').textContent = fmtMoney(pipeline.reduce((s, d) => s + (d.price || 0), 0));
+  document.getElementById('statRevenue').textContent = fmtMoney(closed.reduce((s, d) => s + (d.price || 0), 0));
+  document.getElementById('statMRR').textContent = fmtMoney(subs.reduce((s, d) => s + (d.price || 0), 0));
 }
+function fmtMoney(v) { return v >= 1000 ? '$' + (v / 1000).toFixed(v % 1000 === 0 ? 0 : 1) + 'K' : '$' + v; }
 
 // ─── Filtering ────────────────────────────────────────────────
 function filterDeals(filter, btn) {
@@ -361,9 +373,7 @@ function filterDeals(filter, btn) {
 }
 
 // ─── Drag and drop ────────────────────────────────────────────
-let dragId = null;
-let dragStage = null;
-
+let dragId = null, dragStage = null;
 function attachDragHandlers() {
   document.querySelectorAll('.deal-card').forEach(card => {
     card.addEventListener('dragstart', e => {
@@ -372,35 +382,57 @@ function attachDragHandlers() {
       card.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
     });
-    card.addEventListener('dragend', () => {
-      card.classList.remove('dragging');
-    });
+    card.addEventListener('dragend', () => card.classList.remove('dragging'));
   });
   document.querySelectorAll('.column-body').forEach(col => {
-    col.addEventListener('dragover', e => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-    });
+    col.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
     col.addEventListener('drop', e => {
       e.preventDefault();
       const newStage = col.parentElement.dataset.stage;
       if (dragId && newStage && newStage !== dragStage) {
-        // Update local state
-        const deal = allDeals.find(d => (d.address + (d.unit || '')) === dragId);
+        const deal = allDeals.find(d => String(d.id) === dragId);
         if (deal) {
           deal.stage = newStage;
-          deal.status = newStage === 'CLOSED' ? 'FINISHED' : deal.status;
-          // Persist to Supabase if connected
+          saveLocal();
           if (window._supabase && window._authUser && deal.id) {
             _supabase.from('pipeline_deals').update({ stage: newStage }).eq('id', deal.id).then(() => {});
           }
           renderBoard();
         }
       }
-      dragId = null;
-      dragStage = null;
+      dragId = null; dragStage = null;
     });
   });
+}
+
+// ─── Add deal modal ───────────────────────────────────────────
+function openAddModal() { document.getElementById('addModal').classList.add('open'); }
+function closeAddModal() {
+  document.getElementById('addModal').classList.remove('open');
+  ['newName','newPrice','newSource','newUrl','newNotes'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  document.getElementById('newType').value = 'digital';
+}
+function addDeal() {
+  const name = document.getElementById('newName').value.trim();
+  const price = parseFloat(document.getElementById('newPrice').value) || 0;
+  const type = document.getElementById('newType').value;
+  const source = document.getElementById('newSource').value.trim();
+  const url = document.getElementById('newUrl').value.trim();
+  const notes = document.getElementById('newNotes').value.trim();
+  if (!name) { alert('Deal name is required'); return; }
+  const deal = {
+    id: 'deal-' + Date.now(),
+    name, price, type, source, url, notes,
+    stage: 'PIPELINE',
+    created_at: new Date().toISOString(),
+  };
+  allDeals.unshift(deal);
+  saveLocal();
+  if (window._supabase && window._authUser) {
+    _supabase.from('pipeline_deals').insert(deal).then(() => {});
+  }
+  closeAddModal();
+  renderBoard();
 }
 
 // ─── Init ────────────────────────────────────────────────────

@@ -1,40 +1,38 @@
-# DealFlow — FatCat Pipeline
+# DealFlow — NOD-ify Sales Pipeline
 
-A drag-and-drop sales pipeline board for FatCat Asset Management.
-Pipeline -> Showing -> Negotiation -> Closed.
+A drag-and-drop sales pipeline board for NOD-ify products and services.
+Pipeline -> Negotiation -> Closed.
 
 Static HTML, no build step, no backend. Deploys on Vercel.
-Reads from Supabase when auth is configured; falls back to local JSON.
+Data persists to localStorage (and Supabase when auth is configured).
 
-## What's here
+## Product ladder
 
-- `index.html` — the pipeline board (single file, no dependencies)
-- `deals_data.json` — local fallback data (spreadsheet export format)
-- `vercel.json` — cache headers
+| Product | Price | Type | Source |
+|---|---|---|---|
+| Field Guide | $5 | Digital | Gumroad |
+| Field Manual | $49 | Digital | Gumroad |
+| Realtor Scripts | $99 | Digital | Gumroad |
+| App Subscription | $5/mo | Subscription | Stripe (pending) |
+| Coaching Hour | $500 | Service | Calendly |
+| Training Day | $5,000 | Service | Email booking |
 
-## What's NOT here (intentionally removed)
+## Features
 
-- The old FastAPI backend (3,000+ lines of Python) — superseded by Supabase
-- The Stripe/broker integration — dead (0 subscribers, webhook verification
-  commented out, NOD-ify uses a Supabase Edge Function instead)
-- All Jinja2 templates, SQLAlchemy models, auth routers, Calendly integration
-
-## Pipeline stages
-
-| Stage | Description | Old spreadsheet statuses |
-|---|---|---|
-| Pipeline | Active listings & leads | EXECUTE, LIVE, Load Pics, Get Listing Agmt, YouTube/FB |
-| Showing | Tours booked, CMAs in review | CMA |
-| Negotiation | Offers, approvals, applicants | FOR APPROVAL, APPROVED APPLICANT |
-| Closed | Signed, paid, done | FINISHED, CLOSED section |
+- Drag deals between Pipeline -> Negotiation -> Closed
+- Add new deals with the + button
+- Stats bar: total deals, pipeline value, closed revenue, MRR
+- Filters by type (Digital / Subscriptions / Services)
+- Dark/light theme toggle
+- localStorage persistence (Supabase sync when configured)
 
 ## Deploy
 
 ```bash
 git push origin main
-# Vercel auto-deploys from main
+# Vercel auto-deploys
 ```
 
 ## Local dev
 
-Open `index.html` in a browser. That's it. No server needed.
+Open `index.html` in a browser. No server needed.
